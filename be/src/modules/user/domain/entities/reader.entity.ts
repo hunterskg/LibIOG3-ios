@@ -1,17 +1,22 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
+  OneToOne,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserAuth } from '../entities/user-auth.entity';
+import { User } from './user.entity';
 
-// ponytail: string status thay vì enum, nâng cấp khi chốt danh sách trạng thái
 @Entity('readers')
-export class Reader extends UserAuth {
-  @PrimaryGeneratedColumn()
+export class Reader {
+  @PrimaryColumn()
   id!: number;
+
+  @OneToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id' })
+  user!: User;
 
   @Column({ name: 'full_name' })
   fullName!: string;
@@ -21,9 +26,6 @@ export class Reader extends UserAuth {
 
   @Column({ name: 'date_of_birth', type: 'date', nullable: true })
   dateOfBirth?: Date;
-
-  @Column({ default: 'active' })
-  status!: string;
 
   @CreateDateColumn({ name: 'registered_at' })
   registeredAt!: Date;
