@@ -60,15 +60,30 @@ class ApiClient {
     }
   }
 
-  Future<dynamic> get(String path, {bool requiresAuth = false}) async {
+  Future<dynamic> get(
+    String path, {
+    Map<String, dynamic>? query,
+    bool requiresAuth = false,
+  }) async {
     String? token;
     if (requiresAuth && getAccessToken != null) {
       token = await getAccessToken!();
     }
 
+    final uri = query == null || query.isEmpty
+        ? _uri(path)
+        : _uri(path).replace(
+            queryParameters: {
+              ..._uri(path).queryParameters,
+              ...query.map(
+                (k, v) => MapEntry(k, v == null ? '' : v.toString()),
+              ),
+            },
+          );
+
     try {
       final response = await _client
-          .get(_uri(path), headers: _defaultHeaders(token))
+          .get(uri, headers: _defaultHeaders(token))
           .timeout(ApiConstants.timeout);
       return _handleResponse(response);
     } on SocketException {
@@ -81,6 +96,68 @@ class ApiClient {
       throw ApiException('Đã xảy ra lỗi: $e');
     }
   }
+
+  Future<dynamic> _sendWithBody(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    bool requiresAuth = false,
+  }) async {
+    String? token;
+    if (requiresAuth && getAccessToken != null) {
+      token = await getAccessToken!();
+    }
+
+    Future<http.Response> call() {
+      final uri = _uri(path);
+      final headers = _defaultHeaders(token);
+      final encoded = body != null ? jsonEncode(body) : null;
+      switch (method) {
+        case 'PATCH':
+          return _client.patch(uri, headers: headers, body: encoded);
+        case 'PUT':
+          return _client.put(uri, headers: headers, body: encoded);
+        case 'DELETE':
+          return _client.delete(uri, headers: headers, body: encoded);
+        default:
+          return _client.post(uri, headers: headers, body: encoded);
+      }
+    }
+
+    try {
+      final response = await call().timeout(ApiConstants.timeout);
+      return _handleResponse(response);
+    } on SocketException {
+      throw const ApiException('Không thể kết nối đến máy chủ. Kiểm tra mạng.');
+    } on TimeoutException {
+      throw const ApiException('Hết thời gian kết nối đến máy chủ.');
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Đã xảy ra lỗi không xác định: $e');
+    }
+  }
+
+  Future<dynamic> put(
+    String path, {
+    Map<String, dynamic>? body,
+    bool requiresAuth = false,
+  }) =>
+      _sendWithBody('PUT', path, body: body, requiresAuth: requiresAuth);
+
+  Future<dynamic> patch(
+    String path, {
+    Map<String, dynamic>? body,
+    bool requiresAuth = false,
+  }) =>
+      _sendWithBody('PATCH', path, body: body, requiresAuth: requiresAuth);
+
+  Future<dynamic> delete(
+    String path, {
+    Map<String, dynamic>? body,
+    bool requiresAuth = false,
+  }) =>
+      _sendWithBody('DELETE', path, body: body, requiresAuth: requiresAuth);
 
   dynamic _handleResponse(http.Response response) {
     dynamic decoded;

@@ -15,4 +15,12 @@ abstract final class ApiConstants {
   static const String refreshToken = '/auth/refresh-token';
   static const String updatePassword = '/auth/update-password';
   static const String forgotPassword = '/auth/forgot-password';
+
+  // Reader & Staff endpoints
+  static const String readers = '/readers';
+  static const String staffs = '/staffs';
+
+  static String readerById(String id) => '$readers/$id';
+  static String staffById(String id) => '$staffs/$id';
+  static String staffRole(String id) => '$staffs/$id/role';
 }
