@@ -31,7 +31,7 @@ class _ReaderLoginScreenState extends State<ReaderLoginScreen> {
   }
 
   String? _validateUsername(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Vui lòng nhập email hoặc tên đăng nhập';
+    if (v == null || v.trim().isEmpty) return 'Vui lòng nhập email';
     return null;
   }
 
@@ -53,7 +53,11 @@ class _ReaderLoginScreenState extends State<ReaderLoginScreen> {
 
     if (!mounted) return;
     if (ok) {
-      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.readerHome, (r) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.readerHome,
+        (r) => false,
+      );
     } else if (auth.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -73,7 +77,9 @@ class _ReaderLoginScreenState extends State<ReaderLoginScreen> {
       subtitle: 'Tra cứu và mượn trả tài liệu thư viện',
       child: Form(
         key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+        autovalidateMode: _autoValidate
+            ? AutovalidateMode.always
+            : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -105,7 +111,10 @@ class _ReaderLoginScreenState extends State<ReaderLoginScreen> {
               child: TextButton(
                 onPressed: auth.isLoading
                     ? null
-                    : () => Navigator.pushNamed(context, AppRoutes.readerForgotPassword),
+                    : () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.readerForgotPassword,
+                      ),
                 child: const Text('Quên mật khẩu?'),
               ),
             ),
@@ -121,10 +130,15 @@ class _ReaderLoginScreenState extends State<ReaderLoginScreen> {
               children: [
                 const Text('Chưa có tài khoản? '),
                 GestureDetector(
-                  onTap: auth.isLoading ? null : () => Navigator.pushNamed(context, AppRoutes.register),
+                  onTap: auth.isLoading
+                      ? null
+                      : () => Navigator.pushNamed(context, AppRoutes.register),
                   child: const Text(
                     'Đăng ký ngay',
-                    style: TextStyle(color: AppColors.accent600, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: AppColors.accent600,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -134,7 +148,10 @@ class _ReaderLoginScreenState extends State<ReaderLoginScreen> {
               child: TextButton(
                 onPressed: auth.isLoading
                     ? null
-                    : () => Navigator.pushReplacementNamed(context, AppRoutes.staffLogin),
+                    : () => Navigator.pushReplacementNamed(
+                        context,
+                        AppRoutes.staffLogin,
+                      ),
                 child: const Text('Bạn là thủ thư? Chuyển sang cổng Nhân viên'),
               ),
             ),

@@ -45,8 +45,19 @@ class MockTokenStorage implements TokenStorage {
 class FakeAuthService extends AuthService {
   UserRes? mockUser;
   bool shouldThrow = false;
+  String? lastResentEmail;
+  bool resendShouldThrow = false;
 
   FakeAuthService() : super(ApiClient());
+
+  @override
+  Future<String> resendCode(String email) async {
+    if (resendShouldThrow) {
+      throw const ApiException('Verification session expired', statusCode: 404);
+    }
+    lastResentEmail = email;
+    return 'Mã xác thực mới đã được gửi đến email.';
+  }
 
   @override
   Future<AuthRes> login(LoginReq req) async {
@@ -155,6 +166,22 @@ void main() {
       expect(authProvider.isAuthenticated, isFalse);
       expect(authProvider.currentUser, isNull);
       expect(await tokenStorage.getAccessToken(), isNull);
+    });
+
+    test('resendCode succeeds and clears errorMessage', () async {
+      final ok = await authProvider.resendCode(email: 'reader@test.com');
+      expect(ok, isTrue);
+      expect(authService.lastResentEmail, 'reader@test.com');
+      expect(authProvider.errorMessage, isNull);
+      expect(authProvider.isLoading, isFalse);
+    });
+
+    test('resendCode failure sets errorMessage', () async {
+      authService.resendShouldThrow = true;
+      final ok = await authProvider.resendCode(email: 'expired@test.com');
+      expect(ok, isFalse);
+      expect(authProvider.errorMessage, 'Verification session expired');
+      expect(authProvider.isLoading, isFalse);
     });
   });
 }

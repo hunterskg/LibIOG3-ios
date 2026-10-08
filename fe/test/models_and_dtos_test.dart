@@ -2,6 +2,7 @@ import 'package:fe/core/network/api_exception.dart';
 import 'package:fe/features/auth/domain/dtos/forgot_password_req.dart';
 import 'package:fe/features/auth/domain/dtos/login_req.dart';
 import 'package:fe/features/auth/domain/dtos/register_req.dart';
+import 'package:fe/features/auth/domain/dtos/resend_code_req.dart';
 import 'package:fe/features/auth/domain/dtos/update_password_req.dart';
 import 'package:fe/features/auth/domain/dtos/verify_email_req.dart';
 import 'package:fe/features/auth/domain/models/auth_res.dart';
@@ -44,8 +45,8 @@ void main() {
 
     test('Request DTOs toJson', () {
       expect(
-        const LoginReq(username: 'u', password: 'p').toJson(),
-        {'username': 'u', 'password': 'p'},
+        const LoginReq(email: 'u', password: 'p').toJson(),
+        {'email': 'u', 'password': 'p'},
       );
       expect(
         const RegisterReq(username: 'u', email: 'e', password: 'p', displayName: 'd').toJson(),
@@ -54,6 +55,10 @@ void main() {
       expect(
         const VerifyEmailReq(email: 'e', code: '123456').toJson(),
         {'email': 'e', 'code': '123456'},
+      );
+      expect(
+        const ResendCodeReq(email: 'e').toJson(),
+        {'email': 'e'},
       );
       expect(
         const ForgotPasswordReq(email: 'e').toJson(),

@@ -81,6 +81,41 @@ class _VerifyRegisterScreenState extends State<VerifyRegisterScreen> {
     }
   }
 
+  Future<void> _onResendCode() async {
+    final auth = context.read<AuthProvider>();
+    final email = auth.pendingEmail ?? '';
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không tìm thấy thông tin email để gửi lại mã.'),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final ok = await auth.resendCode(email: email);
+    if (!mounted) return;
+    if (ok) {
+      _startTimer();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã gửi lại mã OTP đến email của bạn.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (auth.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.errorMessage!),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -124,17 +159,7 @@ class _VerifyRegisterScreenState extends State<VerifyRegisterScreen> {
                     style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
                   )
                 : TextButton(
-                    onPressed: auth.isLoading
-                        ? null
-                        : () {
-                            _startTimer();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Đã gửi lại mã OTP.'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
+                    onPressed: auth.isLoading ? null : _onResendCode,
                     child: const Text('Gửi lại mã OTP'),
                   ),
           ),

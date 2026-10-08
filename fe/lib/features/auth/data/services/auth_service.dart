@@ -4,6 +4,7 @@ import 'package:fe/core/network/api_exception.dart';
 import 'package:fe/features/auth/domain/dtos/forgot_password_req.dart';
 import 'package:fe/features/auth/domain/dtos/login_req.dart';
 import 'package:fe/features/auth/domain/dtos/register_req.dart';
+import 'package:fe/features/auth/domain/dtos/resend_code_req.dart';
 import 'package:fe/features/auth/domain/dtos/update_password_req.dart';
 import 'package:fe/features/auth/domain/dtos/verify_email_req.dart';
 import 'package:fe/features/auth/domain/models/auth_res.dart';
@@ -37,6 +38,17 @@ class AuthService {
       return UserRes.fromJson(res);
     }
     throw const ApiException('Phản hồi xác thực email không hợp lệ từ máy chủ.');
+  }
+
+  Future<String> resendCode(String email) async {
+    final res = await _apiClient.post(
+      ApiConstants.resendCode,
+      body: ResendCodeReq(email: email).toJson(),
+    );
+    if (res is Map<String, dynamic> && res['message'] != null) {
+      return res['message'].toString();
+    }
+    return 'Mã xác thực mới đã được gửi đến email.';
   }
 
   Future<AuthRes> refreshToken(String refreshToken) async {

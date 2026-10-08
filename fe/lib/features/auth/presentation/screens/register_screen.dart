@@ -45,7 +45,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String? _validateUsername(String? v) {
     if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên đăng nhập';
-    if (v.trim().contains(' ')) return 'Tên đăng nhập không được chứa khoảng trắng';
+    if (v.trim().contains(' ')) {
+      return 'Tên đăng nhập không được chứa khoảng trắng';
+    }
     return null;
   }
 
@@ -91,10 +93,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final auth = context.watch<AuthProvider>();
     return AuthLayout(
       title: 'Đăng ký tài khoản',
-      subtitle: 'Tạo tài khoản độc giả để mượn và tra cứu sách',
       child: Form(
         key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+        autovalidateMode: _autoValidate
+            ? AutovalidateMode.always
+            : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -165,7 +168,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onTap: auth.isLoading ? null : () => Navigator.pop(context),
                   child: const Text(
                     'Đăng nhập',
-                    style: TextStyle(color: AppColors.accent600, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: AppColors.accent600,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

@@ -11,6 +11,7 @@ abstract final class ApiConstants {
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String verifyEmail = '/auth/verify-email';
+  static const String resendCode = '/auth/resend-code';
   static const String refreshToken = '/auth/refresh-token';
   static const String updatePassword = '/auth/update-password';
   static const String forgotPassword = '/auth/forgot-password';

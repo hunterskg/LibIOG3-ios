@@ -87,7 +87,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final res = await authService.login(
-        LoginReq(username: username.trim(), password: password),
+        LoginReq(email: username.trim(), password: password),
       );
 
       // Phân quyền theo cổng đăng nhập
@@ -172,6 +172,25 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } catch (e) {
       _errorMessage = 'Xác thực email thất bại: $e';
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> resendCode({required String email}) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      await authService.resendCode(email.trim());
+      _setLoading(false);
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      _errorMessage = 'Gửi lại mã OTP thất bại: $e';
       _setLoading(false);
       return false;
     }
