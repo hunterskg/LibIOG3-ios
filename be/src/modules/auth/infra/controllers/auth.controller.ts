@@ -18,11 +18,12 @@ import {
   LoginReq,
   RefreshTokenReq,
   RegisterReq,
+  ResendCodeReq,
   UpdatePasswordReq,
   VerifyEmailReq,
 } from '../../dtos/req.dto';
 import { AuthRes, RegisterPendingRes } from '../../dtos/response.dto';
-import { UserRes } from '../../../user/domain/dtos/res.dto';
+import { ReaderRes } from '../../../user/domain/dtos/res.dto';
 import { JwtGuard } from '../guard/jwt.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
 
@@ -58,16 +59,32 @@ export class AuthController {
   @ApiOperation({ summary: 'Verify email with OTP code' })
   @ApiResponse({
     status: 200,
-    type: UserRes,
-    description: 'Email verified and user created successfully',
+    type: ReaderRes,
+    description: 'Email verified and reader created successfully',
   })
   @ApiResponse({
     status: 400,
     description: 'Invalid or expired verification code',
   })
   @ApiResponse({ status: 409, description: 'Email already exists' })
-  async verifyEmail(@Body() req: VerifyEmailReq): Promise<UserRes> {
+  async verifyEmail(@Body() req: VerifyEmailReq): Promise<ReaderRes> {
     return this.authService.verifyEmail(req);
+  }
+
+  @Post('resend-code')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend verification OTP code' })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification code resent successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Verification request not found or expired',
+  })
+  async resendCode(@Body() req: ResendCodeReq): Promise<{ message: string }> {
+    await this.authService.resendCode(req.email);
+    return { message: 'Verification code resent successfully' };
   }
 
   @Post('refresh-token')

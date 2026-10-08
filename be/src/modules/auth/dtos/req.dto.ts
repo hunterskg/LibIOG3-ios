@@ -23,7 +23,7 @@ export class LoginReq {
   @ApiProperty({ example: 'johndoe' })
   @IsString()
   @IsNotEmpty()
-  username!: string;
+  email!: string;
 
   @ApiProperty({ example: 'password123' })
   @IsString()
@@ -77,4 +77,11 @@ export class RefreshTokenReq {
   @IsString()
   @IsNotEmpty()
   refreshToken!: string;
+}
+
+export class ResendCodeReq {
+  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
 }

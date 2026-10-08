@@ -6,16 +6,11 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 
 import { BaseService } from '../../../../common/application/service/base.service';
-import { User } from '../../../user/domain/entities/user.entity';
-import { Reader } from '../../../user/domain/entities/reader.entity';
-import { Role } from '../../../user/domain/enums/role.enum';
 
 import { LoginUseCase } from '../usecases/login.usecase';
 import { RefreshTokenUseCase } from '../usecases/refresh-token.usecase';
@@ -29,7 +24,11 @@ import {
 } from '../../../infra/cache/application/interface/cache-service.interface';
 import { UserRegisteredEvent } from '../../domain/events/user-registered.event';
 import { UserCreatedEvent } from '../../../user/domain/events/user-created.event';
-import { UserRes } from '../../../user/domain/dtos/res.dto';
+import {
+  ReaderRes,
+  UserAuthRes,
+  UserRes,
+} from '../../../user/domain/dtos/res.dto';
 import { AuthRes, JwtRes, RegisterPendingRes } from '../../dtos/response.dto';
 import {
   ForgotPasswordReq,
@@ -42,6 +41,9 @@ import {
   INTERNAL_EVENT_BUS,
   InternalEventBus,
 } from '../../../infra/event/application/internal-event-bus.interface';
+import { UserService } from '../../../user/application/services/user.service';
+import { ReaderService } from '../../../user/application/services/reader.service';
+import { codeExpirationTime } from '../../domain/constant';
 
 @Injectable()
 export class AuthService
@@ -54,10 +56,6 @@ export class AuthService
     ForgotPasswordUseCase
 {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
-    @InjectRepository(Reader)
-    private readonly readerRepo: Repository<Reader>,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -65,16 +63,62 @@ export class AuthService
     private readonly internalEventBus: InternalEventBus,
     @Inject(CACHE_SERVICE)
     private readonly cacheService: CacheService,
+    private readonly userService: UserService,
+    private readonly readerService: ReaderService,
   ) {
     super(AuthService.name);
   }
 
-  async login(req: LoginReq): Promise<AuthRes> {
-    const user = await this.userRepo.findOne({
-      where: { email: req.username },
-    });
+  /**
+   * @throws {NotFoundException} if the verification code has expired or is invalid
+   */
+  async resendCode(email: string): Promise<void> {
+    const cacheKey = `auth:verify:${email}`;
+    const cachedData = await this.cacheService.get<{
+      email: string;
+      password: string;
+      displayName: string;
+      code: string;
+    }>(cacheKey);
 
-    if (!user || !user.passwordHash || !user.isActived()) {
+    if (!cachedData) {
+      throw new NotFoundException(
+        'Verification code has expired or is invalid',
+      );
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const ttl = codeExpirationTime;
+    await this.cacheService.set(cacheKey, { ...cachedData, code }, ttl);
+
+    this.internalEventBus
+      .publish(
+        new UserRegisteredEvent(
+          cachedData.email,
+          cachedData.displayName,
+          code,
+          ttl,
+        ),
+      )
+      .catch((err) => {
+        this.logger.error(
+          `Failed to publish UserRegisteredEvent for email ${cachedData.email}: ${err}`,
+        );
+      });
+  }
+
+  /**
+   * @throws {NotFoundException} if the user with the given email is not found
+   * @throws {UnauthorizedException} if the email or password is invalid
+   *
+   */
+  async login(req: LoginReq): Promise<AuthRes> {
+    this.logger.log(`Login attempt for email: ${req.email} ${req.password}`);
+
+    const user = await this.userService.getUserByEmailForAuth(req.email);
+
+    if (!user.passwordHash || !user.isActive) {
       throw new UnauthorizedException('Invalid username or password');
     }
 
@@ -97,11 +141,9 @@ export class AuthService
     const storedToken =
       await this.refreshTokenService.validateRefreshToken(token);
 
-    const user = await this.userRepo.findOne({
-      where: { id: Number(storedToken.userId) },
-    });
+    const user = await this.userService.getById(storedToken.userId);
 
-    if (!user || !user.isActived()) {
+    if (!user || !user.isActive) {
       throw new UnauthorizedException('User account is inactive or not found');
     }
 
@@ -112,9 +154,8 @@ export class AuthService
   }
 
   async updatePassword(userId: string, req: UpdatePasswordReq): Promise<void> {
-    const user = await this.userRepo.findOne({
-      where: { id: Number(userId) },
-    });
+    const user = await this.userService.getByIdForAuth(userId);
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -130,17 +171,15 @@ export class AuthService
     }
 
     const hashedPassword = await bcrypt.hash(req.newPassword, 10);
-    user.updatePassword(hashedPassword);
-    await this.userRepo.save(user);
+
+    await this.userService.updatePassword(userId, hashedPassword);
 
     // Revoke all existing refresh tokens for this user
     await this.refreshTokenService.revokeRefreshTokenByUserId(userId);
   }
 
   async register(req: RegisterReq): Promise<RegisterPendingRes> {
-    const existing = await this.userRepo.findOne({
-      where: { email: req.email },
-    });
+    const existing = await this.userService.isEmailExist(req.email);
 
     if (existing) {
       throw new ConflictException('Email already exists');
@@ -149,37 +188,44 @@ export class AuthService
     const existingPending = await this.cacheService.get(
       `auth:verify:${req.email}`,
     );
+
     if (existingPending) {
       throw new ConflictException(
         'A verification code has already been sent to this email. Please check your email or wait for the code to expire.',
       );
     }
 
-    const hashedPassword = await bcrypt.hash(req.password, 10);
-
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const ttl = Number(
-      this.configService.get<number>('EMAIL_VERIFICATION_TTL', 900),
-    );
+    const ttl = codeExpirationTime;
 
     const displayName = req.displayName?.trim() || req.email;
 
     const cacheKey = `auth:verify:${req.email}`;
+
     await this.cacheService.set(
       cacheKey,
       {
         email: req.email,
-        password: hashedPassword,
+        password: req.password,
         displayName,
         code,
       },
       ttl,
     );
 
-    await this.internalEventBus.publish(
-      new UserRegisteredEvent(req.email, displayName, code, ttl),
-    );
+    this.internalEventBus
+      .publish(new UserRegisteredEvent(req.email, displayName, code, ttl))
+      .then(() => {
+        this.logger.log(
+          `UserRegisteredEvent published for email ${req.email} with code ${code}`,
+        );
+      })
+      .catch((err) => {
+        this.logger.error(
+          `Failed to publish UserRegisteredEvent for email ${req.email}: ${err}`,
+        );
+      });
 
     return {
       message: 'Verification code sent to email',
@@ -187,7 +233,7 @@ export class AuthService
     };
   }
 
-  async verifyEmail(req: VerifyEmailReq): Promise<UserRes> {
+  async verifyEmail(req: VerifyEmailReq): Promise<ReaderRes> {
     const cacheKey = `auth:verify:${req.email}`;
     const cachedData = await this.cacheService.get<{
       email: string;
@@ -206,39 +252,30 @@ export class AuthService
       throw new BadRequestException('Invalid verification code');
     }
 
-    const existing = await this.userRepo.findOne({
-      where: { email: cachedData.email },
-    });
+    const existing = await this.userService.isEmailExist(req.email);
     if (existing) {
       await this.cacheService.del(cacheKey);
       throw new ConflictException('Email already exists');
     }
 
-    const user = User.create(
-      cachedData.email,
-      cachedData.password,
-      Role.READER,
-    );
-    const savedUser = await this.userRepo.save(user);
-
-    const reader = this.readerRepo.create({
-      id: savedUser.id,
+    const reader = await this.readerService.createReader({
+      email: cachedData.email,
+      password: cachedData.password,
       fullName: cachedData.displayName || cachedData.email,
     });
-    await this.readerRepo.save(reader);
 
     await this.cacheService.del(cacheKey);
 
     await this.internalEventBus.publish(
       new UserCreatedEvent(
-        savedUser.id.toString(),
-        savedUser.email,
-        cachedData.displayName || savedUser.email,
-        cachedData.displayName || savedUser.email,
+        reader.user.userId,
+        reader.user.email,
+        cachedData.displayName || reader.user.email,
+        cachedData.displayName || reader.user.email,
       ),
     );
 
-    return UserRes.of(savedUser);
+    return reader;
   }
 
   async forgotPassword(req: ForgotPasswordReq): Promise<void> {
@@ -247,9 +284,9 @@ export class AuthService
     await Promise.resolve();
   }
 
-  private async generateAuthRes(user: User): Promise<AuthRes> {
+  private async generateAuthRes(user: UserRes | UserAuthRes): Promise<AuthRes> {
     const payload: JwtRes = {
-      sub: user.id.toString(),
+      sub: user.userId,
       role: user.role,
     };
 
@@ -260,7 +297,7 @@ export class AuthService
     );
 
     const refreshToken = await this.refreshTokenService.createRefreshToken(
-      user.id.toString(),
+      user.userId,
       refreshTokenDays,
     );
 
