@@ -1,6 +1,7 @@
 import {
   IsDateString,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -106,8 +107,15 @@ export class QueryStaffReq extends PageReq {
   @IsOptional()
   name?: string;
 
-  @ApiPropertyOptional({ example: 'ADMIN' })
-  @IsString()
+  @ApiPropertyOptional({ example: 'admin' })
+  @IsEnum(Role, { message: 'Role không hợp lệ' })
   @IsOptional()
   role?: Role;
+}
+
+export class AssignRoleReq {
+  @ApiProperty({ enum: Role, example: Role.STAFF })
+  @IsEnum(Role, { message: 'Role không hợp lệ' })
+  @IsNotEmpty({ message: 'Role không được để trống' })
+  role!: Role;
 }

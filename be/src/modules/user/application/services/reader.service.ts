@@ -40,8 +40,38 @@ export class ReaderService
     super(ReaderService.name);
   }
 
-  getReader(req: QueryReaderReq): Promise<Page<ReaderRes>> {
-    throw new Error('Method not implemented.');
+  async getReader(req: QueryReaderReq): Promise<Page<ReaderRes>> {
+    const page = Number(req.page) > 0 ? Number(req.page) : 1;
+    const size = Number(req.size) > 0 ? Number(req.size) : 10;
+
+    const qb = this.readerRepo
+      .createQueryBuilder('reader')
+      .leftJoinAndSelect('reader.user', 'user');
+
+    if (req.fullName) {
+      qb.andWhere('reader.fullName ILIKE :fullName', {
+        fullName: `%${req.fullName}%`,
+      });
+    }
+    if (req.phone) {
+      qb.andWhere('reader.phone ILIKE :phone', { phone: `%${req.phone}%` });
+    }
+    if (req.dateOfBirth) {
+      qb.andWhere('reader.dateOfBirth = :dateOfBirth', {
+        dateOfBirth: req.dateOfBirth,
+      });
+    }
+
+    qb.orderBy('reader.registeredAt', 'DESC')
+      .skip((page - 1) * size)
+      .take(size);
+
+    const [items, total] = await qb.getManyAndCount();
+    return Page.of(
+      items.map((reader) => ReaderRes.of(reader)),
+      Number(total) || 0,
+      { page, size },
+    );
   }
 
   async createReader(req: ReaderCreateReq): Promise<ReaderRes> {
@@ -121,7 +151,10 @@ export class ReaderService
       where: { id },
       relations: { user: true },
     });
-    if (!reader) {
+    if (!reader || !reader.user) {
+      throw new NotFoundException('Reader not found');
+    }
+    if (reader.user.role !== Role.READER) {
       throw new NotFoundException('Reader not found');
     }
     return ReaderRes.of(reader);

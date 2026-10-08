@@ -38,10 +38,13 @@ describe('StaffService', () => {
     staffRepo = {
       findOne: jest.fn(),
       save: jest.fn(),
+      createQueryBuilder: jest.fn(),
     } as unknown as jest.Mocked<Repository<Staff>>;
 
     userRepo = {
       findOne: jest.fn(),
+      save: jest.fn(),
+      count: jest.fn(),
     } as unknown as jest.Mocked<Repository<User>>;
 
     dataSource = {
@@ -235,6 +238,168 @@ describe('StaffService', () => {
       await expect(service.getStaffById('uuid-999')).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should throw NotFoundException when staff user has non-staff role', async () => {
+      const mockReaderUser = { id: 'uuid-1', role: Role.READER } as User;
+      const mockStaff = {
+        id: 'uuid-1',
+        name: 'Reader In Disguise',
+        user: mockReaderUser,
+      } as Staff;
+
+      staffRepo.findOne.mockResolvedValue(mockStaff);
+
+      await expect(service.getStaffById('uuid-1')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('getStaff', () => {
+    it('should return paginated staff list with filter', async () => {
+      const mockUser = { id: 'uuid-1', role: Role.STAFF } as User;
+      const mockStaff = {
+        id: 'uuid-1',
+        name: 'Tran Thi B',
+        user: mockUser,
+      } as Staff;
+
+      const mockQb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[mockStaff], 1]),
+      };
+
+      staffRepo.createQueryBuilder.mockReturnValue(mockQb as any);
+
+      const result = await service.getStaff({
+        page: 1,
+        size: 10,
+        name: 'Tran',
+        role: Role.STAFF,
+      });
+
+      expect(staffRepo.createQueryBuilder).toHaveBeenCalledWith('staff');
+      expect(mockQb.leftJoinAndSelect).toHaveBeenCalledWith(
+        'staff.user',
+        'user',
+      );
+      expect(mockQb.andWhere).toHaveBeenCalledWith('staff.name ILIKE :name', {
+        name: '%Tran%',
+      });
+      expect(mockQb.andWhere).toHaveBeenCalledWith('user.role = :role', {
+        role: Role.STAFF,
+      });
+      expect(result.data.length).toBe(1);
+      expect(result.total).toBe(1);
+    });
+
+    it('should parse string page and size safely in getStaff', async () => {
+      const mockUser = { id: 'uuid-1', role: Role.STAFF } as User;
+      const mockStaff = {
+        id: 'uuid-1',
+        name: 'Tran Thi B',
+        user: mockUser,
+      } as Staff;
+
+      const mockQb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[mockStaff], '8']),
+      };
+
+      staffRepo.createQueryBuilder.mockReturnValue(mockQb as any);
+
+      const result = await service.getStaff({
+        page: '3' as any,
+        size: '4' as any,
+      });
+
+      expect(mockQb.skip).toHaveBeenCalledWith(8);
+      expect(mockQb.take).toHaveBeenCalledWith(4);
+      expect(result.req.page).toBe(3);
+      expect(result.req.size).toBe(4);
+      expect(result.total).toBe(8);
+    });
+  });
+
+  describe('assignRole', () => {
+    it('should throw BadRequestException if admin assigns role to himself', async () => {
+      await expect(
+        service.assignRole('admin-1', Role.STAFF, 'admin-1'),
+      ).rejects.toThrow('Admin cannot assign role to himself');
+    });
+
+    it('should throw BadRequestException for invalid role', async () => {
+      await expect(
+        service.assignRole('staff-1', Role.READER, 'admin-1'),
+      ).rejects.toThrow('Invalid role for staff');
+    });
+
+    it('should throw NotFoundException if staff does not exist', async () => {
+      staffRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.assignRole('staff-999', Role.ADMIN, 'admin-1'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if target user is not staff/admin', async () => {
+      const mockStaff = {
+        id: 'staff-1',
+        user: { id: 'staff-1', role: Role.READER } as User,
+      } as Staff;
+      staffRepo.findOne.mockResolvedValue(mockStaff);
+
+      await expect(
+        service.assignRole('staff-1', Role.ADMIN, 'admin-1'),
+      ).rejects.toThrow('Target user is not a staff member');
+    });
+
+    it('should throw BadRequestException when demoting last active admin', async () => {
+      const mockAdminUser = {
+        id: 'admin-2',
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+      } as User;
+      const mockStaff = {
+        id: 'admin-2',
+        user: mockAdminUser,
+      } as Staff;
+
+      staffRepo.findOne.mockResolvedValue(mockStaff);
+      userRepo.count.mockResolvedValue(1);
+
+      await expect(
+        service.assignRole('admin-2', Role.STAFF, 'admin-1'),
+      ).rejects.toThrow('System must have at least one active admin');
+    });
+
+    it('should successfully assign role when conditions are met', async () => {
+      const mockStaffUser = {
+        id: 'staff-1',
+        role: Role.STAFF,
+        status: UserStatus.ACTIVE,
+      } as User;
+      const mockStaff = {
+        id: 'staff-1',
+        user: mockStaffUser,
+      } as Staff;
+
+      staffRepo.findOne.mockResolvedValue(mockStaff);
+      userRepo.save.mockResolvedValue(mockStaffUser);
+
+      await service.assignRole('staff-1', Role.ADMIN, 'admin-1');
+
+      expect(mockStaffUser.role).toBe(Role.ADMIN);
+      expect(userRepo.save).toHaveBeenCalledWith(mockStaffUser);
     });
   });
 });

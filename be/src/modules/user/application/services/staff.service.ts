@@ -23,12 +23,17 @@ import { Staff } from '../../domain/entities/staff.entity';
 import { Role } from '../../domain/enums/role.enum';
 import { UserStatus } from '../../domain/enums/user-statis.enum';
 import { ViewStaffUsecase } from '../usecases/staff/view-staff.usecase';
+import { AssignRoleUsecase } from '../usecases/staff/assign-role.usecase';
 import { Page } from '../../../../common/dtos/page.dto';
 
 @Injectable()
 export class StaffService
   extends BaseService
-  implements StaffCreateUsecase, StaffUpdateUsecase, ViewStaffUsecase
+  implements
+    StaffCreateUsecase,
+    StaffUpdateUsecase,
+    ViewStaffUsecase,
+    AssignRoleUsecase
 {
   constructor(
     @InjectRepository(Staff)
@@ -39,8 +44,32 @@ export class StaffService
   ) {
     super(StaffService.name);
   }
-  getStaff(req: QueryStaffReq): Promise<Page<StaffRes>> {
-    throw new Error('Method not implemented.');
+
+  async getStaff(req: QueryStaffReq): Promise<Page<StaffRes>> {
+    const page = Number(req.page) > 0 ? Number(req.page) : 1;
+    const size = Number(req.size) > 0 ? Number(req.size) : 10;
+
+    const qb = this.staffRepo
+      .createQueryBuilder('staff')
+      .leftJoinAndSelect('staff.user', 'user');
+
+    if (req.name) {
+      qb.andWhere('staff.name ILIKE :name', { name: `%${req.name}%` });
+    }
+    if (req.role) {
+      qb.andWhere('user.role = :role', { role: req.role });
+    }
+
+    qb.orderBy('staff.createdAt', 'DESC')
+      .skip((page - 1) * size)
+      .take(size);
+
+    const [items, total] = await qb.getManyAndCount();
+    return Page.of(
+      items.map((staff) => StaffRes.of(staff)),
+      Number(total) || 0,
+      { page, size },
+    );
   }
 
   async createStaff(req: StaffCreateReq): Promise<StaffRes> {
@@ -110,9 +139,63 @@ export class StaffService
       where: { id },
       relations: { user: true },
     });
-    if (!staff) {
+    if (!staff || !staff.user) {
       throw new NotFoundException('Staff not found');
     }
+
+    if (staff.user.role !== Role.STAFF && staff.user.role !== Role.ADMIN) {
+      throw new NotFoundException('Staff not found');
+    }
+
     return StaffRes.of(staff);
+  }
+
+  async assignRole(
+    staffId: string,
+    role: Role,
+    currentAdminId: string,
+  ): Promise<void> {
+    if (staffId === currentAdminId) {
+      throw new BadRequestException('Admin cannot assign role to himself');
+    }
+
+    if (role !== Role.STAFF && role !== Role.ADMIN) {
+      throw new BadRequestException('Invalid role for staff');
+    }
+
+    const staff = await this.staffRepo.findOne({
+      where: { id: staffId },
+      relations: { user: true },
+    });
+    if (!staff || !staff.user) {
+      throw new NotFoundException('Staff not found');
+    }
+
+    const targetUser = staff.user;
+    if (targetUser.role !== Role.STAFF && targetUser.role !== Role.ADMIN) {
+      throw new BadRequestException('Target user is not a staff member');
+    }
+
+    if (targetUser.role === role) {
+      return;
+    }
+
+    if (targetUser.role === Role.ADMIN && role !== Role.ADMIN) {
+      const activeAdminCount = await this.userRepo.count({
+        where: {
+          role: Role.ADMIN,
+          status: UserStatus.ACTIVE,
+        },
+      });
+
+      if (activeAdminCount <= 1) {
+        throw new BadRequestException(
+          'System must have at least one active admin',
+        );
+      }
+    }
+
+    targetUser.role = role;
+    await this.userRepo.save(targetUser);
   }
 }

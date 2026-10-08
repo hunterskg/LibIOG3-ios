@@ -9,5 +9,9 @@ import { Role } from '../../../domain/enums/role.enum';
     admin cannot assign role to himself
 */
 export interface AssignRoleUsecase {
-  assignRole(staffId: string, role: Role): Promise<void>;
+  assignRole(
+    staffId: string,
+    role: Role,
+    currentAdminId: string,
+  ): Promise<void>;
 }

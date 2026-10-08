@@ -38,6 +38,7 @@ describe('ReaderService', () => {
     readerRepo = {
       findOne: jest.fn(),
       save: jest.fn(),
+      createQueryBuilder: jest.fn(),
     } as unknown as jest.Mocked<Repository<Reader>>;
 
     userRepo = {
@@ -224,6 +225,94 @@ describe('ReaderService', () => {
       await expect(service.getReaderById('uuid-999')).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should throw NotFoundException when reader user has role other than READER', async () => {
+      const mockStaffUser = { id: 'uuid-1', role: Role.STAFF } as User;
+      const mockReader = {
+        id: 'uuid-1',
+        fullName: 'Not A Reader',
+        user: mockStaffUser,
+      } as Reader;
+
+      readerRepo.findOne.mockResolvedValue(mockReader);
+
+      await expect(service.getReaderById('uuid-1')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('getReader', () => {
+    it('should return paginated readers with default pagination', async () => {
+      const mockUser = { id: 'uuid-1', role: Role.READER } as User;
+      const mockReader = {
+        id: 'uuid-1',
+        fullName: 'Nguyen Van A',
+        phone: '0912345678',
+        user: mockUser,
+      } as Reader;
+
+      const mockQb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[mockReader], 1]),
+      };
+
+      readerRepo.createQueryBuilder.mockReturnValue(mockQb as any);
+
+      const result = await service.getReader({
+        page: 1,
+        size: 10,
+        fullName: 'Van',
+      });
+
+      expect(readerRepo.createQueryBuilder).toHaveBeenCalledWith('reader');
+      expect(mockQb.leftJoinAndSelect).toHaveBeenCalledWith(
+        'reader.user',
+        'user',
+      );
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        'reader.fullName ILIKE :fullName',
+        { fullName: '%Van%' },
+      );
+      expect(result.data.length).toBe(1);
+      expect(result.total).toBe(1);
+      expect(result.data[0].fullName).toBe('Nguyen Van A');
+    });
+
+    it('should parse string page and size safely in getReader', async () => {
+      const mockUser = { id: 'uuid-1', role: Role.READER } as User;
+      const mockReader = {
+        id: 'uuid-1',
+        fullName: 'Nguyen Van A',
+        user: mockUser,
+      } as Reader;
+
+      const mockQb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[mockReader], '5']),
+      };
+
+      readerRepo.createQueryBuilder.mockReturnValue(mockQb as any);
+
+      const result = await service.getReader({
+        page: '2' as any,
+        size: '5' as any,
+      });
+
+      expect(mockQb.skip).toHaveBeenCalledWith(5);
+      expect(mockQb.take).toHaveBeenCalledWith(5);
+      expect(result.req.page).toBe(2);
+      expect(result.req.size).toBe(5);
+      expect(result.total).toBe(5);
     });
   });
 });
