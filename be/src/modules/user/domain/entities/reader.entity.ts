@@ -11,8 +11,8 @@ import { User } from './user.entity';
 
 @Entity('readers')
 export class Reader {
-  @PrimaryColumn()
-  id!: number;
+  @PrimaryColumn('uuid')
+  id!: string;
 
   @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id' })

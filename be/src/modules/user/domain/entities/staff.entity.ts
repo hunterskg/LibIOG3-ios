@@ -10,8 +10,8 @@ import { User } from './user.entity';
 
 @Entity('staffs')
 export class Staff {
-  @PrimaryColumn()
-  id!: number;
+  @PrimaryColumn('uuid')
+  id!: string;
 
   @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id' })
