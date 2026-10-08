@@ -6,16 +6,9 @@ import { QUEUE_SERVICE } from '../application/queue-service.interface';
 
 @Module({
   imports: [
+    ConfigModule,
     BullModule.forRootAsync({
-      imports: [
-        ConfigModule,
-        BullModule.registerQueue(
-          { name: 'default' },
-          {
-            name: 'video-processing',
-          },
-        ),
-      ],
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         connection: {
@@ -34,6 +27,7 @@ import { QUEUE_SERVICE } from '../application/queue-service.interface';
       useExisting: BullmqService,
     },
   ],
-  exports: [BullModule, BullmqService, QUEUE_SERVICE],
+
+  exports: [BullmqService, QUEUE_SERVICE],
 })
 export class BullmqModule {}
