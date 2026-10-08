@@ -1,0 +1,34 @@
+flowchart TD
+    Start([Start ]) --> RoleSelect[Màn hình Khởi động / Chọn cổng]
+
+    RoleSelect -->|Độc giả| ReaderLogin[Đăng nhập Độc giả]
+    RoleSelect -->|Nhân viên| StaffLogin[Đăng nhập Nhân viên]
+
+    ReaderLogin <-->|Đổi cổng đăng nhập| StaffLogin
+
+    %% Luồng Độc giả
+    ReaderLogin -->|Chưa có tài khoản| Register[Đăng ký tài khoản]
+    ReaderLogin -->|Quên mật khẩu| ForgotPwdReader[Quên mật khẩu Độc giả]
+    ReaderLogin -->|Đăng nhập thành công| ReaderHome([Trang chủ Độc giả])
+
+    %% Luồng Nhân viên
+    StaffLogin -->|Quên mật khẩu| ForgotPwdStaff[Quên mật khẩu Nhân viên]
+    StaffLogin -->|Đăng nhập thành công| StaffHome([Bảng điều khiển Nhân viên])
+
+    %% Đăng ký (Độc giả)
+    Register -->|Gửi biểu mẫu| VerifyRegister[Xác thực OTP / Email]
+    VerifyRegister -->|Thành công| RegSuccess[Đăng ký thành công]
+    RegSuccess --> ReaderLogin
+    Register -->|Đã có tài khoản| ReaderLogin
+
+    %% Quên mật khẩu - Độc giả
+    ForgotPwdReader -->|Nhập email hoặc SĐT| OtpReader[Nhập OTP xác minh]
+    OtpReader -->|OTP đúng| ResetPwdReader[Đặt lại mật khẩu mới]
+    ResetPwdReader -->|Cập nhật thành công| ReaderLogin
+    ForgotPwdReader -->|Quay lại| ReaderLogin
+
+    %% Quên mật khẩu - Nhân viên
+    ForgotPwdStaff -->|Nhập email nội bộ| OtpStaff[Nhập OTP xác minh]
+    OtpStaff -->|OTP đúng| ResetPwdStaff[Đặt lại mật khẩu mới]
+    ResetPwdStaff -->|Cập nhật thành công| StaffLogin
+    ForgotPwdStaff -->|Quay lại| StaffLogin
