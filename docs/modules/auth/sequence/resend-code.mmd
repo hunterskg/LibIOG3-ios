@@ -1,0 +1,22 @@
+sequenceDiagram
+
+    actor Reader as Reader
+    participant Flutter as Flutter App
+    participant AuthModule as Auth Module
+    participant CacheModule as Cache Module
+    participant EventModule as Event Module
+
+    Reader->>Flutter: User clicks resend code button
+    Flutter->>+AuthModule: resendCode(email)
+    AuthModule->>+CacheModule: get(cacheKey)
+    CacheModule-->>-AuthModule: return data
+
+    alt Cache miss
+        AuthModule-->>Flutter: throw new NotFoundException()
+    else Cache hit
+        AuthModule->>+CacheModule: set(cacheKey, data)
+        AuthModule--)EventModule: publish(UserRegisteredEvent)
+        AuthModule-->>Flutter: return void
+        Flutter->>Reader: Show success message
+    end
+    

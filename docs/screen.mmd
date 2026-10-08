@@ -1,34 +1,34 @@
 flowchart TD
-    Start([Start ]) --> RoleSelect[Màn hình Khởi động / Chọn cổng]
+    Start([Start]) --> RoleSelect[Splash / Role Select Screen]
 
-    RoleSelect -->|Độc giả| ReaderLogin[Đăng nhập Độc giả]
-    RoleSelect -->|Nhân viên| StaffLogin[Đăng nhập Nhân viên]
+    RoleSelect -->|Reader| ReaderLogin[Reader Login]
+    RoleSelect -->|Staff| StaffLogin[Staff Login]
 
-    ReaderLogin <-->|Đổi cổng đăng nhập| StaffLogin
+    ReaderLogin <-->|Switch portal| StaffLogin
 
-    %% Luồng Độc giả
-    ReaderLogin -->|Chưa có tài khoản| Register[Đăng ký tài khoản]
-    ReaderLogin -->|Quên mật khẩu| ForgotPwdReader[Quên mật khẩu Độc giả]
-    ReaderLogin -->|Đăng nhập thành công| ReaderHome([Trang chủ Độc giả])
+    %% Reader Flow
+    ReaderLogin -->|No account| Register[Register Screen]
+    ReaderLogin -->|Forgot password| ForgotPwdReader[Reader Forgot Password]
+    ReaderLogin -->|Login success| ReaderHome([Reader Home])
 
-    %% Luồng Nhân viên
-    StaffLogin -->|Quên mật khẩu| ForgotPwdStaff[Quên mật khẩu Nhân viên]
-    StaffLogin -->|Đăng nhập thành công| StaffHome([Bảng điều khiển Nhân viên])
+    %% Staff Flow
+    StaffLogin -->|Forgot password| ForgotPwdStaff[Staff Forgot Password]
+    StaffLogin -->|Login success| StaffHome([Staff Dashboard])
 
-    %% Đăng ký (Độc giả)
-    Register -->|Gửi biểu mẫu| VerifyRegister[Xác thực OTP / Email]
-    VerifyRegister -->|Thành công| RegSuccess[Đăng ký thành công]
+    %% Registration (Reader)
+    Register -->|Submit form| VerifyRegister[Verify OTP / Email]
+    VerifyRegister -->|Success| RegSuccess[Registration Success]
     RegSuccess --> ReaderLogin
-    Register -->|Đã có tài khoản| ReaderLogin
+    Register -->|Already have account| ReaderLogin
 
-    %% Quên mật khẩu - Độc giả
-    ForgotPwdReader -->|Nhập email hoặc SĐT| OtpReader[Nhập OTP xác minh]
-    OtpReader -->|OTP đúng| ResetPwdReader[Đặt lại mật khẩu mới]
-    ResetPwdReader -->|Cập nhật thành công| ReaderLogin
-    ForgotPwdReader -->|Quay lại| ReaderLogin
+    %% Forgot Password - Reader
+    ForgotPwdReader -->|Enter email or phone| OtpReader[Verify OTP]
+    OtpReader -->|Valid OTP| ResetPwdReader[Reset Password]
+    ResetPwdReader -->|Success| ReaderLogin
+    ForgotPwdReader -->|Back| ReaderLogin
 
-    %% Quên mật khẩu - Nhân viên
-    ForgotPwdStaff -->|Nhập email nội bộ| OtpStaff[Nhập OTP xác minh]
-    OtpStaff -->|OTP đúng| ResetPwdStaff[Đặt lại mật khẩu mới]
-    ResetPwdStaff -->|Cập nhật thành công| StaffLogin
-    ForgotPwdStaff -->|Quay lại| StaffLogin
+    %% Forgot Password - Staff
+    ForgotPwdStaff -->|Enter internal email| OtpStaff[Verify OTP]
+    OtpStaff -->|Valid OTP| ResetPwdStaff[Reset Password]
+    ResetPwdStaff -->|Success| StaffLogin
+    ForgotPwdStaff -->|Back| StaffLogin

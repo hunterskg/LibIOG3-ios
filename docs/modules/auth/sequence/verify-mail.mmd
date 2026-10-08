@@ -1,0 +1,35 @@
+sequenceDiagram    
+    actor Reader as Reader
+    participant Flutter as Flutter App
+    participant AuthModule as Auth Module
+    participant UserModule as User Module
+    participant CacheModule as Cache Module
+    participant EventModule as Event Module
+
+    Reader->>Flutter: User fills code verification form
+    Flutter->>+AuthModule: verifyEmail(req)
+    AuthModule->>+CacheModule: get(cacheKey)
+    CacheModule-->>-AuthModule: return data
+
+    alt Cache miss
+        AuthModule-->>Flutter: throw new NotFoundException()
+    else Cache miss
+         alt Code does not match
+            AuthModule-->>Flutter: throw new BadRequestException()
+           
+        else Code matches
+             AuthModule->>+UserModule: isEmailExist(email)
+            UserModule-->>-AuthModule: return isExist
+            alt Email exists
+                AuthModule->>+CacheModule: delete(cacheKey)
+                AuthModule-->>Flutter: throw new ConflictException()
+            else Email does not exist
+                AuthModule->>+UserModule: createReader(req)
+                UserModule-->>-AuthModule: return readerRes
+                AuthModule->>+CacheModule: delete(cacheKey)
+                AuthModule--)EventModule: publish(UserRegisteredEvent)
+                AuthModule-->>Flutter: return readerRes
+                Flutter->>Reader: Show success message
+            end
+        end
+    end
