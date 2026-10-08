@@ -13,19 +13,12 @@ export abstract class DomainEvent {
     return JSON.stringify(this);
   }
 
-  deserialize(json: string): this {
-    const data = typeof json === 'string' ? JSON.parse(json) : json;
-    return Object.assign(this, data, {
-      occuredOn: data?.occuredOn ? new Date(data.occuredOn) : new Date(),
-    });
-  }
-
   static deserialize<T extends DomainEvent>(
     this: new (...args: any[]) => T,
     json: string,
   ): T {
-    const data = typeof json === 'string' ? JSON.parse(json) : json;
-    const instance = Object.create(this.prototype);
+    const data = typeof json === 'string' ? (JSON.parse(json) as T) : json;
+    const instance = Object.create(this.prototype as object) as T;
     return Object.assign(instance, data, {
       occuredOn: data?.occuredOn ? new Date(data.occuredOn) : new Date(),
     });

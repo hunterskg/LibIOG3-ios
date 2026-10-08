@@ -46,6 +46,7 @@ export class BullmqService implements QueueService, OnModuleDestroy {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async consume<T>(queueName: string, handler: Handler<T>): Promise<void> {
     if (this.workers.has(queueName)) return;
 

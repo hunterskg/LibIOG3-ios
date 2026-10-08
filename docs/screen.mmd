@@ -1,0 +1,79 @@
+flowchart TD
+    Start([Start]) --> RoleSelect[Splash / Role Select Screen]
+
+    RoleSelect -->|Reader| ReaderLogin[Reader Login Screen]
+    RoleSelect -->|Staff| StaffLogin[Staff Login Screen]
+
+    ReaderLogin <-->|Switch portal| StaffLogin
+
+    %% ==========================================
+    %% AUTH FLOW - READER
+    %% ==========================================
+    ReaderLogin -->|No account| Register[Register Screen]
+    ReaderLogin -->|Forgot password| ForgotPwdReader[Reader Forgot Password Screen]
+    ReaderLogin -->|Login success| ReaderHome([Reader Home Screen])
+
+    Register -->|Submit form| VerifyRegister[Verify OTP / Email Screen]
+    VerifyRegister -->|Success| RegSuccess[Registration Success Screen]
+    RegSuccess --> ReaderLogin
+    Register -->|Already have account| ReaderLogin
+
+    ForgotPwdReader -->|Enter email or phone| OtpReader[Verify OTP Screen]
+    OtpReader -->|Valid OTP| ResetPwdReader[Reset Password Screen]
+    ResetPwdReader -->|Success| ReaderLogin
+    ForgotPwdReader -->|Back| ReaderLogin
+
+    %% ==========================================
+    %% AUTH FLOW - STAFF / ADMIN / DEVICE
+    %% ==========================================
+    StaffLogin -->|Forgot password| ForgotPwdStaff[Staff Forgot Password Screen]
+    StaffLogin -->|Login: role=staff| StaffHome([Staff Home / Quầy nghiệp vụ])
+    StaffLogin -->|Login: role=admin| AdminHome([Admin Home / Quản trị viên])
+    StaffLogin -->|Login: role=device| DeviceHome([Device Home / Trạm Kiosk])
+
+    ForgotPwdStaff -->|Enter internal email| OtpStaff[Verify OTP Screen]
+    OtpStaff -->|Valid OTP| ResetPwdStaff[Reset Password Screen]
+    ResetPwdStaff -->|Success| StaffLogin
+    ForgotPwdStaff -->|Back| StaffLogin
+
+    %% ==========================================
+    %% READER FLOW
+    %% ==========================================
+    ReaderHome -->|View & edit profile| ReaderProfile[Reader Profile Screen]
+    ReaderProfile -->|Save success| ReaderProfile
+
+    %% ==========================================
+    %% STAFF FLOW
+    %% ==========================================
+    StaffHome -->|View & edit profile| StaffProfile[Staff Profile Screen]
+    StaffProfile -->|Save success| StaffProfile
+
+    StaffHome -->|Manage readers| ReaderList[Reader List Screen]
+    ReaderList -->|Select reader| ReaderDetail[Reader Detail Screen]
+    ReaderDetail -->|Edit| ReaderEditModal[Reader Edit Modal / Screen]
+    ReaderEditModal -->|Save success| ReaderDetail
+
+    %% ==========================================
+    %% ADMIN FLOW
+    %% ==========================================
+    AdminHome -->|Manage staff| StaffList[Staff List Screen]
+    AdminHome -->|Manage readers| ReaderList
+    AdminHome -->|Device monitor| DeviceMonitor[Device / Kiosk Monitor]
+    AdminHome -->|Operation stats| OpsReport[Operation Report & Stats]
+
+    %% ==========================================
+    %% DEVICE FLOW - SELF SERVICE KIOSK
+    %% ==========================================
+    DeviceHome -->|Scan card| SelfCheckout[Self Checkout & Return]
+    DeviceHome -->|Check hardware| HardwareStatus[Scanner / Hardware Status]
+    DeviceHome -->|Lock station| RoleSelect
+
+    StaffList -->|Add staff| CreateStaff[Create Staff Screen]
+    CreateStaff -->|Create success| StaffList
+
+    StaffList -->|Select staff| StaffDetail[Staff Detail Screen]
+    StaffDetail -->|Edit name| StaffEditModal[Staff Edit Modal]
+    StaffEditModal -->|Save success| StaffDetail
+
+    StaffDetail -->|Assign role| AssignRoleDialog[Assign Role Dialog]
+    AssignRoleDialog -->|Assign success| StaffDetail

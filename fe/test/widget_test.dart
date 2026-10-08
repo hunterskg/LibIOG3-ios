@@ -1,30 +1,49 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
+import 'package:fe/core/storage/token_storage.dart';
+import 'package:fe/features/auth/domain/models/user_res.dart';
+import 'package:fe/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:fe/main.dart';
+class FakeTokenStorage implements TokenStorage {
+  String? accessToken;
+  String? refreshToken;
+  UserRes? user;
+
+  @override
+  Future<void> clear() async {
+    accessToken = null;
+    refreshToken = null;
+    user = null;
+  }
+
+  @override
+  Future<String?> getAccessToken() async => accessToken;
+
+  @override
+  Future<String?> getRefreshToken() async => refreshToken;
+
+  @override
+  Future<UserRes?> getUser() async => user;
+
+  @override
+  Future<void> saveTokens({required String accessToken, required String refreshToken}) async {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+  }
+
+  @override
+  Future<void> saveUser(UserRes user) async {
+    this.user = user;
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('App renders RoleSelectScreen initially', (WidgetTester tester) async {
+    final fakeStorage = FakeTokenStorage();
+    await tester.pumpWidget(MyApp(tokenStorage: fakeStorage));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('LibIO — Quản lý Thư viện'), findsOneWidget);
+    expect(find.text('Độc giả'), findsOneWidget);
+    expect(find.text('Nhân viên'), findsOneWidget);
   });
 }

@@ -1,12 +1,10 @@
-/*
-https://docs.nestjs.com/modules
-*/
-
 import { Module } from '@nestjs/common';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
-  imports: [],
+  imports: [RedisModule],
   controllers: [],
   providers: [],
+  exports: [RedisModule],
 })
 export class CacheModule {}

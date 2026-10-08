@@ -8,7 +8,7 @@ export function AtLeastNonEmpty(
   min?: number,
   validationOptions?: ValidationOptions,
 ): ClassDecorator {
-  return function (target: Function) {
+  return function (target) {
     registerDecorator({
       name: 'atLeastNonEmpty',
       target,
@@ -38,7 +38,7 @@ export function AtLeastNonEmpty(
           return count >= n;
         },
         defaultMessage(args: ValidationArguments) {
-          const [n] = args.constraints;
+          const [n] = args.constraints as [number | undefined];
           return `Ít nhất ${n} trường không được để trống`;
         },
       },
