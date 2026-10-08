@@ -1,12 +1,12 @@
 export class PageReq {
-  page: number;
-  size: number;
+  page!: number;
+  size!: number;
 }
 
 export class Page<T> {
-  data: T[];
-  total: number;
-  req: PageReq;
+  data!: T[];
+  total!: number;
+  req!: PageReq;
 
   static of<T>(data: T[], total: number, req: PageReq): Page<T> {
     const page = new Page<T>();
