@@ -1,7 +1,8 @@
 enum UserRole {
   reader('reader'),
   staff('staff'),
-  admin('admin');
+  admin('admin'),
+  device('device');
 
   final String value;
   const UserRole(this.value);

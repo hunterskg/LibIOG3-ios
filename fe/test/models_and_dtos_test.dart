@@ -1,3 +1,4 @@
+import 'package:fe/common/models/page_res.dart';
 import 'package:fe/core/network/api_exception.dart';
 import 'package:fe/features/auth/domain/dtos/forgot_password_req.dart';
 import 'package:fe/features/auth/domain/dtos/login_req.dart';
@@ -20,6 +21,11 @@ void main() {
       expect(u.email, 'test@example.com');
       expect(u.role, UserRole.reader);
       expect(u.toJson(), json);
+
+      final deviceJson = {'userId': 'd1', 'email': 'kiosk@lib.vn', 'role': 'device'};
+      final dev = UserRes.fromJson(deviceJson);
+      expect(dev.role, UserRole.device);
+      expect(dev.toJson(), deviceJson);
     });
 
     test('AuthRes serialization', () {
@@ -76,6 +82,44 @@ void main() {
       expect(ApiException.fromStatus(403, null).message, 'Bạn không có quyền thực hiện thao tác này.');
       expect(ApiException.fromStatus(404, null).message, 'Không tìm thấy tài nguyên yêu cầu.');
       expect(ApiException.fromStatus(409, null).message, 'Thông tin đã tồn tại trong hệ thống.');
+    });
+
+    test('PageRes.fromJson parses string page, size, and total safely', () {
+      final json = {
+        'data': [
+          {'id': '1', 'name': 'Item 1'},
+        ],
+        'total': '15',
+        'req': {
+          'page': '2',
+          'size': '10',
+        },
+      };
+
+      final pageRes = PageRes.fromJson(json, (item) => item['name'] as String);
+
+      expect(pageRes.data, ['Item 1']);
+      expect(pageRes.total, 15);
+      expect(pageRes.page, 2);
+      expect(pageRes.size, 10);
+    });
+
+    test('PageRes.fromJson handles null or invalid types with fallback', () {
+      final json = {
+        'data': <dynamic>[],
+        'total': null,
+        'req': {
+          'page': null,
+          'size': 'invalid_num',
+        },
+      };
+
+      final pageRes = PageRes.fromJson(json, (item) => item);
+
+      expect(pageRes.data, isEmpty);
+      expect(pageRes.total, 0);
+      expect(pageRes.page, 1);
+      expect(pageRes.size, 0);
     });
   });
 }

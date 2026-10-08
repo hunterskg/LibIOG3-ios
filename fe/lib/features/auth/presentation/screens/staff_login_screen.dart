@@ -53,7 +53,17 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
 
     if (!mounted) return;
     if (ok) {
-      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.staffHome, (r) => false);
+      final role = auth.currentUser?.role;
+      final String targetRoute;
+      switch (role) {
+        case UserRole.admin:
+          targetRoute = AppRoutes.adminHome;
+        case UserRole.device:
+          targetRoute = AppRoutes.deviceHome;
+        default:
+          targetRoute = AppRoutes.staffHome;
+      }
+      Navigator.pushNamedAndRemoveUntil(context, targetRoute, (r) => false);
     } else if (auth.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -92,7 +92,9 @@ class AuthProvider extends ChangeNotifier {
 
       // Phân quyền theo cổng đăng nhập
       if (expectedRole == UserRole.staff) {
-        if (res.user.role != UserRole.staff && res.user.role != UserRole.admin) {
+        if (res.user.role != UserRole.staff &&
+            res.user.role != UserRole.admin &&
+            res.user.role != UserRole.device) {
           throw const ApiException('Tài khoản không có quyền truy cập cổng Nhân viên.');
         }
       } else if (expectedRole == UserRole.reader) {
