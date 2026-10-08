@@ -7,11 +7,25 @@ import 'package:fe/core/theme/app_spacing.dart';
 import 'package:fe/core/theme/app_text_styles.dart';
 import 'package:fe/shared/widgets/app_button.dart';
 import 'package:fe/shared/widgets/app_card.dart';
+import 'package:fe/shared/widgets/role_guard.dart';
 import 'package:fe/shared/widgets/status_badge.dart';
+import 'package:fe/features/auth/domain/models/role.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class ReaderHomeScreen extends StatelessWidget {
   const ReaderHomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const RoleGuard(
+      allowedRoles: [UserRole.reader],
+      child: _ReaderHomeContent(),
+    );
+  }
+}
+
+class _ReaderHomeContent extends StatelessWidget {
+  const _ReaderHomeContent();
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +45,11 @@ class ReaderHomeScreen extends StatelessWidget {
                 color: AppColors.charcoal800,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.local_library_rounded, color: AppColors.accent500, size: 20),
+              child: const Icon(
+                Icons.local_library_rounded,
+                color: AppColors.accent500,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -54,7 +72,11 @@ class ReaderHomeScreen extends StatelessWidget {
             onPressed: () async {
               await context.read<AuthProvider>().logout();
               if (context.mounted) {
-                Navigator.pushNamedAndRemoveUntil(context, AppRoutes.roleSelect, (r) => false);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.roleSelect,
+                  (r) => false,
+                );
               }
             },
           ),
@@ -70,7 +92,6 @@ class ReaderHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // User info card
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,32 +100,40 @@ class ReaderHomeScreen extends StatelessWidget {
                         const SizedBox(height: AppSpacing.s3),
                         _infoRow('Email:', user?.email ?? '---'),
                         const SizedBox(height: 6),
-                        _infoRow('Mã bạn đọc (ID):', user?.userId ?? '---', isMono: true),
+                        _infoRow(
+                          'Mã bạn đọc (ID):',
+                          user?.userId ?? '---',
+                          isMono: true,
+                        ),
                         const SizedBox(height: 6),
                         _infoRow('Vai trò:', 'Độc giả (Reader)'),
                       ],
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s4),
-                  // Quick actions
                   Text('Chức năng chính', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
                   Row(
                     children: [
                       Expanded(
                         child: _actionCard(
-                          icon: Icons.search_rounded,
-                          title: 'Tra cứu sách',
-                          desc: 'Tìm kiếm tài liệu & sách',
-                          onTap: () {},
+                          icon: Icons.account_circle_outlined,
+                          title: 'Hồ sơ cá nhân',
+                          desc: 'Xem và sửa thông tin bạn đọc',
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.readerProfile,
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(width: AppSpacing.s3),
                       Expanded(
                         child: _actionCard(
-                          icon: Icons.history_rounded,
-                          title: 'Lịch sử mượn',
-                          desc: 'Sách đang mượn & đã trả',
+                          icon: Icons.search_rounded,
+                          title: 'Mã checkout',
+                          desc: 'Mã quét để checkout tại thư viện',
                           onTap: () {},
                         ),
                       ),
@@ -121,7 +150,11 @@ class ReaderHomeScreen extends StatelessWidget {
                         onPressed: () async {
                           await context.read<AuthProvider>().logout();
                           if (context.mounted) {
-                            Navigator.pushNamedAndRemoveUntil(context, AppRoutes.roleSelect, (r) => false);
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              AppRoutes.roleSelect,
+                              (r) => false,
+                            );
                           }
                         },
                       ),

@@ -9,6 +9,8 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/data/services/auth_service.dart';
 import 'features/auth/domain/models/role.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/user/data/services/user_api_service.dart';
+import 'features/user/presentation/providers/user_provider.dart';
 import 'routes/app_routes.dart';
 
 void main() async {
@@ -30,6 +32,8 @@ class _MyAppState extends State<MyApp> {
   late final ApiClient _apiClient;
   late final AuthService _authService;
   late final AuthProvider _authProvider;
+  late final UserApiService _userApiService;
+  late final UserProvider _userProvider;
 
   @override
   void initState() {
@@ -43,6 +47,8 @@ class _MyAppState extends State<MyApp> {
       authService: _authService,
       tokenStorage: widget.tokenStorage,
     );
+    _userApiService = UserApiService(_apiClient);
+    _userProvider = UserProvider(apiService: _userApiService);
     _authProvider.checkAuth();
   }
 
@@ -50,13 +56,21 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     _apiClient.close();
     _authProvider.dispose();
+    _userProvider.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AuthProvider>.value(
-      value: _authProvider,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>.value(
+          value: _authProvider,
+        ),
+        ChangeNotifierProvider<UserProvider>.value(
+          value: _userProvider,
+        ),
+      ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           final initialRoute = auth.isAuthenticated

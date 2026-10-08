@@ -20,12 +20,21 @@ void main() {
         AppRoutes.staffResetPassword,
         AppRoutes.readerHome,
         AppRoutes.staffHome,
+        AppRoutes.adminHome,
+        AppRoutes.deviceHome,
+        AppRoutes.readerProfile,
+        AppRoutes.staffProfile,
+        AppRoutes.readerList,
+        AppRoutes.readerDetail,
+        AppRoutes.staffList,
+        AppRoutes.createStaff,
+        AppRoutes.staffDetail,
       ];
 
       for (final route in expected) {
         expect(appRoutes.containsKey(route), isTrue, reason: 'Missing route: $route');
       }
-      expect(appRoutes.length, 14);
+      expect(appRoutes.length, expected.length);
     });
   });
 }

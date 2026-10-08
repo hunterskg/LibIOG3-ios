@@ -7,11 +7,25 @@ import 'package:fe/core/theme/app_spacing.dart';
 import 'package:fe/core/theme/app_text_styles.dart';
 import 'package:fe/shared/widgets/app_button.dart';
 import 'package:fe/shared/widgets/app_card.dart';
+import 'package:fe/shared/widgets/role_guard.dart';
 import 'package:fe/shared/widgets/status_badge.dart';
+import 'package:fe/features/auth/domain/models/role.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class StaffHomeScreen extends StatelessWidget {
   const StaffHomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const RoleGuard(
+      allowedRoles: [UserRole.staff],
+      child: _StaffHomeContent(),
+    );
+  }
+}
+
+class _StaffHomeContent extends StatelessWidget {
+  const _StaffHomeContent();
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +45,15 @@ class StaffHomeScreen extends StatelessWidget {
                 color: AppColors.charcoal800,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.admin_panel_settings_rounded, color: AppColors.accent500, size: 20),
+              child: const Icon(
+                Icons.badge_rounded,
+                color: AppColors.accent500,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 8),
             Text(
-              'LibIO Quản lý',
+              'LibIO Quản lý quầy',
               style: AppTextStyles.h2.copyWith(color: AppColors.charcoal900),
             ),
             const SizedBox(width: 12),
@@ -54,7 +72,11 @@ class StaffHomeScreen extends StatelessWidget {
             onPressed: () async {
               await context.read<AuthProvider>().logout();
               if (context.mounted) {
-                Navigator.pushNamedAndRemoveUntil(context, AppRoutes.roleSelect, (r) => false);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.roleSelect,
+                  (r) => false,
+                );
               }
             },
           ),
@@ -70,7 +92,6 @@ class StaffHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // User info card
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,14 +100,17 @@ class StaffHomeScreen extends StatelessWidget {
                         const SizedBox(height: AppSpacing.s3),
                         _infoRow('Email nội bộ:', user?.email ?? '---'),
                         const SizedBox(height: 6),
-                        _infoRow('Mã nhân viên (ID):', user?.userId ?? '---', isMono: true),
+                        _infoRow(
+                          'Mã nhân viên (ID):',
+                          user?.userId ?? '---',
+                          isMono: true,
+                        ),
                         const SizedBox(height: 6),
-                        _infoRow('Quyền hạn:', user?.role.value.toUpperCase() ?? 'STAFF'),
+                        _infoRow('Quyền hạn:', 'STAFF (Nghiệp vụ quầy)'),
                       ],
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s4),
-                  // Counter quick actions
                   Text('Nghiệp vụ quầy thư viện', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
                   Row(
@@ -94,7 +118,7 @@ class StaffHomeScreen extends StatelessWidget {
                       Expanded(
                         child: _actionCard(
                           icon: Icons.check_circle_outline,
-                          title: 'Check-in (Trả sách)',
+                          title: 'Check-in',
                           desc: 'Quét mã nhận trả sách tại quầy',
                           color: AppColors.success,
                           onTap: () {},
@@ -112,6 +136,39 @@ class StaffHomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: AppSpacing.s4),
+                  Text('Quản lý hệ thống', style: AppTextStyles.h3),
+                  const SizedBox(height: AppSpacing.s3),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.badge_outlined,
+                          title: 'Hồ sơ nhân viên',
+                          desc: 'Xem & sửa tên hiển thị',
+                          color: AppColors.charcoal700,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.staffProfile,
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.s3),
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.people_outline_rounded,
+                          title: 'Quản lý bạn đọc',
+                          desc: 'Xem danh sách & sửa thông tin',
+                          color: AppColors.charcoal700,
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.readerList);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: AppSpacing.s5),
                   Center(
                     child: SizedBox(
@@ -123,7 +180,11 @@ class StaffHomeScreen extends StatelessWidget {
                         onPressed: () async {
                           await context.read<AuthProvider>().logout();
                           if (context.mounted) {
-                            Navigator.pushNamedAndRemoveUntil(context, AppRoutes.roleSelect, (r) => false);
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              AppRoutes.roleSelect,
+                              (r) => false,
+                            );
                           }
                         },
                       ),
