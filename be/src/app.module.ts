@@ -1,3 +1,4 @@
+import { BiometricModule } from './modules/biommetric/biometric.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { InfrastructureModule } from './modules/infra/infrastructure.module';
@@ -8,6 +9,7 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
+    BiometricModule,
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     InfrastructureModule,
