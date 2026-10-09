@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package face.v1;
+
+option go_package = "github.com/grpc/face/v1";
+
+// Enums
+enum ImageFormat {
+  IMAGE_FORMAT_UNSPECIFIED = 0;
+  IMAGE_FORMAT_JPEG = 1;
+  IMAGE_FORMAT_PNG = 2;
+}
+
+enum LivenessStatus {
+  LIVENESS_UNKNOWN = 0;
+  LIVENESS_REAL = 1;
+  LIVENESS_SPOOF = 2;
+}
+
+// Value Messages
+message BoundingBox {
+  float x = 1;
+  float y = 2;
+  float width = 3;
+  float height = 4;
+  float confidence = 5;
+}
+
+message Landmark {
+  float x = 1;
+  float y = 2;
+  int32 index = 3;
+}
+
+message FaceDetection {
+  BoundingBox box = 1;
+  repeated Landmark landmarks = 2;
+  float confidence = 3;
+}
+
+message FaceEmbedding {
+  repeated float values = 1;
+  int32 dimension = 2;
+}
+
+// DetectFaces RPC
+message DetectFacesRequest {
+  bytes image_bytes = 1;
+  ImageFormat image_format = 2;
+  int32 max_faces = 3;
+}
+
+message DetectFacesResponse {
+  repeated FaceDetection detections = 1;
+  bool success = 2;
+  string error = 3;
+}
+
+// ExtractEmbedding RPC
+message ExtractEmbeddingRequest {
+  bytes image_bytes = 1;
+  ImageFormat image_format = 2;
+  BoundingBox bbox = 3;
+}
+
+message ExtractEmbeddingResponse {
+  FaceEmbedding embedding = 1;
+  bool success = 2;
+  string error = 3;
+}
+
+// VerifyFace RPC
+message VerifyFaceRequest {
+  bytes image_bytes = 1;
+  ImageFormat image_format = 2;
+  FaceEmbedding reference_embedding = 3;
+  BoundingBox bbox = 4;
+  float threshold = 5;
+}
+
+message VerifyFaceResponse {
+  bool matched = 1;
+  float similarity = 2;
+  bool success = 3;
+  string error = 4;
+}
+
+// CheckLiveness RPC
+message CheckLivenessRequest {
+  bytes image_bytes = 1;
+  ImageFormat image_format = 2;
+}
+
+message CheckLivenessResponse {
+  LivenessStatus status = 1;
+  float confidence = 2;
+  bool success = 3;
+  string error = 4;
+}
+
+// Service
+service FaceService {
+  rpc DetectFaces(DetectFacesRequest) returns (DetectFacesResponse);
+  rpc ExtractEmbedding(ExtractEmbeddingRequest) returns (ExtractEmbeddingResponse);
+  rpc VerifyFace(VerifyFaceRequest) returns (VerifyFaceResponse);
+  rpc CheckLiveness(CheckLivenessRequest) returns (CheckLivenessResponse);
+}
