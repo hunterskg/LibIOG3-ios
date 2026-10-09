@@ -1,0 +1,57 @@
+flowchart TD
+    subgraph Client["Client (NestJS BE / gRPC)"]
+        Req["gRPC Request (image_bytes)"]
+    end
+
+    subgraph Adapters["Infrastructure Adapters (python/)"]
+        subgraph Detection["InsightFaceDetector"]
+            CVDec1["cv2.imdecode(image_bytes)"]
+            IFModel["InsightFace / SCRFD Model"]
+            BoxLandmark["BBox + 5 Landmarks + Pose"]
+            MapFace["Map to Face / DetectedFace"]
+        end
+
+        subgraph Embedding["InsightFaceEmbedder"]
+            AlignCrop["Face Alignment & Crop (112x112)"]
+            RecModel["ArcFace Recognition ONNX"]
+            RawVec["Raw Vector (512-d)"]
+            L2Norm["L2 Normalization (v / ||v||2)"]
+            FEmbed["FaceEmbedding(values, dim=512)"]
+        end
+
+        subgraph Liveness["OnnxLivenessDetector"]
+            CVDec2["cv2.imdecode(image_bytes)"]
+            PreprocLive["Resize + NCHW + Normalize"]
+            OnnxSess["ONNX Runtime InferenceSession"]
+            Softmax["Softmax / Probability Score"]
+            ThresholdCheck{"Score >= Threshold?"}
+            LiveRes["LivenessResult(REAL / SPOOF)"]
+        end
+    end
+
+    subgraph DomainPorts["Domain & Ports"]
+        PortDet["FaceDetectorPort"]
+        PortEmb["FaceEmbedderPort"]
+        PortLive["LivenessDetectorPort"]
+    end
+
+    Req --> CVDec1
+    CVDec1 --> IFModel
+    IFModel --> BoxLandmark
+    BoxLandmark --> MapFace
+    MapFace -.-> PortDet
+
+    Req --> AlignCrop
+    AlignCrop --> RecModel
+    RecModel --> RawVec
+    RawVec --> L2Norm
+    L2Norm --> FEmbed
+    FEmbed -.-> PortEmb
+
+    Req --> CVDec2
+    CVDec2 --> PreprocLive
+    PreprocLive --> OnnxSess
+    OnnxSess --> Softmax
+    Softmax --> ThresholdCheck
+    ThresholdCheck --> LiveRes
+    LiveRes -.-> PortLive
