@@ -3,10 +3,11 @@ https://docs.nestjs.com/modules
 */
 
 import { Module } from '@nestjs/common';
+import { FaceBiometricModule } from './face-biometric/facebiometric.module';
 
 @Module({
-  imports: [],
+  imports: [FaceBiometricModule],
   controllers: [],
-  providers: [],
+  providers: [FaceBiometricModule],
 })
 export class BiometricModule {}
