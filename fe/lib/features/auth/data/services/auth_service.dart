@@ -25,7 +25,10 @@ class AuthService {
   }
 
   Future<RegisterPendingRes> register(RegisterReq req) async {
-    final res = await _apiClient.post(ApiConstants.register, body: req.toJson());
+    final res = await _apiClient.post(
+      ApiConstants.register,
+      body: req.toJson(),
+    );
     if (res is Map<String, dynamic>) {
       return RegisterPendingRes.fromJson(res);
     }
@@ -33,11 +36,16 @@ class AuthService {
   }
 
   Future<UserRes> verifyEmail(VerifyEmailReq req) async {
-    final res = await _apiClient.post(ApiConstants.verifyEmail, body: req.toJson());
+    final res = await _apiClient.post(
+      ApiConstants.verifyEmail,
+      body: req.toJson(),
+    );
     if (res is Map<String, dynamic>) {
       return UserRes.fromJson(res);
     }
-    throw const ApiException('Phản hồi xác thực email không hợp lệ từ máy chủ.');
+    throw const ApiException(
+      'Phản hồi xác thực email không hợp lệ từ máy chủ.',
+    );
   }
 
   Future<String> resendCode(String email) async {
@@ -78,7 +86,10 @@ class AuthService {
   // Gửi forgotPassword thật, còn verify OTP + reset fallback giả lập hoàn tất flow UI.
   Future<String> forgotPassword(ForgotPasswordReq req) async {
     try {
-      final res = await _apiClient.post(ApiConstants.forgotPassword, body: req.toJson());
+      final res = await _apiClient.post(
+        ApiConstants.forgotPassword,
+        body: req.toJson(),
+      );
       if (res is Map<String, dynamic> && res['message'] != null) {
         return res['message'].toString();
       }
@@ -91,7 +102,10 @@ class AuthService {
     }
   }
 
-  Future<bool> verifyResetOtp({required String email, required String code}) async {
+  Future<bool> verifyResetOtp({
+    required String email,
+    required String code,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 300));
     final clean = code.trim();
     if (clean.length != 6) {

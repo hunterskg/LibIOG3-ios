@@ -83,7 +83,9 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
       subtitle: 'Cổng thông tin nghiệp vụ và quản lý thư viện',
       child: Form(
         key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+        autovalidateMode: _autoValidate
+            ? AutovalidateMode.always
+            : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -115,7 +117,10 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
               child: TextButton(
                 onPressed: auth.isLoading
                     ? null
-                    : () => Navigator.pushNamed(context, AppRoutes.staffForgotPassword),
+                    : () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.staffForgotPassword,
+                      ),
                 child: const Text('Quên mật khẩu?'),
               ),
             ),
@@ -125,12 +130,26 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
               onPressed: auth.isLoading ? null : _onLogin,
               isLoading: auth.isLoading,
             ),
+            const SizedBox(height: AppSpacing.s2),
+            OutlinedButton.icon(
+              onPressed: auth.isLoading
+                  ? null
+                  : () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.deviceActivation,
+                    ),
+              icon: const Icon(Icons.phonelink_lock_outlined),
+              label: const Text('Kích hoạt điện thoại bằng mã 6 số'),
+            ),
             const SizedBox(height: AppSpacing.s3),
             Center(
               child: TextButton(
                 onPressed: auth.isLoading
                     ? null
-                    : () => Navigator.pushReplacementNamed(context, AppRoutes.readerLogin),
+                    : () => Navigator.pushReplacementNamed(
+                        context,
+                        AppRoutes.readerLogin,
+                      ),
                 child: const Text('Chuyển sang cổng Độc giả'),
               ),
             ),

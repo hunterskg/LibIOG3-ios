@@ -49,9 +49,10 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
     if (userId == null) return;
 
     final req = StaffUpdateReq(name: _nameCtrl.text.trim());
-    final success = await context
-        .read<UserProvider>()
-        .updateMyStaffProfile(userId, req);
+    final success = await context.read<UserProvider>().updateMyStaffProfile(
+      userId,
+      req,
+    );
     if (!mounted) return;
 
     if (success) {
@@ -148,8 +149,10 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                           ),
                           const Divider(height: 32),
                           if (!_isEditing) ...[
-                            _infoRow('Tên nhân viên:',
-                                profile?.name ?? 'Chưa cập nhật'),
+                            _infoRow(
+                              'Tên nhân viên:',
+                              profile?.name ?? 'Chưa cập nhật',
+                            ),
                             const SizedBox(height: AppSpacing.s2),
                             _infoRow(
                               'Vai trò:',
@@ -173,8 +176,8 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                                     prefixIcon: Icons.person_outline_rounded,
                                     validator: (v) =>
                                         (v == null || v.trim().isEmpty)
-                                            ? 'Tên không được để trống'
-                                            : null,
+                                        ? 'Tên không được để trống'
+                                        : null,
                                   ),
                                   const SizedBox(height: AppSpacing.s4),
                                   Row(
@@ -184,8 +187,7 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                                           text: 'Hủy',
                                           variant: AppButtonVariant.secondary,
                                           onPressed: () {
-                                            setState(
-                                                () => _isEditing = false);
+                                            setState(() => _isEditing = false);
                                           },
                                         ),
                                       ),

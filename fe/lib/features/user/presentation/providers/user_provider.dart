@@ -13,8 +13,7 @@ import 'package:fe/features/user/domain/models/staff_res.dart';
 class UserProvider extends ChangeNotifier {
   final UserApiService _apiService;
 
-  UserProvider({required UserApiService apiService})
-      : _apiService = apiService;
+  UserProvider({required UserApiService apiService}) : _apiService = apiService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -245,7 +244,7 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _apiService.createStaff(req);
+      _selectedStaff = await _apiService.createStaff(req);
       await loadStaffs(page: 1);
       return true;
     } on ApiException catch (e) {

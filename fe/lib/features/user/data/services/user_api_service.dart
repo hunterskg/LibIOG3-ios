@@ -61,10 +61,7 @@ class UserApiService {
       requiresAuth: true,
     );
     if (res is Map<String, dynamic>) {
-      return PageRes.fromJson(
-        res,
-        (item) => ReaderRes.fromJson(item),
-      );
+      return PageRes.fromJson(res, (item) => ReaderRes.fromJson(item));
     }
     throw const ApiException('Không thể tải danh sách độc giả.');
   }
@@ -124,10 +121,7 @@ class UserApiService {
       requiresAuth: true,
     );
     if (res is Map<String, dynamic>) {
-      return PageRes.fromJson(
-        res,
-        (item) => StaffRes.fromJson(item),
-      );
+      return PageRes.fromJson(res, (item) => StaffRes.fromJson(item));
     }
     throw const ApiException('Không thể tải danh sách nhân viên.');
   }

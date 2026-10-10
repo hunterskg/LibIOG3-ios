@@ -25,7 +25,11 @@ class RegSuccessScreen extends StatelessWidget {
                 color: AppColors.successLight,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 36),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.success,
+                size: 36,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.s4),

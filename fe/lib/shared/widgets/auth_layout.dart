@@ -71,14 +71,18 @@ class AuthLayout extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: AppTextStyles.h2.copyWith(color: AppColors.charcoal900),
+                          style: AppTextStyles.h2.copyWith(
+                            color: AppColors.charcoal900,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         if (subtitle != null) ...[
                           const SizedBox(height: AppSpacing.s2),
                           Text(
                             subtitle!,
-                            style: AppTextStyles.body.copyWith(color: AppColors.charcoal500),
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.charcoal500,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],

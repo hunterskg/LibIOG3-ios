@@ -96,7 +96,10 @@ class _DeviceHomeContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Thông tin trạm thiết bị', style: AppTextStyles.h3),
+                        Text(
+                          'Thông tin trạm thiết bị',
+                          style: AppTextStyles.h3,
+                        ),
                         const SizedBox(height: AppSpacing.s3),
                         _infoRow('Tài khoản thiết bị:', user?.email ?? '---'),
                         const SizedBox(height: 6),
@@ -111,7 +114,10 @@ class _DeviceHomeContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s4),
-                  Text('Dịch vụ tự phục vụ (Self-service)', style: AppTextStyles.h3),
+                  Text(
+                    'Dịch vụ tự phục vụ (Self-service)',
+                    style: AppTextStyles.h3,
+                  ),
                   const SizedBox(height: AppSpacing.s3),
                   Row(
                     children: [

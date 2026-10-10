@@ -19,13 +19,15 @@ class ApiClient {
   }) : _client = client ?? http.Client();
 
   Map<String, String> _defaultHeaders([String? token]) => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+  };
 
   Uri _uri(String path) {
-    final cleanBase = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final cleanBase = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
     final cleanPath = path.startsWith('/') ? path : '/$path';
     return Uri.parse('$cleanBase$cleanPath');
   }
@@ -142,22 +144,19 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     bool requiresAuth = false,
-  }) =>
-      _sendWithBody('PUT', path, body: body, requiresAuth: requiresAuth);
+  }) => _sendWithBody('PUT', path, body: body, requiresAuth: requiresAuth);
 
   Future<dynamic> patch(
     String path, {
     Map<String, dynamic>? body,
     bool requiresAuth = false,
-  }) =>
-      _sendWithBody('PATCH', path, body: body, requiresAuth: requiresAuth);
+  }) => _sendWithBody('PATCH', path, body: body, requiresAuth: requiresAuth);
 
   Future<dynamic> delete(
     String path, {
     Map<String, dynamic>? body,
     bool requiresAuth = false,
-  }) =>
-      _sendWithBody('DELETE', path, body: body, requiresAuth: requiresAuth);
+  }) => _sendWithBody('DELETE', path, body: body, requiresAuth: requiresAuth);
 
   dynamic _handleResponse(http.Response response) {
     dynamic decoded;

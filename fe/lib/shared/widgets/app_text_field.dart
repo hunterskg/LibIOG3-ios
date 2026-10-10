@@ -62,7 +62,8 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   void didUpdateWidget(AppTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.obscureText != null && widget.obscureText != oldWidget.obscureText) {
+    if (widget.obscureText != null &&
+        widget.obscureText != oldWidget.obscureText) {
       _obscureText = widget.obscureText!;
     }
   }
@@ -75,7 +76,9 @@ class _AppTextFieldState extends State<AppTextField> {
     if (widget.isPassword) {
       suffixIcon = IconButton(
         icon: Icon(
-          _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+          _obscureText
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
           size: 20,
           color: AppColors.charcoal500,
         ),
@@ -114,12 +117,19 @@ class _AppTextFieldState extends State<AppTextField> {
             hintText: widget.hintText,
             counterText: '',
             prefixIcon: widget.prefixIcon != null
-                ? Icon(widget.prefixIcon, size: 20, color: AppColors.charcoal500)
+                ? Icon(
+                    widget.prefixIcon,
+                    size: 20,
+                    color: AppColors.charcoal500,
+                  )
                 : null,
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: widget.enabled ? AppColors.white : AppColors.neutral100,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             enabledBorder: const OutlineInputBorder(
               borderRadius: AppRadius.brMd,
               borderSide: BorderSide(color: AppColors.neutral300),

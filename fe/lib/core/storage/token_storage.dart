@@ -4,7 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fe/features/auth/domain/models/user_res.dart';
 
 abstract class TokenStorage {
-  Future<void> saveTokens({required String accessToken, required String refreshToken});
+  Future<void> saveTokens({
+    required String accessToken,
+    required String refreshToken,
+  });
   Future<String?> getAccessToken();
   Future<String?> getRefreshToken();
   Future<void> saveUser(UserRes user);
@@ -27,7 +30,10 @@ class SharedPreferencesTokenStorage implements TokenStorage {
   }
 
   @override
-  Future<void> saveTokens({required String accessToken, required String refreshToken}) async {
+  Future<void> saveTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
     await _prefs.setString(_kAccessToken, accessToken);
     await _prefs.setString(_kRefreshToken, refreshToken);
   }
