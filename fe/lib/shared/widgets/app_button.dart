@@ -5,6 +5,7 @@ import 'package:fe/core/theme/app_radius.dart';
 import 'package:fe/core/theme/app_text_styles.dart';
 
 enum AppButtonVariant { primary, secondary, ghost, danger }
+
 enum AppButtonSize { sm, md, lg }
 
 class AppButton extends StatelessWidget {
@@ -63,11 +64,7 @@ class AppButton extends StatelessWidget {
       content = Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 8),
-          Text(text),
-        ],
+        children: [Icon(icon, size: 18), const SizedBox(width: 8), Text(text)],
       );
     } else {
       content = Text(text);

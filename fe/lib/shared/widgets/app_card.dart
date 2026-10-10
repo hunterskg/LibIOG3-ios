@@ -47,10 +47,6 @@ class AppCard extends StatelessWidget {
       );
     }
 
-    return Container(
-      padding: padding,
-      decoration: decoration,
-      child: child,
-    );
+    return Container(padding: padding, decoration: decoration, child: child);
   }
 }

@@ -11,8 +11,5 @@ class RegisterPendingRes {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'message': message,
-        'email': email,
-      };
+  Map<String, dynamic> toJson() => {'message': message, 'email': email};
 }

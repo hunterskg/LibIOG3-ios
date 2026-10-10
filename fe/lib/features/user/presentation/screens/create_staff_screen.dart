@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:fe/core/theme/app_colors.dart';
 import 'package:fe/core/theme/app_spacing.dart';
+import 'package:fe/core/constants/route_constants.dart';
 import 'package:fe/features/user/domain/dtos/staff_create_req.dart';
 import 'package:fe/features/user/presentation/providers/user_provider.dart';
 import 'package:fe/shared/widgets/app_button.dart';
@@ -39,17 +40,21 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
       name: _nameCtrl.text.trim(),
     );
 
-    final ok = await context.read<UserProvider>().createStaff(req);
+    final provider = context.read<UserProvider>();
+    final ok = await provider.createStaff(req);
     if (!mounted) return;
 
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tạo tài khoản nhân viên thành công'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-      Navigator.pop(context, true);
+      final created = provider.selectedStaff;
+      if (created != null) {
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.staffDetail,
+          arguments: {'id': created.id},
+        );
+      } else {
+        Navigator.pop(context, true);
+      }
     } else {
       final err = context.read<UserProvider>().errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(

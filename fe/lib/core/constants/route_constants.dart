@@ -26,4 +26,5 @@ abstract final class AppRoutes {
   static const String staffList = '/admin/staffs';
   static const String createStaff = '/admin/staffs/create';
   static const String staffDetail = '/admin/staffs/detail';
+  static const String deviceActivation = '/staff/device-activation';
 }

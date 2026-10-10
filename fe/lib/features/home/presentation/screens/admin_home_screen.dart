@@ -96,7 +96,10 @@ class _AdminHomeContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Thông tin quản trị viên', style: AppTextStyles.h3),
+                        Text(
+                          'Thông tin quản trị viên',
+                          style: AppTextStyles.h3,
+                        ),
                         const SizedBox(height: AppSpacing.s3),
                         _infoRow('Email nội bộ:', user?.email ?? '---'),
                         const SizedBox(height: 6),

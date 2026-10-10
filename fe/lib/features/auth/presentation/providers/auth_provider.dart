@@ -95,11 +95,15 @@ class AuthProvider extends ChangeNotifier {
         if (res.user.role != UserRole.staff &&
             res.user.role != UserRole.admin &&
             res.user.role != UserRole.device) {
-          throw const ApiException('Tài khoản không có quyền truy cập cổng Nhân viên.');
+          throw const ApiException(
+            'Tài khoản không có quyền truy cập cổng Nhân viên.',
+          );
         }
       } else if (expectedRole == UserRole.reader) {
         if (res.user.role != UserRole.reader) {
-          throw const ApiException('Vui lòng sử dụng cổng đăng nhập Nhân viên.');
+          throw const ApiException(
+            'Vui lòng sử dụng cổng đăng nhập Nhân viên.',
+          );
         }
       }
 
@@ -158,7 +162,10 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> verifyEmail({required String email, required String code}) async {
+  Future<bool> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
     _setLoading(true);
     _errorMessage = null;
 
@@ -218,7 +225,10 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> verifyResetOtp({required String email, required String code}) async {
+  Future<bool> verifyResetOtp({
+    required String email,
+    required String code,
+  }) async {
     _setLoading(true);
     _errorMessage = null;
 

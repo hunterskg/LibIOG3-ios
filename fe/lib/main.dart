@@ -11,6 +11,8 @@ import 'features/auth/domain/models/role.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/user/data/services/user_api_service.dart';
 import 'features/user/presentation/providers/user_provider.dart';
+import 'features/device/data/services/device_api_service.dart';
+import 'features/device/presentation/providers/device_provider.dart';
 import 'routes/app_routes.dart';
 
 void main() async {
@@ -34,6 +36,7 @@ class _MyAppState extends State<MyApp> {
   late final AuthProvider _authProvider;
   late final UserApiService _userApiService;
   late final UserProvider _userProvider;
+  late final DeviceProvider _deviceProvider;
 
   @override
   void initState() {
@@ -49,6 +52,7 @@ class _MyAppState extends State<MyApp> {
     );
     _userApiService = UserApiService(_apiClient);
     _userProvider = UserProvider(apiService: _userApiService);
+    _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
     _authProvider.checkAuth();
   }
 
@@ -57,6 +61,7 @@ class _MyAppState extends State<MyApp> {
     _apiClient.close();
     _authProvider.dispose();
     _userProvider.dispose();
+    _deviceProvider.dispose();
     super.dispose();
   }
 
@@ -64,19 +69,18 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthProvider>.value(
-          value: _authProvider,
-        ),
-        ChangeNotifierProvider<UserProvider>.value(
-          value: _userProvider,
-        ),
+        ChangeNotifierProvider<AuthProvider>.value(value: _authProvider),
+        ChangeNotifierProvider<UserProvider>.value(value: _userProvider),
+        ChangeNotifierProvider<DeviceProvider>.value(value: _deviceProvider),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           final initialRoute = auth.isAuthenticated
               ? (auth.currentUser?.role == UserRole.reader
-                  ? AppRoutes.readerHome
-                  : AppRoutes.staffHome)
+                    ? AppRoutes.readerHome
+                    : auth.currentUser?.role.value == 'admin'
+                    ? AppRoutes.adminHome
+                    : AppRoutes.staffHome)
               : AppRoutes.roleSelect;
 
           return MaterialApp(

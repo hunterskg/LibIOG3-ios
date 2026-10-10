@@ -68,13 +68,15 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
           ? _fullNameCtrl.text.trim()
           : null,
       phone: _phoneCtrl.text.trim().isNotEmpty ? _phoneCtrl.text.trim() : null,
-      dateOfBirth:
-          _dobCtrl.text.trim().isNotEmpty ? _dobCtrl.text.trim() : null,
+      dateOfBirth: _dobCtrl.text.trim().isNotEmpty
+          ? _dobCtrl.text.trim()
+          : null,
     );
 
-    final success = await context
-        .read<UserProvider>()
-        .updateMyReaderProfile(userId, req);
+    final success = await context.read<UserProvider>().updateMyReaderProfile(
+      userId,
+      req,
+    );
     if (!mounted) return;
 
     if (success) {
@@ -189,9 +191,9 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                   'Ngày sinh:',
                                   profile?.dateOfBirth != null
                                       ? profile!.dateOfBirth!
-                                          .toIso8601String()
-                                          .split('T')
-                                          .first
+                                            .toIso8601String()
+                                            .split('T')
+                                            .first
                                       : 'Chưa cập nhật',
                                 ),
                                 const SizedBox(height: AppSpacing.s2),
@@ -212,8 +214,8 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                         prefixIcon: Icons.badge_outlined,
                                         validator: (v) =>
                                             (v == null || v.trim().isEmpty)
-                                                ? 'Họ và tên không được để trống'
-                                                : null,
+                                            ? 'Họ và tên không được để trống'
+                                            : null,
                                       ),
                                       const SizedBox(height: AppSpacing.s3),
                                       AppTextField(
@@ -228,7 +230,8 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                         controller: _dobCtrl,
                                         labelText: 'Ngày sinh (YYYY-MM-DD)',
                                         hintText: '2000-01-01',
-                                        prefixIcon: Icons.calendar_today_outlined,
+                                        prefixIcon:
+                                            Icons.calendar_today_outlined,
                                       ),
                                       const SizedBox(height: AppSpacing.s4),
                                       Row(
@@ -249,8 +252,7 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                           Expanded(
                                             child: AppButton(
                                               text: 'Lưu thay đổi',
-                                              isLoading:
-                                                  userProvider.isLoading,
+                                              isLoading: userProvider.isLoading,
                                               onPressed: _handleSave,
                                             ),
                                           ),
