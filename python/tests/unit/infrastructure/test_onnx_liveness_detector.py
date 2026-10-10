@@ -6,8 +6,7 @@ import cv2
 import numpy as np
 import pytest
 
-from app.application.ports.liveness_detector import LivenessDetectorPort
-from app.domain.entities.liveness import LivenessStatus
+from app.ports.liveness_detector import LivenessDetectorPort, LivenessStatus
 from app.infrastructure.adapters.onnx_liveness_detector import OnnxLivenessDetector
 
 

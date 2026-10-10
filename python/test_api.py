@@ -25,7 +25,6 @@ from app.infrastructure.adapters.insightface_embedder import (
     ARCFACE_DST_112,
     InsightFaceEmbedder,
 )
-from app.infrastructure.adapters.numpy_similarity_calculator import NumpySimilarityCalculator
 from app.infrastructure.config.settings import AppSettings
 from proto.face.v1 import face_pb2, face_pb2_grpc
 
@@ -288,7 +287,6 @@ class FaceComparatorService:
             model_name=cfg.insightface_model_name,
             model_root=cfg.model_root_dir,
         )
-        self.similarity_calculator = NumpySimilarityCalculator()
 
     def compare(
         self,
@@ -328,7 +326,7 @@ class FaceComparatorService:
             img2_norm, bbox=target_face2.bbox, landmarks=target_face2.landmarks
         )
 
-        similarity = float(self.similarity_calculator.compute_cosine_similarity(emb1, emb2))
+        similarity = float(emb1.cosine_similarity(emb2))
         matched = similarity >= thresh
         euclidean_dist = round(math.sqrt(max(0.0, 2.0 * (1.0 - similarity))), 4)
         match_confidence = compute_match_confidence(similarity)

@@ -3,14 +3,14 @@ from unittest.mock import MagicMock
 import grpc
 import pytest
 
-from app.domain.exceptions.face_exceptions import (
-    EmbeddingMismatchException,
-    FaceDomainException,
+from app.ports.face_detector import (
     FaceNotFoundException,
+    FaceServiceException,
     LowFaceQualityException,
     MultipleFacesDetectedException,
-    SpoofDetectedException,
 )
+from app.ports.face_embedder import EmbeddingMismatchException
+from app.ports.liveness_detector import SpoofDetectedException
 from app.interfaces.grpc.interceptors.error_interceptor import (
     DOMAIN_EXCEPTION_STATUS_MAP,
     GrpcErrorInterceptor,
@@ -33,7 +33,7 @@ def test_domain_exception_status_map_keys():
         DOMAIN_EXCEPTION_STATUS_MAP[EmbeddingMismatchException] == grpc.StatusCode.INVALID_ARGUMENT
     )
     assert DOMAIN_EXCEPTION_STATUS_MAP[ValueError] == grpc.StatusCode.INVALID_ARGUMENT
-    assert DOMAIN_EXCEPTION_STATUS_MAP[FaceDomainException] == grpc.StatusCode.INTERNAL
+    assert DOMAIN_EXCEPTION_STATUS_MAP[FaceServiceException] == grpc.StatusCode.INTERNAL
     assert DOMAIN_EXCEPTION_STATUS_MAP[Exception] == grpc.StatusCode.INTERNAL
 
 
@@ -66,7 +66,7 @@ def test_domain_exception_status_map_keys():
             grpc.StatusCode.INVALID_ARGUMENT,
             "image_bytes is required",
         ),
-        (FaceDomainException("Domain error"), grpc.StatusCode.INTERNAL, "Domain error"),
+        (FaceServiceException("Domain error"), grpc.StatusCode.INTERNAL, "Domain error"),
         (RuntimeError("Unexpected error"), grpc.StatusCode.INTERNAL, "Unexpected error"),
     ],
 )

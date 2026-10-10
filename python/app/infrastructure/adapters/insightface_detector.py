@@ -4,10 +4,13 @@ from uuid import uuid4
 import cv2
 import numpy as np
 
-from app.application.ports.face_detector import FaceDetectorPort
-from app.domain.entities.face import Face
-from app.domain.value_objects.bounding_box import BoundingBox
-from app.domain.value_objects.landmark import FaceLandmarks, Point2D
+from app.ports.face_detector import (
+    BoundingBox,
+    Face,
+    FaceDetectorPort,
+    FaceLandmarks,
+    Point2D,
+)
 
 
 class InsightFaceDetector(FaceDetectorPort):

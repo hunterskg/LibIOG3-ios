@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import pytest
 
-from app.application.ports.face_detector import FaceDetectorPort
+from app.ports.face_detector import FaceDetectorPort
 from app.infrastructure.adapters.insightface_detector import InsightFaceDetector
 
 

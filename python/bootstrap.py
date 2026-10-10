@@ -3,21 +3,15 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from app.application.ports.face_detector import FaceDetectorPort
-from app.application.ports.face_embedder import FaceEmbedderPort
-from app.application.ports.liveness_detector import LivenessDetectorPort
-from app.application.use_cases.check_liveness import CheckLivenessUseCase
-from app.application.use_cases.detect_face import DetectFaceUseCase
-from app.application.use_cases.extract_embedding import ExtractEmbeddingUseCase
-from app.application.use_cases.verify_face import VerifyFaceUseCase
-from app.domain.services.similarity import SimilarityCalculator
 from app.infrastructure.adapters.insightface_detector import InsightFaceDetector
 from app.infrastructure.adapters.insightface_embedder import InsightFaceEmbedder
-from app.infrastructure.adapters.numpy_similarity_calculator import NumpySimilarityCalculator
 from app.infrastructure.adapters.onnx_liveness_detector import OnnxLivenessDetector
 from app.infrastructure.config.settings import AppSettings
 from app.interfaces.grpc.server import GrpcServer
 from app.interfaces.grpc.servicer import FaceServiceServicer
+from app.ports.face_detector import FaceDetectorPort
+from app.ports.face_embedder import FaceEmbedderPort
+from app.ports.liveness_detector import LivenessDetectorPort
 
 
 @dataclass
@@ -30,11 +24,6 @@ class ApplicationContainer:
     detector: FaceDetectorPort | None = None
     embedder: FaceEmbedderPort | None = None
     liveness_detector: LivenessDetectorPort | None = None
-    similarity_calculator: SimilarityCalculator | None = None
-    detect_face_uc: DetectFaceUseCase | None = None
-    extract_embedding_uc: ExtractEmbeddingUseCase | None = None
-    verify_face_uc: VerifyFaceUseCase | None = None
-    check_liveness_uc: CheckLivenessUseCase | None = None
 
 
 logger = logging.getLogger("face_service")
@@ -87,34 +76,13 @@ def bootstrap_app(
         threshold=cfg.liveness_threshold,
         input_size=cfg.liveness_input_size,
     )
-    similarity_calculator = NumpySimilarityCalculator()
-
-    detect_face_uc = DetectFaceUseCase(detector=detector)
-    extract_embedding_uc = ExtractEmbeddingUseCase(
-        embedder=embedder,
-        detector=detector,
-        liveness_detector=liveness_detector,
-        validate_quality=True,
-        require_single_face=True,
-    )
-    verify_face_uc = VerifyFaceUseCase(
-        embedder=embedder,
-        similarity_calculator=similarity_calculator,
-        detector=detector,
-        liveness_detector=liveness_detector,
-        validate_quality=True,
-        require_single_face=True,
-    )
-    check_liveness_uc = CheckLivenessUseCase(
-        liveness_detector=liveness_detector,
-        detector=detector,
-    )
 
     servicer = FaceServiceServicer(
-        detect_face_uc=detect_face_uc,
-        extract_embedding_uc=extract_embedding_uc,
-        verify_face_uc=verify_face_uc,
-        check_liveness_uc=check_liveness_uc,
+        detector=detector,
+        embedder=embedder,
+        liveness_detector=liveness_detector,
+        validate_quality=True,
+        require_single_face=True,
     )
     server = GrpcServer(settings=cfg, servicer=servicer)
 
@@ -125,11 +93,6 @@ def bootstrap_app(
         detector=detector,
         embedder=embedder,
         liveness_detector=liveness_detector,
-        similarity_calculator=similarity_calculator,
-        detect_face_uc=detect_face_uc,
-        extract_embedding_uc=extract_embedding_uc,
-        verify_face_uc=verify_face_uc,
-        check_liveness_uc=check_liveness_uc,
     )
 
     if warmup:

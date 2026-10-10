@@ -3,8 +3,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from app.application.ports.liveness_detector import LivenessDetectorPort
-from app.domain.entities.liveness import LivenessResult, LivenessStatus
+from app.ports.liveness_detector import (
+    LivenessDetectorPort,
+    LivenessResult,
+    LivenessStatus,
+)
 
 
 class OnnxLivenessDetector(LivenessDetectorPort):

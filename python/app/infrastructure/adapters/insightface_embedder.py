@@ -3,9 +3,8 @@ from typing import Any
 import cv2
 import numpy as np
 
-from app.application.ports.face_embedder import FaceEmbedderPort
-from app.domain.value_objects.bounding_box import BoundingBox
-from app.domain.value_objects.embedding import FaceEmbedding
+from app.ports.face_detector import BoundingBox
+from app.ports.face_embedder import FaceEmbedderPort, FaceEmbedding
 
 # Ma trận tọa độ landmark đích chuẩn ArcFace / InsightFace (112x112 px)
 ARCFACE_DST_112: np.ndarray = np.array(

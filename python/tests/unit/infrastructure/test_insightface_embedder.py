@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 import pytest
 
-from app.application.ports.face_embedder import FaceEmbedderPort
-from app.domain.value_objects.bounding_box import BoundingBox
+from app.ports.face_detector import BoundingBox, FaceLandmarks, Point2D
+from app.ports.face_embedder import FaceEmbedderPort
 from app.infrastructure.adapters.insightface_embedder import InsightFaceEmbedder
 
 
@@ -84,7 +84,7 @@ def test_extract_embedding_with_landmarks_aligns_face(sample_image_bytes: bytes)
     """Kiểm tra trích xuất embedding với 5 landmarks căn chỉnh ArcFace 112x112 qua cv2."""
     import warnings
 
-    from app.domain.value_objects.landmark import FaceLandmarks, Point2D
+    from app.ports.face_detector import FaceLandmarks, Point2D
     from app.infrastructure.adapters.insightface_embedder import ARCFACE_DST_112
 
     mock_recognizer = MagicMock()

@@ -3,14 +3,14 @@ from typing import Any
 
 import grpc
 
-from app.domain.exceptions.face_exceptions import (
-    EmbeddingMismatchException,
-    FaceDomainException,
+from app.ports.face_detector import (
     FaceNotFoundException,
+    FaceServiceException,
     LowFaceQualityException,
     MultipleFacesDetectedException,
-    SpoofDetectedException,
 )
+from app.ports.face_embedder import EmbeddingMismatchException
+from app.ports.liveness_detector import SpoofDetectedException
 
 DOMAIN_EXCEPTION_STATUS_MAP: dict[type[Exception], grpc.StatusCode] = {
     FaceNotFoundException: grpc.StatusCode.NOT_FOUND,
@@ -19,7 +19,7 @@ DOMAIN_EXCEPTION_STATUS_MAP: dict[type[Exception], grpc.StatusCode] = {
     SpoofDetectedException: grpc.StatusCode.PERMISSION_DENIED,
     EmbeddingMismatchException: grpc.StatusCode.INVALID_ARGUMENT,
     ValueError: grpc.StatusCode.INVALID_ARGUMENT,
-    FaceDomainException: grpc.StatusCode.INTERNAL,
+    FaceServiceException: grpc.StatusCode.INTERNAL,
     Exception: grpc.StatusCode.INTERNAL,
 }
 

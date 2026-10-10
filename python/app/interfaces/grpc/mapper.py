@@ -1,12 +1,14 @@
 import uuid
 from collections.abc import Iterable
 
-from app.domain.entities.face import Face
-from app.domain.entities.liveness import LivenessStatus as DomainLivenessStatus
-from app.domain.exceptions.face_exceptions import EmbeddingMismatchException
-from app.domain.value_objects.bounding_box import BoundingBox
-from app.domain.value_objects.embedding import FaceEmbedding
-from app.domain.value_objects.landmark import FaceLandmarks, Point2D
+from app.ports.face_detector import (
+    BoundingBox,
+    Face,
+    FaceLandmarks,
+    Point2D,
+)
+from app.ports.face_embedder import EmbeddingMismatchException, FaceEmbedding
+from app.ports.liveness_detector import LivenessStatus as DomainLivenessStatus
 from proto.face.v1 import face_pb2
 
 
