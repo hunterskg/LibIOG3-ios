@@ -16,6 +16,7 @@ abstract final class AppRoutes {
 
   static const String readerHome = '/reader/home';
   static const String readerProfile = '/reader/profile';
+  static const String faceRegister = '/reader/face-register';
 
   static const String staffHome = '/staff/home';
   static const String adminHome = '/admin/home';
@@ -28,4 +29,5 @@ abstract final class AppRoutes {
   static const String staffDetail = '/admin/staffs/detail';
   static const String readerQr = '/reader/qr';
   static const String staffScanner = '/staff/scanner';
+  static const String deviceActivation = '/staff/device-activation';
 }

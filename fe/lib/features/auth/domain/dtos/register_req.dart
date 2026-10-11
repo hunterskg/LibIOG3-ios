@@ -12,9 +12,10 @@ class RegisterReq {
   });
 
   Map<String, dynamic> toJson() => {
-        'username': username,
-        'email': email,
-        'password': password,
-        if (displayName != null && displayName!.isNotEmpty) 'displayName': displayName,
-      };
+    'username': username,
+    'email': email,
+    'password': password,
+    if (displayName != null && displayName!.isNotEmpty)
+      'displayName': displayName,
+  };
 }

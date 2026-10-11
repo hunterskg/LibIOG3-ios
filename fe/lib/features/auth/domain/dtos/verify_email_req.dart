@@ -4,8 +4,5 @@ class VerifyEmailReq {
 
   const VerifyEmailReq({required this.email, required this.code});
 
-  Map<String, dynamic> toJson() => {
-        'email': email,
-        'code': code,
-      };
+  Map<String, dynamic> toJson() => {'email': email, 'code': code};
 }

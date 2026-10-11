@@ -10,8 +10,9 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Accept, Authorization', // Allow specific headers
   });
   app.use(morgan('dev'));
-  await app.listen(process.env.PORT ?? 3000);
-
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  const port = process.env.PORT ?? 3000;
+  const host = process.env.HOST ?? '0.0.0.0';
+  await app.listen(port, host);
+  console.log(`Application is running on: http://${host}:${port}`);
 }
 void bootstrap();

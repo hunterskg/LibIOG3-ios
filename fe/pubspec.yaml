@@ -1,5 +1,5 @@
 name: fe
-description: "A new Flutter project."
+description: 'A new Flutter project.'
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -41,6 +41,9 @@ dependencies:
   intl: ^0.20.2
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.4.2
+  device_info_plus: ^11.3.0
+  camera: ^0.11.0+2
+  google_mlkit_face_detection: ^0.12.0
 
 dev_dependencies:
   flutter_test:
@@ -58,7 +61,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

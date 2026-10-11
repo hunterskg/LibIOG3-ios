@@ -27,4 +27,13 @@ abstract final class ApiConstants {
   //Checkin - Checkout
   static const String qrTokens = '/qr-tokens';
   static const String qrTokensVerify = '/qr-tokens/verify';
+  static const String deviceAssignments = '/devices/assignments';
+  static const String assignDevice = '/devices/assign';
+  static const String activateDevice = '/devices/activate';
+  static String staffDeviceAssignments(String id) =>
+      '$deviceAssignments/staff/$id';
+  static String revokeDeviceAssignment(String id) => '$deviceAssignments/$id';
+
+  // Biometric endpoints
+  static const String registerFace = '/biometric/face/register';
 }

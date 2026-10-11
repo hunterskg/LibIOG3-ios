@@ -19,13 +19,15 @@ class ApiClient {
   }) : _client = client ?? http.Client();
 
   Map<String, String> _defaultHeaders([String? token]) => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+  };
 
   Uri _uri(String path) {
-    final cleanBase = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final cleanBase = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
     final cleanPath = path.startsWith('/') ? path : '/$path';
     return Uri.parse('$cleanBase$cleanPath');
   }
@@ -142,22 +144,55 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     bool requiresAuth = false,
-  }) =>
-      _sendWithBody('PUT', path, body: body, requiresAuth: requiresAuth);
+  }) => _sendWithBody('PUT', path, body: body, requiresAuth: requiresAuth);
 
   Future<dynamic> patch(
     String path, {
     Map<String, dynamic>? body,
     bool requiresAuth = false,
-  }) =>
-      _sendWithBody('PATCH', path, body: body, requiresAuth: requiresAuth);
+  }) => _sendWithBody('PATCH', path, body: body, requiresAuth: requiresAuth);
 
   Future<dynamic> delete(
     String path, {
     Map<String, dynamic>? body,
     bool requiresAuth = false,
-  }) =>
-      _sendWithBody('DELETE', path, body: body, requiresAuth: requiresAuth);
+  }) => _sendWithBody('DELETE', path, body: body, requiresAuth: requiresAuth);
+
+  Future<dynamic> postMultipart(
+    String path, {
+    Map<String, String>? fields,
+    required List<http.MultipartFile> files,
+    bool requiresAuth = false,
+  }) async {
+    String? token;
+    if (requiresAuth && getAccessToken != null) {
+      token = await getAccessToken!();
+    }
+
+    try {
+      final request = http.MultipartRequest('POST', _uri(path));
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.headers['Accept'] = 'application/json';
+      if (fields != null) request.fields.addAll(fields);
+      request.files.addAll(files);
+
+      final streamedResponse = await _client
+          .send(request)
+          .timeout(ApiConstants.timeout);
+      final response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } on SocketException {
+      throw const ApiException('Không thể kết nối đến máy chủ. Kiểm tra mạng.');
+    } on TimeoutException {
+      throw const ApiException('Hết thời gian kết nối đến máy chủ.');
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Đã xảy ra lỗi không xác định: $e');
+    }
+  }
 
   dynamic _handleResponse(http.Response response) {
     dynamic decoded;

@@ -63,13 +63,16 @@ class _ReaderListScreenState extends State<ReaderListScreen> {
                   context.read<UserProvider>().loadReaders(page: 1, search: v);
                 },
                 suffix: IconButton(
-                  icon: const Icon(Icons.search_rounded,
-                      color: AppColors.charcoal500),
+                  icon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.charcoal500,
+                  ),
                   tooltip: 'Tìm kiếm',
                   onPressed: () {
-                    context
-                        .read<UserProvider>()
-                        .loadReaders(page: 1, search: _searchCtrl.text);
+                    context.read<UserProvider>().loadReaders(
+                      page: 1,
+                      search: _searchCtrl.text,
+                    );
                   },
                 ),
               ),
@@ -78,66 +81,69 @@ class _ReaderListScreenState extends State<ReaderListScreen> {
               child: provider.isLoading && page == null
                   ? const Center(child: CircularProgressIndicator())
                   : items.isEmpty
-                      ? Center(
-                          child: Text(
-                            provider.errorMessage ?? 'Chưa có độc giả nào.',
-                            style: AppTextStyles.body
-                                .copyWith(color: AppColors.charcoal500),
-                          ),
-                        )
-                      : ListView.separated(
+                  ? Center(
+                      child: Text(
+                        provider.errorMessage ?? 'Chưa có độc giả nào.',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.charcoal500,
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: AppSpacing.p4,
+                      itemCount: items.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 8),
+                      itemBuilder: (context, i) {
+                        final r = items[i];
+                        return AppCard(
                           padding: AppSpacing.p4,
-                          itemCount: items.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 8),
-                          itemBuilder: (context, i) {
-                            final r = items[i];
-                            return AppCard(
-                              padding: AppSpacing.p4,
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.readerDetail,
-                                  arguments: {'id': r.id},
-                                );
-                              },
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: AppColors.accent100,
-                                    child: const Icon(
-                                      Icons.person_outline_rounded,
-                                      color: AppColors.accent600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppSpacing.s3),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(r.fullName,
-                                            style: AppTextStyles.body.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            )),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          r.phone ?? r.user?.email ?? '---',
-                                          style: AppTextStyles.bodySm.copyWith(
-                                            color: AppColors.charcoal500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right_rounded,
-                                    color: AppColors.charcoal400,
-                                  ),
-                                ],
-                              ),
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.readerDetail,
+                              arguments: {'id': r.id},
                             );
                           },
-                        ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: AppColors.accent100,
+                                child: const Icon(
+                                  Icons.person_outline_rounded,
+                                  color: AppColors.accent600,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.s3),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      r.fullName,
+                                      style: AppTextStyles.body.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      r.phone ?? r.user?.email ?? '---',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        color: AppColors.charcoal500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.charcoal400,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
             ),
             if (page != null && page.total > page.data.length)
               Padding(
@@ -146,11 +152,11 @@ class _ReaderListScreenState extends State<ReaderListScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
-                      onPressed: provider.readerCurrentPage > 1 &&
-                              !provider.isLoading
+                      onPressed:
+                          provider.readerCurrentPage > 1 && !provider.isLoading
                           ? () => context.read<UserProvider>().loadReaders(
-                                page: provider.readerCurrentPage - 1,
-                              )
+                              page: provider.readerCurrentPage - 1,
+                            )
                           : null,
                       child: const Text('Trước'),
                     ),
@@ -161,8 +167,8 @@ class _ReaderListScreenState extends State<ReaderListScreen> {
                     TextButton(
                       onPressed: !provider.isLoading
                           ? () => context.read<UserProvider>().loadReaders(
-                                page: provider.readerCurrentPage + 1,
-                              )
+                              page: provider.readerCurrentPage + 1,
+                            )
                           : null,
                       child: const Text('Sau'),
                     ),

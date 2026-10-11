@@ -63,7 +63,9 @@ class _ForgotPwdReaderScreenState extends State<ForgotPwdReaderScreen> {
       subtitle: 'Nhập email tài khoản để nhận mã OTP khôi phục mật khẩu',
       child: Form(
         key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+        autovalidateMode: _autoValidate
+            ? AutovalidateMode.always
+            : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

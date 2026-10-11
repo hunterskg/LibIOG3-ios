@@ -49,7 +49,10 @@ class _ResetPwdReaderScreenState extends State<ResetPwdReaderScreen> {
 
     final auth = context.read<AuthProvider>();
     final email = auth.pendingEmail ?? '';
-    final ok = await auth.resetPassword(email: email, newPassword: _newPwdCtrl.text);
+    final ok = await auth.resetPassword(
+      email: email,
+      newPassword: _newPwdCtrl.text,
+    );
 
     if (!mounted) return;
     if (ok) {
@@ -60,7 +63,11 @@ class _ResetPwdReaderScreenState extends State<ResetPwdReaderScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.readerLogin, (r) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.readerLogin,
+        (r) => false,
+      );
     } else if (auth.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -80,7 +87,9 @@ class _ResetPwdReaderScreenState extends State<ResetPwdReaderScreen> {
       subtitle: 'Nhập mật khẩu mới cho tài khoản',
       child: Form(
         key: _formKey,
-        autovalidateMode: _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+        autovalidateMode: _autoValidate
+            ? AutovalidateMode.always
+            : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -93,7 +102,9 @@ class _ResetPwdReaderScreenState extends State<ResetPwdReaderScreen> {
               obscureText: _obscureNew,
               suffix: IconButton(
                 icon: Icon(
-                  _obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  _obscureNew
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                   size: 20,
                   color: AppColors.charcoal500,
                 ),
@@ -116,11 +127,14 @@ class _ResetPwdReaderScreenState extends State<ResetPwdReaderScreen> {
               obscureText: _obscureConfirm,
               suffix: IconButton(
                 icon: Icon(
-                  _obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  _obscureConfirm
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                   size: 20,
                   color: AppColors.charcoal500,
                 ),
-                onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                onPressed: () =>
+                    setState(() => _obscureConfirm = !_obscureConfirm),
                 tooltip: _obscureConfirm ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
               ),
               validator: _validateConfirm,

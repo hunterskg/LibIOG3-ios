@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:fe/core/constants/route_constants.dart';
 import 'package:fe/core/theme/app_colors.dart';
 import 'package:fe/core/theme/app_spacing.dart';
 import 'package:fe/core/theme/app_text_styles.dart';
@@ -32,10 +33,13 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      final userId = context.read<AuthProvider>().currentUser?.userId;
-      if (userId != null && userId.isNotEmpty) {
-        context.read<UserProvider>().loadMyReaderProfile(userId);
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final userId = context.read<AuthProvider>().currentUser?.userId;
+        if (userId != null && userId.isNotEmpty) {
+          context.read<UserProvider>().loadMyReaderProfile(userId);
+        }
+      });
     }
   }
 
@@ -68,13 +72,15 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
           ? _fullNameCtrl.text.trim()
           : null,
       phone: _phoneCtrl.text.trim().isNotEmpty ? _phoneCtrl.text.trim() : null,
-      dateOfBirth:
-          _dobCtrl.text.trim().isNotEmpty ? _dobCtrl.text.trim() : null,
+      dateOfBirth: _dobCtrl.text.trim().isNotEmpty
+          ? _dobCtrl.text.trim()
+          : null,
     );
 
-    final success = await context
-        .read<UserProvider>()
-        .updateMyReaderProfile(userId, req);
+    final success = await context.read<UserProvider>().updateMyReaderProfile(
+      userId,
+      req,
+    );
     if (!mounted) return;
 
     if (success) {
@@ -189,9 +195,9 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                   'Ngày sinh:',
                                   profile?.dateOfBirth != null
                                       ? profile!.dateOfBirth!
-                                          .toIso8601String()
-                                          .split('T')
-                                          .first
+                                            .toIso8601String()
+                                            .split('T')
+                                            .first
                                       : 'Chưa cập nhật',
                                 ),
                                 const SizedBox(height: AppSpacing.s2),
@@ -212,8 +218,8 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                         prefixIcon: Icons.badge_outlined,
                                         validator: (v) =>
                                             (v == null || v.trim().isEmpty)
-                                                ? 'Họ và tên không được để trống'
-                                                : null,
+                                            ? 'Họ và tên không được để trống'
+                                            : null,
                                       ),
                                       const SizedBox(height: AppSpacing.s3),
                                       AppTextField(
@@ -228,7 +234,8 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                         controller: _dobCtrl,
                                         labelText: 'Ngày sinh (YYYY-MM-DD)',
                                         hintText: '2000-01-01',
-                                        prefixIcon: Icons.calendar_today_outlined,
+                                        prefixIcon:
+                                            Icons.calendar_today_outlined,
                                       ),
                                       const SizedBox(height: AppSpacing.s4),
                                       Row(
@@ -249,8 +256,7 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                           Expanded(
                                             child: AppButton(
                                               text: 'Lưu thay đổi',
-                                              isLoading:
-                                                  userProvider.isLoading,
+                                              isLoading: userProvider.isLoading,
                                               onPressed: _handleSave,
                                             ),
                                           ),
@@ -263,6 +269,67 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                             ],
                           ),
                         ),
+                        if (!_isEditing) ...[
+                          const SizedBox(height: AppSpacing.s4),
+                          AppCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Sinh trắc học',
+                                  style: AppTextStyles.h3,
+                                ),
+                                const SizedBox(height: AppSpacing.s2),
+                                Text(
+                                  'Đăng ký khuôn mặt để sử dụng cổng quét tự động tại thư viện.',
+                                  style: AppTextStyles.bodySm.copyWith(
+                                    color: AppColors.charcoal500,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.s3),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: Container(
+                                      padding: AppSpacing.p2,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.face_retouching_natural_rounded,
+                                        color: AppColors.accent600,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      'Dữ liệu khuôn mặt',
+                                      style: AppTextStyles.body.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      'Đăng ký nhận diện khuôn mặt',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        color: AppColors.charcoal500,
+                                      ),
+                                    ),
+                                    trailing: const Icon(
+                                      Icons.chevron_right_rounded,
+                                      color: AppColors.charcoal400,
+                                    ),
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.faceRegister,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

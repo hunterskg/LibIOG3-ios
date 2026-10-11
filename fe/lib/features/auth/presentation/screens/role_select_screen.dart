@@ -29,7 +29,11 @@ class RoleSelectScreen extends StatelessWidget {
                     color: AppColors.infoLight,
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: const Icon(Icons.menu_book_rounded, color: AppColors.info, size: 24),
+                  child: const Icon(
+                    Icons.menu_book_rounded,
+                    color: AppColors.info,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.s4),
                 Expanded(
@@ -38,12 +42,16 @@ class RoleSelectScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Độc giả',
-                        style: AppTextStyles.h3.copyWith(color: AppColors.charcoal900),
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.charcoal900,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Tra cứu tài liệu, mượn trả và quản lý tài khoản cá nhân',
-                        style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
+                        style: AppTextStyles.bodySm.copyWith(
+                          color: AppColors.charcoal500,
+                        ),
                       ),
                     ],
                   ),
@@ -65,7 +73,11 @@ class RoleSelectScreen extends StatelessWidget {
                     color: AppColors.successLight,
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: const Icon(Icons.admin_panel_settings_rounded, color: AppColors.success, size: 24),
+                  child: const Icon(
+                    Icons.admin_panel_settings_rounded,
+                    color: AppColors.success,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.s4),
                 Expanded(
@@ -74,12 +86,16 @@ class RoleSelectScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Nhân viên',
-                        style: AppTextStyles.h3.copyWith(color: AppColors.charcoal900),
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.charcoal900,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Quản lý kho sách, quầy check-in/out và nghiệp vụ thư viện',
-                        style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
+                        style: AppTextStyles.bodySm.copyWith(
+                          color: AppColors.charcoal500,
+                        ),
                       ),
                     ],
                   ),

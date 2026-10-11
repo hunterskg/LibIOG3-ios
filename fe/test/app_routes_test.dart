@@ -23,12 +23,14 @@ void main() {
         AppRoutes.adminHome,
         AppRoutes.deviceHome,
         AppRoutes.readerProfile,
+        AppRoutes.faceRegister,
         AppRoutes.staffProfile,
         AppRoutes.readerList,
         AppRoutes.readerDetail,
         AppRoutes.staffList,
         AppRoutes.createStaff,
         AppRoutes.staffDetail,
+        AppRoutes.deviceActivation,
       ];
 
       for (final route in expected) {

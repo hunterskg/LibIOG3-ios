@@ -28,6 +28,8 @@ import 'package:fe/features/qr/presentation/screens/reader_qr_screen.dart';
 import 'package:fe/core/network/api_client.dart';
 import 'package:provider/provider.dart';
 import 'package:fe/features/qr/presentation/screens/staff_scanner_screen.dart';
+import 'package:fe/features/device/presentation/screens/device_activation_screen.dart';
+import 'package:fe/features/biometric/presentation/screens/face_register_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -44,6 +46,7 @@ Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.staffResetPassword: (context) => const ResetPwdStaffScreen(),
   AppRoutes.readerHome: (context) => const ReaderHomeScreen(),
   AppRoutes.readerProfile: (context) => const ReaderProfileScreen(),
+  AppRoutes.faceRegister: (context) => const FaceRegisterScreen(),
   AppRoutes.staffHome: (context) => const StaffHomeScreen(),
   AppRoutes.adminHome: (context) => const AdminHomeScreen(),
   AppRoutes.deviceHome: (context) => const DeviceHomeScreen(),
@@ -83,4 +86,5 @@ Map<String, WidgetBuilder> get appRoutes => {
 
     return StaffScannerScreen(action: action!);
   },
+  AppRoutes.deviceActivation: (context) => const DeviceActivationScreen(),
 };

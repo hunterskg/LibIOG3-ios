@@ -119,7 +119,7 @@ class _StaffHomeContent extends StatelessWidget {
                         child: _actionCard(
                           icon: Icons.check_circle_outline,
                           title: 'Check-in',
-                          desc: 'Quét mã nhận trả sách tại quầy',
+                          desc: 'Quét mã nhận diện bạn đọc',
                           color: AppColors.success,
                           onTap: () {
                             Navigator.pushNamed(
@@ -134,8 +134,8 @@ class _StaffHomeContent extends StatelessWidget {
                       Expanded(
                         child: _actionCard(
                           icon: Icons.menu_book_outlined,
-                          title: 'Check-out (Mượn sách)',
-                          desc: 'Quét thẻ bạn đọc & cấp mượn sách',
+                          title: 'Lịch sử ra vào',
+                          desc: 'Theo dõi lượt vào và lượt ra',
                           color: AppColors.info,
 
                           onTap: () {
@@ -207,6 +207,51 @@ class _StaffHomeContent extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Chức năng quét mã khách hàng sẽ được bổ sung sau.',
+              ),
+            ),
+          );
+        },
+        backgroundColor: AppColors.accent600,
+        foregroundColor: AppColors.white,
+        elevation: 8,
+        child: const Icon(Icons.qr_code_scanner_rounded, size: 30),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        height: 72,
+        color: AppColors.white,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              tooltip: 'Trang chủ',
+              onPressed: () {},
+              icon: const Icon(
+                Icons.home_rounded,
+                color: AppColors.charcoal900,
+              ),
+            ),
+            const SizedBox(width: 52),
+            IconButton(
+              tooltip: 'Tài khoản',
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.staffProfile),
+              icon: const Icon(
+                Icons.account_circle_outlined,
+                color: AppColors.charcoal700,
+              ),
+            ),
+          ],
         ),
       ),
     );
