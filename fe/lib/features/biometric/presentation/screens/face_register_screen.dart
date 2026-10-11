@@ -4,10 +4,15 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:provider/provider.dart';
 
+import 'package:fe/core/constants/api_constants.dart';
+import 'package:fe/core/network/api_client.dart';
 import 'package:fe/core/theme/app_colors.dart';
 import 'package:fe/core/theme/app_spacing.dart';
 import 'package:fe/core/theme/app_text_styles.dart';
+import 'package:fe/features/auth/presentation/providers/auth_provider.dart';
+import 'package:fe/features/biometric/data/services/face_biometric_service.dart';
 import 'package:fe/features/biometric/domain/constants/face_pose_constants.dart';
 import 'package:fe/shared/widgets/app_button.dart';
 import 'package:fe/shared/widgets/app_card.dart';
@@ -22,11 +27,14 @@ class FaceRegisterScreen extends StatefulWidget {
 class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
   CameraController? _cameraController;
   FaceDetector? _faceDetector;
+  FaceBiometricService? _faceBiometricService;
+  late final String _requestId;
 
   bool _isCameraInitialized = false;
   bool _isProcessingFrame = false;
   bool _isDetecting = false;
   bool _isCapturingManual = false;
+  bool _isUploading = false;
   String? _initError;
   String? _statusMessage;
 
@@ -34,6 +42,8 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
     FacePoseStatus.frontal,
     FacePoseStatus.leftProfile,
     FacePoseStatus.rightProfile,
+    FacePoseStatus.lookDown,
+    FacePoseStatus.lookUp,
   ];
   int _currentPoseIndex = 0;
   bool _isCurrentPoseMatched = false;
@@ -49,6 +59,7 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
   @override
   void initState() {
     super.initState();
+    _requestId = 'reg-${DateTime.now().millisecondsSinceEpoch}';
     if (_isMobilePlatform) {
       _faceDetector = FaceDetector(
         options: FaceDetectorOptions(
@@ -59,6 +70,19 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
       );
     }
     _initCamera();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_faceBiometricService == null) {
+      final auth = context.read<AuthProvider>();
+      final client = ApiClient(
+        baseUrl: ApiConstants.baseUrl,
+        getAccessToken: () async => auth.accessToken,
+      );
+      _faceBiometricService = FaceBiometricService(client);
+    }
   }
 
   Future<void> _initCamera() async {
@@ -137,14 +161,14 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
                 constraint?.matches(pitch: pitch, yaw: yaw, roll: roll) ??
                 false;
 
-            if (isMatched && !_isCurrentPoseMatched) {
+            if (isMatched && !_isCurrentPoseMatched && !_isUploading) {
               setState(() => _isCurrentPoseMatched = true);
-              await _onPosePassed();
-            } else if (!isMatched && _isCurrentPoseMatched) {
+              await _sendPoseFrameToBackend();
+            } else if (!isMatched && _isCurrentPoseMatched && !_isUploading) {
               setState(() => _isCurrentPoseMatched = false);
             }
           } else {
-            if (_isCurrentPoseMatched) {
+            if (_isCurrentPoseMatched && !_isUploading) {
               setState(() => _isCurrentPoseMatched = false);
             }
           }
@@ -164,12 +188,14 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
     final controller = _cameraController;
     if (controller == null ||
         !controller.value.isInitialized ||
-        _isCapturingManual)
+        _isCapturingManual ||
+        _isUploading) {
       return;
+    }
 
     setState(() {
       _isCapturingManual = true;
-      _statusMessage = 'Đang chụp và phân tích dáng mặt...';
+      _statusMessage = 'Đang chụp ảnh...';
     });
 
     try {
@@ -178,18 +204,85 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
       if (!mounted) return;
 
       if (bytes.isNotEmpty) {
-        setState(() {
-          _isCurrentPoseMatched = true;
-          _statusMessage = 'Đã nhận diện thành công!';
-        });
-        await _onPosePassed();
+        await _uploadFaceToBackend(bytes);
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() => _statusMessage = 'Lỗi chụp ảnh: $e');
+      final msg = 'Lỗi chụp ảnh: $e';
+      setState(() => _statusMessage = msg);
+      _showErrorSnackBar(msg);
     } finally {
       if (mounted) {
         setState(() => _isCapturingManual = false);
+      }
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _sendPoseFrameToBackend() async {
+    final controller = _cameraController;
+    if (controller == null || !controller.value.isInitialized || _isUploading) {
+      return;
+    }
+
+    try {
+      final file = await controller.takePicture();
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      await _uploadFaceToBackend(bytes);
+    } catch (e) {
+      if (!mounted) return;
+      final msg = 'Lỗi chụp ảnh gửi máy chủ: $e';
+      setState(() {
+        _isCurrentPoseMatched = false;
+        _statusMessage = msg;
+      });
+      _showErrorSnackBar(msg);
+    }
+  }
+
+  Future<void> _uploadFaceToBackend(List<int> bytes) async {
+    final service = _faceBiometricService;
+    if (service == null) return;
+
+    setState(() {
+      _isUploading = true;
+      _statusMessage = 'Đang xác thực với máy chủ...';
+    });
+
+    try {
+      final poseBackendName = FacePoseConstraints.getBackendName(_targetPose);
+      final res = await service.registerFace(
+        imageBytes: bytes,
+        requestId: _requestId,
+        facePose: poseBackendName,
+      );
+
+      if (!mounted) return;
+      setState(() => _statusMessage = res.message);
+      await _onPosePassed();
+    } catch (e) {
+      if (!mounted) return;
+      final msg = 'Lỗi xác thực máy chủ: $e';
+      setState(() {
+        _isCurrentPoseMatched = false;
+        _statusMessage = msg;
+      });
+      _showErrorSnackBar(msg);
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
       }
     }
   }
@@ -435,11 +528,15 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
         if (!_isMobilePlatform) ...[
           const SizedBox(height: AppSpacing.s3),
           AppButton(
-            text: _isCapturingManual
-                ? 'Đang kiểm tra...'
-                : 'Chụp ảnh & Xác nhận góc mặt',
-            isLoading: _isCapturingManual,
-            onPressed: _isCapturingManual ? null : _captureManualPose,
+            text: _isUploading
+                ? 'Đang gửi lên máy chủ...'
+                : (_isCapturingManual
+                      ? 'Đang chụp ảnh...'
+                      : 'Chụp ảnh & Xác nhận góc mặt'),
+            isLoading: _isCapturingManual || _isUploading,
+            onPressed: (_isCapturingManual || _isUploading)
+                ? null
+                : _captureManualPose,
           ),
         ],
       ],
