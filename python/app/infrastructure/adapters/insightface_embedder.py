@@ -88,16 +88,20 @@ class InsightFaceEmbedder(FaceEmbedderPort):
 
         if landmarks is not None and hasattr(landmarks, "points") and len(landmarks.points) >= 5:
             kps = np.array([[pt.x, pt.y] for pt in landmarks.points[:5]], dtype=np.float32)
-            # Dùng OpenCV estimateAffinePartial2D thay thế skimage để tránh cảnh báo deprecated
-            affine_matrix, _ = cv2.estimateAffinePartial2D(kps, ARCFACE_DST_112)
-            if affine_matrix is not None:
-                face_img = cv2.warpAffine(
-                    img,
-                    affine_matrix,
-                    (112, 112),
-                    borderMode=cv2.BORDER_CONSTANT,
-                    borderValue=0.0,
-                )
+            try:
+                from insightface.utils import face_align
+
+                face_img = face_align.norm_crop(img, landmark=kps, image_size=112)
+            except Exception:
+                affine_matrix, _ = cv2.estimateAffinePartial2D(kps, ARCFACE_DST_112)
+                if affine_matrix is not None:
+                    face_img = cv2.warpAffine(
+                        img,
+                        affine_matrix,
+                        (112, 112),
+                        borderMode=cv2.BORDER_CONSTANT,
+                        borderValue=0.0,
+                    )
 
         if face_img is None:
             if bbox is not None:

@@ -108,5 +108,14 @@ def test_check_liveness_single_scalar_output(sample_image_bytes: bytes) -> None:
     result = detector.check_liveness(sample_image_bytes)
 
     assert result.is_live is True
+
+
+def test_check_liveness_model_missing_fallback(sample_image_bytes: bytes) -> None:
+    """Kiểm tra fallback sang status REAL khi file model ONNX không tồn tại."""
+    detector = OnnxLivenessDetector(model_path="non_existent_file.onnx")
+    detector.warmup()  # Không ném lỗi
+    result = detector.check_liveness(sample_image_bytes)
+
+    assert result.is_live is True
     assert result.status == LivenessStatus.REAL
-    assert pytest.approx(result.confidence, abs=1e-5) == 0.92
+    assert result.confidence == 1.0

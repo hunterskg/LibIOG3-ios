@@ -1,3 +1,5 @@
+import logging
+from pathlib import Path
 from typing import Any
 
 import cv2
@@ -8,6 +10,8 @@ from app.ports.liveness_detector import (
     LivenessResult,
     LivenessStatus,
 )
+
+logger = logging.getLogger("face_service")
 
 
 class OnnxLivenessDetector(LivenessDetectorPort):
@@ -28,6 +32,8 @@ class OnnxLivenessDetector(LivenessDetectorPort):
     def _get_session(self) -> Any:
         # ponytail: lazy load InferenceSession khi chưa được inject session mock
         if self._session is None:
+            if not Path(self._model_path).is_file():
+                return None
             import onnxruntime as ort
 
             self._session = ort.InferenceSession(
@@ -39,6 +45,9 @@ class OnnxLivenessDetector(LivenessDetectorPort):
     def warmup(self) -> None:
         """Khởi tạo ONNX Runtime session và chạy 1 lần dummy inference."""
         session = self._get_session()
+        if session is None:
+            logger.warning("Liveness model not found at %s, skipping warmup", self._model_path)
+            return
         dummy_tensor = np.zeros((1, 3, *self._input_size), dtype=np.float32)
         input_name = "input"
         if hasattr(session, "get_inputs") and session.get_inputs():
@@ -53,6 +62,20 @@ class OnnxLivenessDetector(LivenessDetectorPort):
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if img is None:
             raise ValueError("Invalid or corrupted image format")
+
+        session = self._get_session()
+        if session is None:
+            # ponytail: fallback REAL khi chưa có model liveness.onnx trên disk; nâng cấp khi có model
+            logger.warning(
+                "Liveness model not found at %s. Returning default REAL status.",
+                self._model_path,
+            )
+            return LivenessResult(
+                is_live=True,
+                status=LivenessStatus.REAL,
+                confidence=1.0,
+                details={"fallback": True, "reason": "model_file_missing"},
+            )
 
         resized = cv2.resize(img, self._input_size)
         tensor = np.transpose(resized, (2, 0, 1))

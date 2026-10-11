@@ -61,6 +61,7 @@ message ExtractEmbeddingRequest {
   bytes image_bytes = 1;
   ImageFormat image_format = 2;
   BoundingBox bbox = 3;
+  repeated Landmark landmarks = 4;
 }
 
 message ExtractEmbeddingResponse {

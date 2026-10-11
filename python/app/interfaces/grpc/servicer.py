@@ -72,9 +72,22 @@ class FaceServiceServicer(face_pb2_grpc.FaceServiceServicer):
         ) is not None:
             bbox = FaceGrpcMapper.to_domain_bounding_box(request.bbox)
 
+        landmarks = None
+        if getattr(request, "landmarks", None):
+            landmarks = FaceGrpcMapper.to_domain_landmarks(request.landmarks)
+
+        if landmarks is None and self._detector is not None:
+            faces = self._detector.detect(request.image_bytes)
+            if faces:
+                target_face = faces[0]
+                if bbox is None:
+                    bbox = target_face.bbox
+                landmarks = target_face.landmarks
+
         embedding = self._embedder.extract_embedding(
             image_bytes=request.image_bytes,
             bbox=bbox,
+            landmarks=landmarks,
         )
         proto_emb = FaceGrpcMapper.to_proto_face_embedding(embedding)
         return face_pb2.ExtractEmbeddingResponse(
@@ -111,7 +124,7 @@ class FaceServiceServicer(face_pb2_grpc.FaceServiceServicer):
 
         target_bbox = bbox
         target_landmarks = None
-        if self._detector is not None and target_bbox is None:
+        if self._detector is not None:
             faces = self._detector.detect(request.image_bytes)
             if len(faces) == 0:
                 raise FaceNotFoundException("No face detected for verification")
@@ -120,7 +133,8 @@ class FaceServiceServicer(face_pb2_grpc.FaceServiceServicer):
                     f"Expected single face for verification, detected {len(faces)}"
                 )
             target_face = faces[0]
-            target_bbox = target_face.bbox
+            if target_bbox is None:
+                target_bbox = target_face.bbox
             target_landmarks = target_face.landmarks
             if self._validate_quality and hasattr(target_face, "validate_quality"):
                 target_face.validate_quality()

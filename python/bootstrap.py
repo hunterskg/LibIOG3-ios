@@ -47,7 +47,7 @@ def warmup_models(container: ApplicationContainer) -> None:
                 adapter.warmup()
                 elapsed = (time.perf_counter() - step_start) * 1000.0
                 logger.info("Warming up %s... done (%.1f ms)", name, elapsed)
-            except (FileNotFoundError, RuntimeError) as exc:
+            except Exception as exc:
                 elapsed = (time.perf_counter() - step_start) * 1000.0
                 logger.warning("Warming up %s failed (%.1f ms): %s", name, elapsed, exc)
 

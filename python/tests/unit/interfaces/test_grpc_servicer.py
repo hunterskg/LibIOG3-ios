@@ -103,6 +103,32 @@ def test_extract_embedding_success(servicer, mock_ports):
     assert called_kwargs["bbox"].x == 5.0
 
 
+def test_extract_embedding_with_landmarks(servicer, mock_ports):
+    mock_ports["embedder"].extract_embedding.return_value = FaceEmbedding(
+        values=tuple([0.2] * 512),
+        dimension=512,
+    )
+    landmarks_proto = [
+        face_pb2.Landmark(x=10.0, y=10.0, index=0),
+        face_pb2.Landmark(x=20.0, y=10.0, index=1),
+        face_pb2.Landmark(x=15.0, y=15.0, index=2),
+        face_pb2.Landmark(x=12.0, y=20.0, index=3),
+        face_pb2.Landmark(x=18.0, y=20.0, index=4),
+    ]
+    request = face_pb2.ExtractEmbeddingRequest(
+        image_bytes=b"test_image_bytes",
+        landmarks=landmarks_proto,
+    )
+    context = MagicMock()
+
+    response = servicer.ExtractEmbedding(request, context)
+
+    assert response.success is True
+    called_kwargs = mock_ports["embedder"].extract_embedding.call_args.kwargs
+    assert called_kwargs["landmarks"] is not None
+    assert len(called_kwargs["landmarks"].points) == 5
+
+
 def test_verify_face_empty_image_raises_value_error(servicer):
     proto_emb = face_pb2.FaceEmbedding(values=[0.1] * 512, dimension=512)
     request = face_pb2.VerifyFaceRequest(image_bytes=b"", reference_embedding=proto_emb)
@@ -121,6 +147,10 @@ def test_verify_face_missing_reference_embedding_raises_value_error(servicer):
 
 
 def test_verify_face_success(servicer, mock_ports):
+    bbox = BoundingBox(x=10.0, y=20.0, width=50.0, height=60.0, confidence=0.95)
+    face = Face(id="face-1", bbox=bbox, landmarks=None, confidence=0.95)
+    mock_ports["detector"].detect.return_value = [face]
+
     mock_ports["embedder"].extract_embedding.return_value = FaceEmbedding(
         values=tuple([0.1] * 512),
         dimension=512,
@@ -144,6 +174,10 @@ def test_verify_face_success(servicer, mock_ports):
 
 
 def test_verify_face_default_threshold(servicer, mock_ports):
+    bbox = BoundingBox(x=10.0, y=20.0, width=50.0, height=60.0, confidence=0.95)
+    face = Face(id="face-1", bbox=bbox, landmarks=None, confidence=0.95)
+    mock_ports["detector"].detect.return_value = [face]
+
     mock_ports["embedder"].extract_embedding.return_value = FaceEmbedding(
         values=tuple([0.1] * 512),
         dimension=512,
