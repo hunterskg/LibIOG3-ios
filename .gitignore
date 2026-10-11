@@ -34,3 +34,6 @@ coverage/
 *.bak
 
 docs/plans
+
+.vscode
+.pytest_cache

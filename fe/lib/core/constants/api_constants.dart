@@ -2,7 +2,7 @@ abstract final class ApiConstants {
   // ponytail: đọc từ String.fromEnvironment('API_BASE_URL') để override khi build APK/web
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
+    defaultValue: 'http://localhost:3000',
   );
 
   static const Duration timeout = Duration(seconds: 15);
@@ -30,4 +30,7 @@ abstract final class ApiConstants {
   static String staffDeviceAssignments(String id) =>
       '$deviceAssignments/staff/$id';
   static String revokeDeviceAssignment(String id) => '$deviceAssignments/$id';
+
+  // Biometric endpoints
+  static const String registerFace = '/biometric/face/register';
 }

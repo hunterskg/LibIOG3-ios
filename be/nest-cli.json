@@ -8,7 +8,12 @@
       {
         "include": "**/*.hbs",
         "watchAssets": true
+      },
+      {
+        "include": "**/*.proto",
+        "watchAssets": true
       }
-    ]
+    ],
+    "watchAssets": true
   }
 }

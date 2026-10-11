@@ -1,0 +1,11 @@
+services:
+  face-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: face-service
+    ports:
+      - "50051:50051"
+    env_file:
+      - .env.example
+    restart: unless-stopped

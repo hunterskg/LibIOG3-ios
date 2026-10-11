@@ -1,0 +1,61 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Testing & linting
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# AI / ML Model files & weights
+models/
+*.onnx
+*.zip
+*.pt
+*.pth
+*.tflite
+
+# Proto generated files (if generated locally into source)
+app/interfaces/grpc/*_pb2.py
+app/interfaces/grpc/*_pb2_grpc.py
+app/interfaces/grpc/*_pb2.pyi
+proto/**/*_pb2.py
+proto/**/*_pb2_grpc.py
+proto/**/*_pb2.pyi
