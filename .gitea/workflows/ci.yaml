@@ -9,7 +9,7 @@ on:
 jobs:
   backend:
     name: Backend (NestJS)
-    runs-on: ubuntu-latest
+    runs-on: latest
     defaults:
       run:
         working-directory: be
@@ -35,7 +35,7 @@ jobs:
 
   python-service:
     name: Python Face Service
-    runs-on: ubuntu-latest
+    runs-on: latest
     defaults:
       run:
         working-directory: python
@@ -58,7 +58,7 @@ jobs:
 
   frontend:
     name: Frontend (Flutter)
-    runs-on: ubuntu-latest
+    runs-on: latest
     defaults:
       run:
         working-directory: fe
@@ -83,7 +83,7 @@ jobs:
 
   docker-build:
     name: Docker Build Check
-    runs-on: ubuntu-latest
+    runs-on: latest
     needs: [backend, python-service, frontend]
     steps:
       - name: Checkout repository
