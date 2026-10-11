@@ -1,3 +1,4 @@
+import { VectorUtils } from '../../../../../common/utils/vector.utils';
 import { EmbeddingMismatchException } from '../exceptions/embedding-mismatch.exception';
 import { FaceEmbedding } from '../value-objects/face-embedding.vo';
 
@@ -11,31 +12,7 @@ export class SimilarityCalculator {
     emb2: FaceEmbedding,
   ): number {
     this.assertSameDimension(emb1, emb2);
-
-    const v1 = this.toFloat32Array(emb1.values);
-    const v2 = this.toFloat32Array(emb2.values);
-
-    let dot = 0;
-    let norm1Squared = 0;
-    let norm2Squared = 0;
-
-    for (let i = 0; i < v1.length; i++) {
-      const a = v1[i];
-      const b = v2[i];
-
-      dot += a * b;
-      norm1Squared += a * a;
-      norm2Squared += b * b;
-    }
-
-    if (norm1Squared === 0 || norm2Squared === 0) {
-      return 0;
-    }
-
-    const similarity =
-      dot / (Math.sqrt(norm1Squared) * Math.sqrt(norm2Squared));
-
-    return Math.max(-1, Math.min(1, similarity));
+    return VectorUtils.cosineSimilarity(emb1.values, emb2.values);
   }
 
   /**
@@ -46,18 +23,34 @@ export class SimilarityCalculator {
     emb2: FaceEmbedding,
   ): number {
     this.assertSameDimension(emb1, emb2);
+    return VectorUtils.euclideanDistance(emb1.values, emb2.values);
+  }
 
-    const v1 = this.toFloat32Array(emb1.values);
-    const v2 = this.toFloat32Array(emb2.values);
-
-    let sumSquared = 0;
-
-    for (let i = 0; i < v1.length; i++) {
-      const diff = v1[i] - v2[i];
-      sumSquared += diff * diff;
+  /**
+   * Vector trung bình của nhiều FaceEmbedding, tự động chuẩn hóa L2.
+   */
+  public static compute_average(
+    embeddings: FaceEmbedding[],
+    normalize = true,
+  ): FaceEmbedding {
+    if (!embeddings.length) {
+      throw new EmbeddingMismatchException(
+        'Danh sách embeddings không được để trống',
+      );
     }
-
-    return Math.sqrt(sumSquared);
+    const dim = embeddings[0].dimension;
+    for (const emb of embeddings) {
+      if (emb.dimension !== dim) {
+        throw new EmbeddingMismatchException(
+          `Kích thước embedding không khớp: ${emb.dimension} != ${dim}`,
+        );
+      }
+    }
+    const avgVector = VectorUtils.average(
+      embeddings.map((e) => e.values),
+      normalize,
+    );
+    return new FaceEmbedding(avgVector, dim);
   }
 
   private static assertSameDimension(
@@ -73,9 +66,5 @@ export class SimilarityCalculator {
           `${emb1.values.length} != ${emb2.values.length}`,
       );
     }
-  }
-
-  private static toFloat32Array(values: ArrayLike<number>): Float32Array {
-    return values instanceof Float32Array ? values : Float32Array.from(values);
   }
 }
