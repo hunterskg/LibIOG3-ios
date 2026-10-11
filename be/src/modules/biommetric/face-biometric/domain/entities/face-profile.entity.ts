@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import {
   Column,
   CreateDateColumn,
@@ -39,13 +40,13 @@ export class FaceProfile {
   updatedAt!: Date;
 
   static create(
-    faceProfileId: string,
+    faceProfileId: string | undefined,
     embedding: number[],
     biometricProfileId: string,
     biometricProfile?: BiometricProfile,
   ): FaceProfile {
     const faceProfile = new FaceProfile();
-    faceProfile.faceProfileId = faceProfileId;
+    faceProfile.faceProfileId = faceProfileId || randomUUID();
     faceProfile.embedding = embedding;
     faceProfile.biometricProfileId = biometricProfileId;
     if (biometricProfile) {

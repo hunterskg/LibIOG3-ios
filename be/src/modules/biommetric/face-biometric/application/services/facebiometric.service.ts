@@ -4,6 +4,7 @@ https://docs.nestjs.com/providers#services
 
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
 import { DataSource, Repository } from 'typeorm';
 import {
   CACHE_SERVICE,
@@ -68,7 +69,7 @@ export class FaceBiometricService implements RegisterFaceUseCase {
     const cachedData =
       await this.cacheService.get<FaceEmbeddingRes[]>(sessionKey);
 
-    if (cachedData && cachedData.length > 0) {
+    if (cachedData && this.isFinishedRegistering(cachedData)) {
       return RegisterFaceRes.of('RegistrationSuccess', req.requestId);
     }
 
@@ -102,9 +103,10 @@ export class FaceBiometricService implements RegisterFaceUseCase {
       true, // requireSingleFace
     );
 
-    // 4. Cache embedding (append to session list)
-
-    const cachedList = cachedData || [];
+    // 4. Cache embedding (dedup same pose and append to session list)
+    const cachedList = (cachedData || []).filter(
+      (item) => item.pose !== req.facePose,
+    );
     cachedList.push(FaceEmbeddingRes.of(embedding, req.facePose));
     await this.cacheService.set(
       sessionKey,
@@ -121,7 +123,7 @@ export class FaceBiometricService implements RegisterFaceUseCase {
       cachedList.map((item) => item.values),
     );
 
-    // 6. Save biometric profile to Database
+    // 6. Save biometric profile and face profile to Database in transaction
     await this.dataSource.transaction(async (manager) => {
       let profile = await manager.findOne(BiometricProfile, {
         where: { readerId: req.readerId },
@@ -136,14 +138,29 @@ export class FaceBiometricService implements RegisterFaceUseCase {
           BiometricStatus.ACTIVE,
         );
         profile = await manager.save(profile);
+      } else {
+        profile.status = BiometricStatus.ACTIVE;
+        profile.consentGiven = true;
+        profile.consentAt = new Date();
+        profile.consentRevokedAt = undefined;
+        profile = await manager.save(profile);
       }
 
-      const faceProfile = FaceProfile.create(
-        req.requestId,
-        meanEmbedding,
-        profile.id,
-        profile,
-      );
+      let faceProfile = await manager.findOne(FaceProfile, {
+        where: { biometricProfileId: profile.id },
+      });
+
+      if (!faceProfile) {
+        faceProfile = FaceProfile.create(
+          randomUUID(),
+          meanEmbedding,
+          profile.id,
+          profile,
+        );
+      } else {
+        faceProfile.embedding = meanEmbedding;
+        faceProfile.biometricProfile = profile;
+      }
       await manager.save(faceProfile);
 
       return profile;

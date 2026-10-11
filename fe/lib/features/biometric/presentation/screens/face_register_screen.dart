@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'package:fe/core/constants/api_constants.dart';
 import 'package:fe/core/network/api_client.dart';
+import 'package:fe/core/network/api_exception.dart';
 import 'package:fe/core/theme/app_colors.dart';
 import 'package:fe/core/theme/app_spacing.dart';
 import 'package:fe/core/theme/app_text_styles.dart';
@@ -35,6 +36,7 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
   bool _isDetecting = false;
   bool _isCapturingManual = false;
   bool _isUploading = false;
+  bool _isStreamCooldown = false;
   String? _initError;
   String? _statusMessage;
 
@@ -140,7 +142,12 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
       setState(() => _isDetecting = true);
 
       controller.startImageStream((CameraImage image) async {
-        if (_isProcessingFrame || _isCompleted || !_isDetecting) return;
+        if (_isProcessingFrame ||
+            _isCompleted ||
+            !_isDetecting ||
+            _isStreamCooldown) {
+          return;
+        }
         _isProcessingFrame = true;
 
         try {
@@ -161,7 +168,10 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
                 constraint?.matches(pitch: pitch, yaw: yaw, roll: roll) ??
                 false;
 
-            if (isMatched && !_isCurrentPoseMatched && !_isUploading) {
+            if (isMatched &&
+                !_isCurrentPoseMatched &&
+                !_isUploading &&
+                !_isStreamCooldown) {
               setState(() => _isCurrentPoseMatched = true);
               await _sendPoseFrameToBackend();
             } else if (!isMatched && _isCurrentPoseMatched && !_isUploading) {
@@ -270,21 +280,59 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
       );
 
       if (!mounted) return;
-      setState(() => _statusMessage = res.message);
-      await _onPosePassed();
-    } catch (e) {
-      if (!mounted) return;
-      final msg = 'Lỗi xác thực máy chủ: $e';
+      if (res.isSuccess) {
+        setState(() {
+          _isCompleted = true;
+          _isDetecting = false;
+          _statusMessage = 'Đăng ký khuôn mặt thành công!';
+        });
+        if (_isMobilePlatform) {
+          await _cameraController?.stopImageStream();
+        }
+        return;
+      }
+
+      if (res.isInProgress) {
+        await _onPosePassed();
+        return;
+      }
+
+      final msg = 'Phản hồi không hợp lệ từ máy chủ: ${res.message}';
       setState(() {
         _isCurrentPoseMatched = false;
         _statusMessage = msg;
       });
       _showErrorSnackBar(msg);
+      await _startCooldown();
+    } catch (e) {
+      if (!mounted) return;
+      final friendly = _formatApiError(e);
+      setState(() {
+        _isCurrentPoseMatched = false;
+        _statusMessage = friendly;
+      });
+      _showErrorSnackBar(friendly);
+      await _startCooldown();
     } finally {
       if (mounted) {
         setState(() => _isUploading = false);
       }
     }
+  }
+
+  Future<void> _startCooldown() async {
+    _isStreamCooldown = true;
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (mounted) {
+      _isStreamCooldown = false;
+    }
+  }
+
+  String _formatApiError(Object e) {
+    if (e is ApiException) {
+      return e.message;
+    }
+    return 'Lỗi xác thực máy chủ: $e';
   }
 
   Future<void> _onPosePassed() async {
@@ -299,13 +347,8 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
       });
     } else {
       setState(() {
-        _isCompleted = true;
-        _isDetecting = false;
-        _statusMessage = null;
+        _statusMessage = 'Đang xử lý khuôn mặt, vui lòng giữ nguyên tư thế...';
       });
-      if (_isMobilePlatform) {
-        await _cameraController?.stopImageStream();
-      }
     }
   }
 

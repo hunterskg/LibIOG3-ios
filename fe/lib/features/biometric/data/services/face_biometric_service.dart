@@ -10,6 +10,9 @@ class RegisterFaceRes {
 
   const RegisterFaceRes({required this.message, required this.resultId});
 
+  bool get isInProgress => message == 'RegistrationInProgress';
+  bool get isSuccess => message == 'RegistrationSuccess';
+
   factory RegisterFaceRes.fromJson(Map<String, dynamic> json) =>
       RegisterFaceRes(
         message: json['message'] as String? ?? '',

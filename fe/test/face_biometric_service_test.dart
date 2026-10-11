@@ -6,6 +6,29 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
+  test('RegisterFaceRes status getters', () {
+    const successRes = RegisterFaceRes(
+      message: 'RegistrationSuccess',
+      resultId: 'req-1',
+    );
+    expect(successRes.isSuccess, isTrue);
+    expect(successRes.isInProgress, isFalse);
+
+    const inProgressRes = RegisterFaceRes(
+      message: 'RegistrationInProgress',
+      resultId: 'req-2',
+    );
+    expect(inProgressRes.isSuccess, isFalse);
+    expect(inProgressRes.isInProgress, isTrue);
+
+    const otherRes = RegisterFaceRes(
+      message: 'UnknownStatus',
+      resultId: 'req-3',
+    );
+    expect(otherRes.isSuccess, isFalse);
+    expect(otherRes.isInProgress, isFalse);
+  });
+
   test(
     'FaceBiometricService.registerFace sends multipart request and parses response',
     () async {
@@ -31,6 +54,8 @@ void main() {
 
       expect(res.message, 'RegistrationSuccess');
       expect(res.resultId, 'res-123');
+      expect(res.isSuccess, isTrue);
+      expect(res.isInProgress, isFalse);
     },
   );
 }
