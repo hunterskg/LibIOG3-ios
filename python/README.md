@@ -123,6 +123,20 @@ Các biến môi trường quan trọng:
 
 Mọi thao tác phát triển đều chạy qua `uv`:
 
+### Khởi chạy Service (Run Server)
+```bash
+# Chạy trực tiếp qua uv
+uv run python main.py
+
+# Hoặc kích hoạt venv rồi chạy python trực tiếp
+# Windows (PowerShell): .\.venv\Scripts\Activate.ps1
+# Linux/macOS: source .venv/bin/activate
+python main.py
+
+# Hoặc chạy bằng Docker Compose
+docker compose up --build
+```
+
 ### Chạy kiểm thử (Testing)
 ```bash
 uv run --extra dev pytest
