@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: libio-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_DATABASE:-libio}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: libio-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+
+  python-face:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: libio-python-face
+    restart: unless-stopped
+    ports:
+      - "${GRPC_PORT:-50051}:50051"
+    env_file:
+      - ./python/.env.example
+
+  be:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: libio-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      PYTHON_GRPC_URL: python-face:50051
+    depends_on:
+      - postgres
+      - redis
+      - python-face
+
+volumes:
+  postgres_data:
+  redis_data:

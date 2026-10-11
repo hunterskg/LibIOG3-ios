@@ -1,16 +1,18 @@
-FROM python:3.11-slim as builder
+FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on
+    PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 
-RUN pip install uv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml .python-version ./
-RUN uv pip install --system --no-cache -r <(uv pip compile pyproject.toml) || uv pip install --system .
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+
+COPY pyproject.toml uv.lock* ./
+RUN uv pip install --system --no-cache -r pyproject.toml
 
 COPY . .
 
