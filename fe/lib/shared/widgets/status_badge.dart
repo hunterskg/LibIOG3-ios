@@ -60,6 +60,20 @@ class StatusBadge extends StatelessWidget {
     icon: Icons.block,
   );
 
+  factory StatusBadge.faceRegistered() => const StatusBadge(
+    label: 'Đã đăng ký',
+    color: AppColors.success,
+    backgroundColor: AppColors.successLight,
+    icon: Icons.check_circle_outline,
+  );
+
+  factory StatusBadge.faceNotRegistered() => const StatusBadge(
+    label: 'Chưa đăng ký',
+    color: AppColors.warning,
+    backgroundColor: AppColors.warningLight,
+    icon: Icons.info_outline,
+  );
+
   @override
   Widget build(BuildContext context) {
     final bg = backgroundColor ?? color.withValues(alpha: 0.12);

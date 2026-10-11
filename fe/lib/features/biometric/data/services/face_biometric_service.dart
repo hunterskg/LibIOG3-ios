@@ -20,6 +20,42 @@ class RegisterFaceRes {
       );
 }
 
+class FaceRegistrationStatusRes {
+  final bool isRegistered;
+  final String? status;
+  final DateTime? registeredAt;
+  final DateTime? updatedAt;
+
+  const FaceRegistrationStatusRes({
+    required this.isRegistered,
+    this.status,
+    this.registeredAt,
+    this.updatedAt,
+  });
+
+  factory FaceRegistrationStatusRes.fromJson(Map<String, dynamic> json) {
+    return FaceRegistrationStatusRes(
+      isRegistered: json['isRegistered'] as bool? ?? false,
+      status: json['status'] as String?,
+      registeredAt: json['registeredAt'] != null
+          ? DateTime.tryParse(json['registeredAt'].toString())
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'].toString())
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'isRegistered': isRegistered,
+      if (status != null) 'status': status,
+      if (registeredAt != null) 'registeredAt': registeredAt?.toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+}
+
 class FaceBiometricService {
   final ApiClient _apiClient;
 
@@ -54,5 +90,30 @@ class FaceBiometricService {
       return RegisterFaceRes.fromJson(res);
     }
     throw const ApiException('Phản hồi đăng ký khuôn mặt không hợp lệ.');
+  }
+
+  Future<FaceRegistrationStatusRes> getRegistrationStatus({
+    String? readerId,
+  }) async {
+    try {
+      final res = await _apiClient.get(
+        ApiConstants.faceStatusOf(readerId: readerId),
+        requiresAuth: true,
+      );
+
+      if (res is Map<String, dynamic>) {
+        return FaceRegistrationStatusRes.fromJson(res);
+      }
+      throw const ApiException(
+        'Phản hồi kiểm tra trạng thái đăng ký khuôn mặt không hợp lệ.',
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      return FaceRegistrationStatusRes(
+        isRegistered: false,
+        registeredAt: DateTime.now().toUtc(),
+      );
+    }
   }
 }

@@ -10,6 +10,7 @@ import 'package:fe/features/auth/domain/models/auth_res.dart';
 import 'package:fe/features/auth/domain/models/register_pending_res.dart';
 import 'package:fe/features/auth/domain/models/role.dart';
 import 'package:fe/features/auth/domain/models/user_res.dart';
+import 'package:fe/features/biometric/data/services/face_biometric_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -120,6 +121,39 @@ void main() {
       expect(pageRes.total, 0);
       expect(pageRes.page, 1);
       expect(pageRes.size, 0);
+    });
+  });
+
+  group('FaceRegistrationStatusRes Model', () {
+    test('fromJson and toJson with all fields', () {
+      final json = {
+        'isRegistered': true,
+        'status': 'ACTIVE',
+        'registeredAt': '2026-10-10T10:00:00.000Z',
+        'updatedAt': '2026-10-10T12:00:00.000Z',
+      };
+
+      final res = FaceRegistrationStatusRes.fromJson(json);
+
+      expect(res.isRegistered, isTrue);
+      expect(res.status, 'ACTIVE');
+      expect(res.registeredAt, DateTime.parse('2026-10-10T10:00:00.000Z'));
+      expect(res.updatedAt, DateTime.parse('2026-10-10T12:00:00.000Z'));
+
+      final encoded = res.toJson();
+      expect(encoded['isRegistered'], isTrue);
+      expect(encoded['status'], 'ACTIVE');
+      expect(encoded['registeredAt'], contains('2026-10-10T10:00:00'));
+      expect(encoded['updatedAt'], contains('2026-10-10T12:00:00'));
+    });
+
+    test('fromJson with fallback defaults', () {
+      final res = FaceRegistrationStatusRes.fromJson({});
+
+      expect(res.isRegistered, isFalse);
+      expect(res.status, isNull);
+      expect(res.registeredAt, isNull);
+      expect(res.updatedAt, isNull);
     });
   });
 }

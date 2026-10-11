@@ -58,4 +58,61 @@ void main() {
       expect(res.isInProgress, isFalse);
     },
   );
+
+  group('FaceBiometricService.getRegistrationStatus', () {
+    test('returns status successfully without readerId', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/biometric/face/status');
+        expect(request.url.queryParameters, isEmpty);
+        return http.Response(
+          jsonEncode({
+            'isRegistered': true,
+            'status': 'ACTIVE',
+            'registeredAt': '2026-10-10T10:00:00.000Z',
+            'updatedAt': '2026-10-10T12:00:00.000Z',
+          }),
+          200,
+        );
+      });
+
+      final apiClient = ApiClient(
+        client: mockClient,
+        getAccessToken: () async => 'test-token',
+      );
+      final service = FaceBiometricService(apiClient);
+
+      final res = await service.getRegistrationStatus();
+
+      expect(res.isRegistered, isTrue);
+      expect(res.status, 'ACTIVE');
+      expect(res.registeredAt, isNotNull);
+      expect(res.updatedAt, isNotNull);
+    });
+
+    test('returns status with readerId query param', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/biometric/face/status');
+        expect(request.url.queryParameters['readerId'], 'target-uuid');
+        return http.Response(
+          jsonEncode({
+            'isRegistered': false,
+          }),
+          200,
+        );
+      });
+
+      final apiClient = ApiClient(
+        client: mockClient,
+        getAccessToken: () async => 'test-token',
+      );
+      final service = FaceBiometricService(apiClient);
+
+      final res = await service.getRegistrationStatus(readerId: 'target-uuid');
+
+      expect(res.isRegistered, isFalse);
+      expect(res.status, isNull);
+    });
+  });
 }

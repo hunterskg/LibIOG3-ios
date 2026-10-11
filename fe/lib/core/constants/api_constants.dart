@@ -33,4 +33,10 @@ abstract final class ApiConstants {
 
   // Biometric endpoints
   static const String registerFace = '/biometric/face/register';
+  static const String faceStatus = '/biometric/face/status';
+
+  static String faceStatusOf({String? readerId}) {
+    if (readerId == null || readerId.isEmpty) return faceStatus;
+    return '$faceStatus?readerId=$readerId';
+  }
 }

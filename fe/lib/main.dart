@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/data/services/auth_service.dart';
 import 'features/auth/domain/models/role.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/biometric/data/services/face_biometric_service.dart';
 import 'features/user/data/services/user_api_service.dart';
 import 'features/user/presentation/providers/user_provider.dart';
 import 'features/device/data/services/device_api_service.dart';
@@ -34,6 +35,7 @@ class _MyAppState extends State<MyApp> {
   late final ApiClient _apiClient;
   late final AuthService _authService;
   late final AuthProvider _authProvider;
+  late final FaceBiometricService _faceBiometricService;
   late final UserApiService _userApiService;
   late final UserProvider _userProvider;
   late final DeviceProvider _deviceProvider;
@@ -50,8 +52,12 @@ class _MyAppState extends State<MyApp> {
       authService: _authService,
       tokenStorage: widget.tokenStorage,
     );
+    _faceBiometricService = FaceBiometricService(_apiClient);
     _userApiService = UserApiService(_apiClient);
-    _userProvider = UserProvider(apiService: _userApiService);
+    _userProvider = UserProvider(
+      apiService: _userApiService,
+      faceBiometricService: _faceBiometricService,
+    );
     _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
     _authProvider.checkAuth();
   }

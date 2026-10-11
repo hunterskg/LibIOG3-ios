@@ -11,6 +11,7 @@ import 'package:fe/features/user/presentation/providers/user_provider.dart';
 import 'package:fe/shared/widgets/app_button.dart';
 import 'package:fe/shared/widgets/app_card.dart';
 import 'package:fe/shared/widgets/app_text_field.dart';
+import 'package:fe/shared/widgets/status_badge.dart';
 
 class ReaderDetailScreen extends StatefulWidget {
   final String readerId;
@@ -33,8 +34,28 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      context.read<UserProvider>().loadReaderDetail(widget.readerId);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.read<UserProvider>().loadReaderDetail(widget.readerId);
+        context
+            .read<UserProvider>()
+            .loadFaceRegistrationStatus(readerId: widget.readerId);
+      });
     }
+  }
+
+  Widget _buildFaceStatus(UserProvider provider) {
+    if (provider.isLoadingFaceStatus) {
+      return const SizedBox(
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+    final isRegistered = provider.faceStatus?.isRegistered ?? false;
+    return isRegistered
+        ? StatusBadge.faceRegistered()
+        : StatusBadge.faceNotRegistered();
   }
 
   @override
@@ -213,6 +234,22 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
                               ),
                               const Divider(height: 32),
                               _infoRow('Mã bạn đọc:', reader.id, isMono: true),
+                              const SizedBox(height: AppSpacing.s2),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 130,
+                                    child: Text(
+                                      'Khuôn mặt:',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        color: AppColors.charcoal500,
+                                      ),
+                                    ),
+                                  ),
+                                  _buildFaceStatus(provider),
+                                ],
+                              ),
                               const SizedBox(height: AppSpacing.s2),
                               _infoRow('Họ và tên:', reader.fullName),
                               const SizedBox(height: AppSpacing.s2),
