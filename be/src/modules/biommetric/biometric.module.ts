@@ -9,5 +9,6 @@ import { FaceBiometricModule } from './face-biometric/facebiometric.module';
   imports: [FaceBiometricModule],
   controllers: [],
   providers: [FaceBiometricModule],
+  exports: [FaceBiometricModule],
 })
 export class BiometricModule {}

@@ -13,6 +13,8 @@ import {
   FaceGrpcAdapter,
 } from './infra/grpc/adapters/face-grpc.adapter';
 import { FaceTestController } from './infra/controllers/face-test.controller';
+import { FaceDomainExceptionInterceptor } from './infra/interceptors/face-domain-exception.interceptor';
+import { FaceBiometricService } from './application/services/facebiometric.service';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { FaceTestController } from './infra/controllers/face-test.controller';
     DetectFaceService,
     ExtractEmbeddingService,
     VerifyFaceService,
+    FaceDomainExceptionInterceptor,
+    FaceBiometricService,
   ],
   exports: [
     CheckLivenessService,
@@ -53,6 +57,8 @@ import { FaceTestController } from './infra/controllers/face-test.controller';
     ExtractEmbeddingService,
     VerifyFaceService,
     FaceGrpcAdapter,
+    FaceDomainExceptionInterceptor,
+    FaceBiometricService,
   ],
 })
 export class FaceBiometricModule {}
