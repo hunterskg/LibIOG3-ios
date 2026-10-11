@@ -23,4 +23,8 @@ abstract final class ApiConstants {
   static String readerById(String id) => '$readers/$id';
   static String staffById(String id) => '$staffs/$id';
   static String staffRole(String id) => '$staffs/$id/role';
+
+  //Checkin - Checkout
+  static const String qrTokens = '/qr-tokens';
+  static const String qrTokensVerify = '/qr-tokens/verify';
 }

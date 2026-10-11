@@ -121,7 +121,13 @@ class _StaffHomeContent extends StatelessWidget {
                           title: 'Check-in',
                           desc: 'Quét mã nhận trả sách tại quầy',
                           color: AppColors.success,
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.staffScanner,
+                              arguments: {'action': 'CHECK_IN'},
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(width: AppSpacing.s3),
@@ -131,7 +137,14 @@ class _StaffHomeContent extends StatelessWidget {
                           title: 'Check-out (Mượn sách)',
                           desc: 'Quét thẻ bạn đọc & cấp mượn sách',
                           color: AppColors.info,
-                          onTap: () {},
+
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.staffScanner,
+                              arguments: {'action': 'CHECK_OUT'},
+                            );
+                          },
                         ),
                       ),
                     ],

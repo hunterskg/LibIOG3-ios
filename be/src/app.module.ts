@@ -6,6 +6,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { QrModule } from './modules/qr/qr.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AppService } from './app.service';
     AuthModule,
     InfrastructureModule,
     UserModule,
+    QrModule,
   ],
   controllers: [AppController],
   providers: [AppService],

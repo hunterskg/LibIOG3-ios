@@ -64,19 +64,16 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthProvider>.value(
-          value: _authProvider,
-        ),
-        ChangeNotifierProvider<UserProvider>.value(
-          value: _userProvider,
-        ),
+        Provider<ApiClient>.value(value: _apiClient),
+        ChangeNotifierProvider<AuthProvider>.value(value: _authProvider),
+        ChangeNotifierProvider<UserProvider>.value(value: _userProvider),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           final initialRoute = auth.isAuthenticated
               ? (auth.currentUser?.role == UserRole.reader
-                  ? AppRoutes.readerHome
-                  : AppRoutes.staffHome)
+                    ? AppRoutes.readerHome
+                    : AppRoutes.staffHome)
               : AppRoutes.roleSelect;
 
           return MaterialApp(
