@@ -25,6 +25,7 @@ import 'package:fe/features/user/presentation/screens/staff_detail_screen.dart';
 import 'package:fe/features/user/presentation/screens/staff_list_screen.dart';
 import 'package:fe/features/user/presentation/screens/staff_profile_screen.dart';
 import 'package:fe/features/device/presentation/screens/device_activation_screen.dart';
+import 'package:fe/features/biometric/presentation/screens/face_register_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -41,6 +42,7 @@ Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.staffResetPassword: (context) => const ResetPwdStaffScreen(),
   AppRoutes.readerHome: (context) => const ReaderHomeScreen(),
   AppRoutes.readerProfile: (context) => const ReaderProfileScreen(),
+  AppRoutes.faceRegister: (context) => const FaceRegisterScreen(),
   AppRoutes.staffHome: (context) => const StaffHomeScreen(),
   AppRoutes.adminHome: (context) => const AdminHomeScreen(),
   AppRoutes.deviceHome: (context) => const DeviceHomeScreen(),
