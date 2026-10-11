@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor Reader as Reader
+    participant Flutter as Flutter App
+    participant BiometricModule as Biometric Module
+    participant PythonService as Python Face Service
+    participant CacheModule as Cache Module
+    participant Database as Database
+
+    loop For each required pose (Frontal, Left, Right...)
+        Reader->>Flutter: Perform pose in front of camera
+        Flutter->>+BiometricModule: POST /biometric/face/process-pose (image, expectedPose)
+        BiometricModule->>+PythonService: gRPC: CheckPose & ExtractEmbedding(image, expectedPose)
+
+        alt Pose invalid / Spoof
+            PythonService-->>BiometricModule: Error (InvalidPose / Spoof)
+            BiometricModule-->>Flutter: 400 Bad Request
+            Flutter-->>Reader: Prompt adjust pose & retry
+        else Pose valid
+            PythonService-->>-BiometricModule: FaceEmbedding
+            BiometricModule->>+CacheModule: rpush(sessionKey, embedding)
+            CacheModule-->>-BiometricModule: OK
+            BiometricModule-->>-Flutter: 200 OK (PoseAccepted)
+            Flutter-->>Reader: Guide next pose
+        end
+    end
+
+    Reader->>Flutter: Finish all poses
+    Flutter->>+BiometricModule: POST /biometric/face/complete-registration (sessionId)
+    BiometricModule->>+CacheModule: lrange(sessionKey)
+    CacheModule-->>-BiometricModule: listEmbeddings
+    Note over BiometricModule: Calculate average vector (mean embedding)
+    BiometricModule->>+Database: saveBiometricProfile(userId, meanEmbedding)
+    Database-->>-BiometricModule: OK
+    BiometricModule->>+CacheModule: del(sessionKey)
+    CacheModule-->>-BiometricModule: OK
+    BiometricModule-->>-Flutter: 201 Created (RegistrationSuccess)
+    Flutter-->>Reader: Registration completed
+
