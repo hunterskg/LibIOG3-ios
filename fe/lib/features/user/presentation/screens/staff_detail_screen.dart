@@ -10,6 +10,8 @@ import 'package:fe/features/user/presentation/providers/user_provider.dart';
 import 'package:fe/shared/widgets/app_button.dart';
 import 'package:fe/shared/widgets/app_card.dart';
 import 'package:fe/shared/widgets/app_text_field.dart';
+import 'package:fe/features/device/domain/models/device_assignment.dart';
+import 'package:fe/features/device/presentation/providers/device_provider.dart';
 
 class StaffDetailScreen extends StatefulWidget {
   final String staffId;
@@ -31,6 +33,7 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
     if (!_initialized) {
       _initialized = true;
       context.read<UserProvider>().loadStaffDetail(widget.staffId);
+      context.read<DeviceProvider>().loadForStaff(widget.staffId);
     }
   }
 
@@ -81,11 +84,14 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(ok
-                            ? 'Cập nhật tên thành công'
-                            : (p.errorMessage ?? 'Cập nhật thất bại')),
-                        backgroundColor:
-                            ok ? AppColors.success : AppColors.danger,
+                        content: Text(
+                          ok
+                              ? 'Cập nhật tên thành công'
+                              : (p.errorMessage ?? 'Cập nhật thất bại'),
+                        ),
+                        backgroundColor: ok
+                            ? AppColors.success
+                            : AppColors.danger,
                       ),
                     );
                   }
@@ -143,8 +149,9 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Lưu ý: Không thể tự phân quyền chính mình. Hệ thống luôn giữ tối thiểu 1 admin hoạt động.',
-                    style: AppTextStyles.bodySm
-                        .copyWith(color: AppColors.charcoal500),
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: AppColors.charcoal500,
+                    ),
                   ),
                 ],
               );
@@ -165,11 +172,14 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(ok
-                            ? 'Phân quyền thành công'
-                            : (p.errorMessage ?? 'Phân quyền thất bại')),
-                        backgroundColor:
-                            ok ? AppColors.success : AppColors.danger,
+                        content: Text(
+                          ok
+                              ? 'Phân quyền thành công'
+                              : (p.errorMessage ?? 'Phân quyền thất bại'),
+                        ),
+                        backgroundColor: ok
+                            ? AppColors.success
+                            : AppColors.danger,
                       ),
                     );
                   }
@@ -182,12 +192,120 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
     );
   }
 
+  Future<void> _assignDevice() async {
+    final assignment = await context.read<DeviceProvider>().assign(
+      widget.staffId,
+    );
+    if (!mounted) return;
+    if (assignment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.read<DeviceProvider>().errorMessage ??
+                'Không thể cấp thiết bị',
+          ),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+    await context.read<DeviceProvider>().loadForStaff(widget.staffId);
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Mã cấp thiết bị'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              assignment.activationCode ?? '---',
+              style: AppTextStyles.h1.copyWith(letterSpacing: 8),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Gửi mã 6 số này cho nhân viên. Mã có hiệu lực trong 24 giờ.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _assignmentCard(BuildContext context, DeviceAssignment assignment) {
+    final active = assignment.status == DeviceAssignmentStatus.active;
+    final device = assignment.deviceName ?? 'Chưa kích hoạt';
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                active
+                    ? Icons.phone_android_rounded
+                    : Icons.pending_actions_rounded,
+                color: active ? AppColors.success : AppColors.warning,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  active ? device : 'Đang chờ nhân viên kích hoạt',
+                  style: AppTextStyles.h3,
+                ),
+              ),
+              Text(
+                assignment.status.name.toUpperCase(),
+                style: AppTextStyles.bodySm.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (assignment.activationCode != null)
+            _infoRow('Mã kích hoạt:', assignment.activationCode!, isMono: true),
+          if (assignment.platform != null) ...[
+            const SizedBox(height: 6),
+            _infoRow('Nền tảng:', assignment.platform!),
+          ],
+          if (assignment.fingerprint != null) ...[
+            const SizedBox(height: 6),
+            _infoRow('Device ID:', assignment.fingerprint!, isMono: true),
+          ],
+          const SizedBox(height: 12),
+          if (assignment.status != DeviceAssignmentStatus.revoked)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () async {
+                  await context.read<DeviceProvider>().revoke(assignment.id);
+                  await context.read<DeviceProvider>().loadForStaff(
+                    widget.staffId,
+                  );
+                },
+                icon: const Icon(Icons.block_outlined),
+                label: const Text('Thu hồi'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<UserProvider>();
     final staff = provider.selectedStaff;
-    final currentUserId =
-        context.watch<AuthProvider>().currentUser?.userId;
+    final currentUserId = context.watch<AuthProvider>().currentUser?.userId;
+    final deviceProvider = context.watch<DeviceProvider>();
 
     return Scaffold(
       backgroundColor: AppColors.neutral50,
@@ -201,133 +319,162 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
         child: provider.isLoading && staff == null
             ? const Center(child: CircularProgressIndicator())
             : staff == null
-                ? Center(
-                    child: Text(
-                      provider.errorMessage ?? 'Không tìm thấy nhân viên.',
-                      style: AppTextStyles.body
-                          .copyWith(color: AppColors.charcoal500),
-                    ),
-                  )
-                : SingleChildScrollView(
-                    padding: AppSpacing.p5,
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 600),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AppCard(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+            ? Center(
+                child: Text(
+                  provider.errorMessage ?? 'Không tìm thấy nhân viên.',
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.charcoal500,
+                  ),
+                ),
+              )
+            : SingleChildScrollView(
+                padding: AppSpacing.p5,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 28,
-                                        backgroundColor: AppColors.successLight,
-                                        child: const Icon(
-                                          Icons.badge_outlined,
-                                          size: 32,
-                                          color: AppColors.success,
+                                  CircleAvatar(
+                                    radius: 28,
+                                    backgroundColor: AppColors.successLight,
+                                    child: const Icon(
+                                      Icons.badge_outlined,
+                                      size: 32,
+                                      color: AppColors.success,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.s3),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          staff.name,
+                                          style: AppTextStyles.h2,
                                         ),
-                                      ),
-                                      const SizedBox(width: AppSpacing.s3),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              staff.name,
-                                              style: AppTextStyles.h2,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              staff.user?.email ?? '---',
-                                              style: AppTextStyles.bodySm
-                                                  .copyWith(
-                                                color: AppColors.charcoal500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.neutral100,
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          staff.user?.role.value
-                                                  .toUpperCase() ??
-                                              'STAFF',
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          staff.user?.email ?? '---',
                                           style: AppTextStyles.bodySm.copyWith(
-                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.charcoal500,
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                  const Divider(height: 32),
-                                  _infoRow('Mã nhân viên:', staff.id,
-                                      isMono: true),
-                                  const SizedBox(height: AppSpacing.s2),
-                                  _infoRow('Tên nhân viên:', staff.name),
-                                  const SizedBox(height: AppSpacing.s2),
-                                  _infoRow(
-                                    'Email:',
-                                    staff.user?.email ?? '---',
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.neutral100,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      staff.user?.role.value.toUpperCase() ??
+                                          'STAFF',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
+                              const Divider(height: 32),
+                              _infoRow('Mã nhân viên:', staff.id, isMono: true),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow('Tên nhân viên:', staff.name),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow('Email:', staff.user?.email ?? '---'),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow(
+                                'Trạng thái:',
+                                staff.user?.status?.toUpperCase() ?? 'ACTIVE',
+                              ),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow(
+                                'Tạo lúc:',
+                                _formatDate(staff.user?.createdAt),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.s4),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Thiết bị được cấp',
+                                style: AppTextStyles.h3,
+                              ),
                             ),
-                            const SizedBox(height: AppSpacing.s4),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: AppButton(
-                                    text: 'Sửa tên',
-                                    icon: Icons.edit_outlined,
-                                    variant: AppButtonVariant.secondary,
-                                    onPressed: () =>
-                                        _showEditNameDialog(context),
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.s3),
-                                Expanded(
-                                  child: AppButton(
-                                    text: 'Phân quyền',
-                                    icon:
-                                        Icons.admin_panel_settings_outlined,
-                                    onPressed: currentUserId == staff.id
-                                        ? () {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  'Không thể tự phân quyền chính mình',
-                                                ),
-                                                backgroundColor:
-                                                    AppColors.danger,
-                                              ),
-                                            );
-                                          }
-                                        : () =>
-                                            _showAssignRoleDialog(context),
-                                  ),
-                                ),
-                              ],
+                            TextButton.icon(
+                              onPressed: deviceProvider.isLoading
+                                  ? null
+                                  : _assignDevice,
+                              icon: const Icon(Icons.add_link_rounded),
+                              label: const Text('Cấp mã'),
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: AppSpacing.s2),
+                        if (deviceProvider.assignments.isEmpty)
+                          const Text('Chưa có thiết bị được cấp.')
+                        else
+                          ...deviceProvider.assignments.map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _assignmentCard(context, item),
+                            ),
+                          ),
+                        const SizedBox(height: AppSpacing.s2),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppButton(
+                                text: 'Sửa tên',
+                                icon: Icons.edit_outlined,
+                                variant: AppButtonVariant.secondary,
+                                onPressed: () => _showEditNameDialog(context),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.s3),
+                            Expanded(
+                              child: AppButton(
+                                text: 'Phân quyền',
+                                icon: Icons.admin_panel_settings_outlined,
+                                onPressed: currentUserId == staff.id
+                                    ? () {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Không thể tự phân quyền chính mình',
+                                            ),
+                                            backgroundColor: AppColors.danger,
+                                          ),
+                                        );
+                                      }
+                                    : () => _showAssignRoleDialog(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
+                ),
+              ),
       ),
     );
   }
@@ -354,5 +501,11 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
         ),
       ],
     );
+  }
+
+  String _formatDate(DateTime? value) {
+    if (value == null) return '---';
+    final local = value.toLocal();
+    return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}/${local.year} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
   }
 }

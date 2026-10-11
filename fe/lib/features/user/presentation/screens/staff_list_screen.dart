@@ -75,13 +75,16 @@ class _StaffListScreenState extends State<StaffListScreen> {
                   context.read<UserProvider>().loadStaffs(page: 1, search: v);
                 },
                 suffix: IconButton(
-                  icon: const Icon(Icons.search_rounded,
-                      color: AppColors.charcoal500),
+                  icon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.charcoal500,
+                  ),
                   tooltip: 'Tìm kiếm',
                   onPressed: () {
-                    context
-                        .read<UserProvider>()
-                        .loadStaffs(page: 1, search: _searchCtrl.text);
+                    context.read<UserProvider>().loadStaffs(
+                      page: 1,
+                      search: _searchCtrl.text,
+                    );
                   },
                 ),
               ),
@@ -102,69 +105,71 @@ class _StaffListScreenState extends State<StaffListScreen> {
               child: provider.isLoading && page == null
                   ? const Center(child: CircularProgressIndicator())
                   : items.isEmpty
-                      ? Center(
-                          child: Text(
-                            provider.errorMessage ?? 'Chưa có nhân viên nào.',
-                            style: AppTextStyles.body
-                                .copyWith(color: AppColors.charcoal500),
-                          ),
-                        )
-                      : ListView.separated(
+                  ? Center(
+                      child: Text(
+                        provider.errorMessage ?? 'Chưa có nhân viên nào.',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.charcoal500,
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: AppSpacing.p4,
+                      itemCount: items.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 8),
+                      itemBuilder: (context, i) {
+                        final s = items[i];
+                        final roleLabel =
+                            s.user?.role.value.toUpperCase() ?? 'STAFF';
+                        return AppCard(
                           padding: AppSpacing.p4,
-                          itemCount: items.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, i) {
-                            final s = items[i];
-                            final roleLabel =
-                                s.user?.role.value.toUpperCase() ?? 'STAFF';
-                            return AppCard(
-                              padding: AppSpacing.p4,
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.staffDetail,
-                                  arguments: {'id': s.id},
-                                );
-                              },
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: AppColors.successLight,
-                                    child: const Icon(
-                                      Icons.badge_outlined,
-                                      color: AppColors.success,
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppSpacing.s3),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(s.name,
-                                            style: AppTextStyles.body.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            )),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          '${s.user?.email ?? '---'} • $roleLabel',
-                                          style: AppTextStyles.bodySm.copyWith(
-                                            color: AppColors.charcoal500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right_rounded,
-                                    color: AppColors.charcoal400,
-                                  ),
-                                ],
-                              ),
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.staffDetail,
+                              arguments: {'id': s.id},
                             );
                           },
-                        ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: AppColors.successLight,
+                                child: const Icon(
+                                  Icons.badge_outlined,
+                                  color: AppColors.success,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.s3),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      s.name,
+                                      style: AppTextStyles.body.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${s.user?.email ?? '---'} • $roleLabel',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        color: AppColors.charcoal500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.charcoal400,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
             ),
             if (page != null && page.total > page.data.length)
               Padding(
@@ -173,11 +178,11 @@ class _StaffListScreenState extends State<StaffListScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
-                      onPressed: provider.staffCurrentPage > 1 &&
-                              !provider.isLoading
+                      onPressed:
+                          provider.staffCurrentPage > 1 && !provider.isLoading
                           ? () => context.read<UserProvider>().loadStaffs(
-                                page: provider.staffCurrentPage - 1,
-                              )
+                              page: provider.staffCurrentPage - 1,
+                            )
                           : null,
                       child: const Text('Trước'),
                     ),
@@ -188,8 +193,8 @@ class _StaffListScreenState extends State<StaffListScreen> {
                     TextButton(
                       onPressed: !provider.isLoading
                           ? () => context.read<UserProvider>().loadStaffs(
-                                page: provider.staffCurrentPage + 1,
-                              )
+                              page: provider.staffCurrentPage + 1,
+                            )
                           : null,
                       child: const Text('Sau'),
                     ),
@@ -202,19 +207,24 @@ class _StaffListScreenState extends State<StaffListScreen> {
     );
   }
 
-  Widget _roleChip(BuildContext context,
-      {required String label, required String value}) {
+  Widget _roleChip(
+    BuildContext context, {
+    required String label,
+    required String value,
+  }) {
     final provider = context.watch<UserProvider>();
     final active =
         (provider.staffRoleFilter ?? '') == value ||
-            (value.isEmpty && provider.staffRoleFilter == null);
+        (value.isEmpty && provider.staffRoleFilter == null);
     return FilterChip(
       label: Text(label),
       selected: active,
       onSelected: (_) {
-        context
-            .read<UserProvider>()
-            .loadStaffs(page: 1, role: value, search: _searchCtrl.text);
+        context.read<UserProvider>().loadStaffs(
+          page: 1,
+          role: value,
+          search: _searchCtrl.text,
+        );
       },
       selectedColor: AppColors.charcoal900,
       labelStyle: TextStyle(

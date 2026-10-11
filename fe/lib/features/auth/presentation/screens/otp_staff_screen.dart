@@ -98,7 +98,11 @@ class _OtpStaffScreenState extends State<OtpStaffScreen> {
                 color: AppColors.successLight,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.mark_email_read_outlined, color: AppColors.success, size: 28),
+              child: const Icon(
+                Icons.mark_email_read_outlined,
+                color: AppColors.success,
+                size: 28,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.s4),
@@ -119,18 +123,22 @@ class _OtpStaffScreenState extends State<OtpStaffScreen> {
             child: _countdown > 0
                 ? Text(
                     'Gửi lại mã sau ${_countdown}s',
-                    style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: AppColors.charcoal500,
+                    ),
                   )
                 : TextButton(
-                    onPressed: auth.isLoading ? null : () {
-                      _startTimer();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Đã gửi lại mã OTP.'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    onPressed: auth.isLoading
+                        ? null
+                        : () {
+                            _startTimer();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Đã gửi lại mã OTP.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
                     child: const Text('Gửi lại mã OTP'),
                   ),
           ),

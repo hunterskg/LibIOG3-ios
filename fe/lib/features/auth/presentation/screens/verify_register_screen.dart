@@ -69,7 +69,11 @@ class _VerifyRegisterScreenState extends State<VerifyRegisterScreen> {
 
     if (!mounted) return;
     if (ok) {
-      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.regSuccess, (r) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.regSuccess,
+        (r) => false,
+      );
     } else if (auth.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -135,7 +139,11 @@ class _VerifyRegisterScreenState extends State<VerifyRegisterScreen> {
                 color: AppColors.infoLight,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.mark_email_read_outlined, color: AppColors.info, size: 28),
+              child: const Icon(
+                Icons.mark_email_read_outlined,
+                color: AppColors.info,
+                size: 28,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.s4),
@@ -156,7 +164,9 @@ class _VerifyRegisterScreenState extends State<VerifyRegisterScreen> {
             child: _countdown > 0
                 ? Text(
                     'Gửi lại mã sau ${_countdown}s',
-                    style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: AppColors.charcoal500,
+                    ),
                   )
                 : TextButton(
                     onPressed: auth.isLoading ? null : _onResendCode,

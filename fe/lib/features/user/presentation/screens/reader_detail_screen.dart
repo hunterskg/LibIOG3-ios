@@ -114,17 +114,19 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
                         ? _dobCtrl.text.trim()
                         : null,
                   );
-                  final ok =
-                      await p.adminUpdateReader(widget.readerId, req);
+                  final ok = await p.adminUpdateReader(widget.readerId, req);
                   if (dialogCtx.mounted) Navigator.pop(dialogCtx);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(ok
-                            ? 'Cập nhật độc giả thành công'
-                            : (p.errorMessage ?? 'Cập nhật thất bại')),
-                        backgroundColor:
-                            ok ? AppColors.success : AppColors.danger,
+                        content: Text(
+                          ok
+                              ? 'Cập nhật độc giả thành công'
+                              : (p.errorMessage ?? 'Cập nhật thất bại'),
+                        ),
+                        backgroundColor: ok
+                            ? AppColors.success
+                            : AppColors.danger,
                       ),
                     );
                   }
@@ -156,103 +158,104 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
         child: provider.isLoading && reader == null
             ? const Center(child: CircularProgressIndicator())
             : reader == null
-                ? Center(
-                    child: Text(
-                      provider.errorMessage ?? 'Không tìm thấy độc giả.',
-                      style: AppTextStyles.body
-                          .copyWith(color: AppColors.charcoal500),
-                    ),
-                  )
-                : SingleChildScrollView(
-                    padding: AppSpacing.p5,
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 600),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AppCard(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+            ? Center(
+                child: Text(
+                  provider.errorMessage ?? 'Không tìm thấy độc giả.',
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.charcoal500,
+                  ),
+                ),
+              )
+            : SingleChildScrollView(
+                padding: AppSpacing.p5,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 28,
-                                        backgroundColor: AppColors.accent100,
-                                        child: const Icon(
-                                          Icons.person_outline_rounded,
-                                          size: 32,
-                                          color: AppColors.accent600,
-                                        ),
-                                      ),
-                                      const SizedBox(width: AppSpacing.s3),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              reader.fullName,
-                                              style: AppTextStyles.h2,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              reader.user?.email ?? '---',
-                                              style:
-                                                  AppTextStyles.bodySm.copyWith(
-                                                color: AppColors.charcoal500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                  CircleAvatar(
+                                    radius: 28,
+                                    backgroundColor: AppColors.accent100,
+                                    child: const Icon(
+                                      Icons.person_outline_rounded,
+                                      size: 32,
+                                      color: AppColors.accent600,
+                                    ),
                                   ),
-                                  const Divider(height: 32),
-                                  _infoRow('Mã bạn đọc:', reader.id,
-                                      isMono: true),
-                                  const SizedBox(height: AppSpacing.s2),
-                                  _infoRow('Họ và tên:', reader.fullName),
-                                  const SizedBox(height: AppSpacing.s2),
-                                  _infoRow('Số điện thoại:',
-                                      reader.phone ?? 'Chưa cập nhật'),
-                                  const SizedBox(height: AppSpacing.s2),
-                                  _infoRow(
-                                    'Ngày sinh:',
-                                    reader.dateOfBirth != null
-                                        ? reader.dateOfBirth!
-                                            .toIso8601String()
-                                            .split('T')
-                                            .first
-                                        : 'Chưa cập nhật',
-                                  ),
-                                  const SizedBox(height: AppSpacing.s2),
-                                  _infoRow(
-                                    'Ngày đăng ký:',
-                                    reader.registeredAt != null
-                                        ? reader.registeredAt!
-                                            .toIso8601String()
-                                            .split('T')
-                                            .first
-                                        : '---',
+                                  const SizedBox(width: AppSpacing.s3),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          reader.fullName,
+                                          style: AppTextStyles.h2,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          reader.user?.email ?? '---',
+                                          style: AppTextStyles.bodySm.copyWith(
+                                            color: AppColors.charcoal500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                            if (isAdmin) ...[
-                              const SizedBox(height: AppSpacing.s4),
-                              AppButton(
-                                text: 'Chỉnh sửa thông tin',
-                                icon: Icons.edit_outlined,
-                                onPressed: () => _showEditDialog(context),
+                              const Divider(height: 32),
+                              _infoRow('Mã bạn đọc:', reader.id, isMono: true),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow('Họ và tên:', reader.fullName),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow(
+                                'Số điện thoại:',
+                                reader.phone ?? 'Chưa cập nhật',
+                              ),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow(
+                                'Ngày sinh:',
+                                reader.dateOfBirth != null
+                                    ? reader.dateOfBirth!
+                                          .toIso8601String()
+                                          .split('T')
+                                          .first
+                                    : 'Chưa cập nhật',
+                              ),
+                              const SizedBox(height: AppSpacing.s2),
+                              _infoRow(
+                                'Ngày đăng ký:',
+                                reader.registeredAt != null
+                                    ? reader.registeredAt!
+                                          .toIso8601String()
+                                          .split('T')
+                                          .first
+                                    : '---',
                               ),
                             ],
-                          ],
+                          ),
                         ),
-                      ),
+                        if (isAdmin) ...[
+                          const SizedBox(height: AppSpacing.s4),
+                          AppButton(
+                            text: 'Chỉnh sửa thông tin',
+                            icon: Icons.edit_outlined,
+                            onPressed: () => _showEditDialog(context),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
+                ),
+              ),
       ),
     );
   }

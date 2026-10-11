@@ -10,8 +10,8 @@ class StaffCreateReq {
   });
 
   Map<String, dynamic> toJson() => {
-        'email': email,
-        'password': password,
-        'name': name,
-      };
+    'email': email,
+    'password': password,
+    'name': name,
+  };
 }
