@@ -41,6 +41,8 @@ flowchart TD
     %% ==========================================
     ReaderHome -->|View & edit profile| ReaderProfile[Reader Profile Screen]
     ReaderProfile -->|Save success| ReaderProfile
+    ReaderProfile -->|Register or update face| FaceRegister[Face Register Screen]
+    FaceRegister -->|Completed / Back| ReaderProfile
 
     %% ==========================================
     %% STAFF FLOW
