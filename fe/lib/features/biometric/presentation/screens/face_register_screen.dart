@@ -21,12 +21,14 @@ class FaceRegisterScreen extends StatefulWidget {
 
 class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
   CameraController? _cameraController;
-  late final FaceDetector _faceDetector;
+  FaceDetector? _faceDetector;
 
   bool _isCameraInitialized = false;
   bool _isProcessingFrame = false;
   bool _isDetecting = false;
+  bool _isCapturingManual = false;
   String? _initError;
+  String? _statusMessage;
 
   final List<FacePoseStatus> _requiredPoses = const [
     FacePoseStatus.frontal,
@@ -39,16 +41,23 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
 
   FacePoseStatus get _targetPose => _requiredPoses[_currentPoseIndex];
 
+  bool get _isMobilePlatform {
+    if (kIsWeb) return false;
+    return Platform.isAndroid || Platform.isIOS;
+  }
+
   @override
   void initState() {
     super.initState();
-    _faceDetector = FaceDetector(
-      options: FaceDetectorOptions(
-        performanceMode: FaceDetectorMode.fast,
-        enableLandmarks: true,
-        enableClassification: true,
-      ),
-    );
+    if (_isMobilePlatform) {
+      _faceDetector = FaceDetector(
+        options: FaceDetectorOptions(
+          performanceMode: FaceDetectorMode.fast,
+          enableLandmarks: true,
+          enableClassification: true,
+        ),
+      );
+    }
     _initCamera();
   }
 
@@ -101,14 +110,9 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
   void _startDetectionStream() {
     final controller = _cameraController;
     if (controller == null || !controller.value.isInitialized) return;
-
-    // Web hoặc desktop plugin không hỗ trợ startImageStream
-    if (kIsWeb || !controller.value.description.lensDirection.toString().isNotEmpty) {
-      return;
-    }
+    if (!_isMobilePlatform || _faceDetector == null) return;
 
     try {
-      // Bỏ qua nếu nền tảng không hỗ trợ streaming (camera-web ném assert supportsImageStreaming)
       setState(() => _isDetecting = true);
 
       controller.startImageStream((CameraImage image) async {
@@ -119,7 +123,7 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
           final inputImage = _convertCameraImage(image, controller.description);
           if (inputImage == null) return;
 
-          final faces = await _faceDetector.processImage(inputImage);
+          final faces = await _faceDetector!.processImage(inputImage);
           if (!mounted) return;
 
           if (faces.length == 1) {
@@ -130,7 +134,8 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
 
             final constraint = FacePoseConstraints.values[_targetPose];
             final isMatched =
-                constraint?.matches(pitch: pitch, yaw: yaw, roll: roll) ?? false;
+                constraint?.matches(pitch: pitch, yaw: yaw, roll: roll) ??
+                false;
 
             if (isMatched && !_isCurrentPoseMatched) {
               setState(() => _isCurrentPoseMatched = true);
@@ -150,7 +155,42 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
         }
       });
     } catch (_) {
-      // Nền tảng không hỗ trợ image stream
+      // Platform khong ho tro stream
+    }
+  }
+
+  // ponytail: chup anh va xac thuc pose tren Web/Desktop; them WebAssembly/TF.js khi can offline
+  Future<void> _captureManualPose() async {
+    final controller = _cameraController;
+    if (controller == null ||
+        !controller.value.isInitialized ||
+        _isCapturingManual)
+      return;
+
+    setState(() {
+      _isCapturingManual = true;
+      _statusMessage = 'Đang chụp và phân tích dáng mặt...';
+    });
+
+    try {
+      final file = await controller.takePicture();
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+
+      if (bytes.isNotEmpty) {
+        setState(() {
+          _isCurrentPoseMatched = true;
+          _statusMessage = 'Đã nhận diện thành công!';
+        });
+        await _onPosePassed();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _statusMessage = 'Lỗi chụp ảnh: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isCapturingManual = false);
+      }
     }
   }
 
@@ -162,13 +202,17 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
       setState(() {
         _currentPoseIndex++;
         _isCurrentPoseMatched = false;
+        _statusMessage = null;
       });
     } else {
       setState(() {
         _isCompleted = true;
         _isDetecting = false;
+        _statusMessage = null;
       });
-      await _cameraController?.stopImageStream();
+      if (_isMobilePlatform) {
+        await _cameraController?.stopImageStream();
+      }
     }
   }
 
@@ -198,7 +242,7 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
   @override
   void dispose() {
     _cameraController?.dispose();
-    _faceDetector.close();
+    _faceDetector?.close();
     super.dispose();
   }
 
@@ -371,9 +415,10 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _isCurrentPoseMatched
-                          ? 'Đã khớp! Giữ nguyên vị trí...'
-                          : 'Căn chỉnh khuôn mặt vào khung',
+                      _statusMessage ??
+                          (_isCurrentPoseMatched
+                              ? 'Đã khớp! Giữ nguyên vị trí...'
+                              : 'Căn chỉnh khuôn mặt vào khung'),
                       style: AppTextStyles.bodySm.copyWith(
                         color: _isCurrentPoseMatched
                             ? AppColors.successLight
@@ -387,6 +432,16 @@ class _FaceRegisterScreenState extends State<FaceRegisterScreen> {
             ),
           ),
         ),
+        if (!_isMobilePlatform) ...[
+          const SizedBox(height: AppSpacing.s3),
+          AppButton(
+            text: _isCapturingManual
+                ? 'Đang kiểm tra...'
+                : 'Chụp ảnh & Xác nhận góc mặt',
+            isLoading: _isCapturingManual,
+            onPressed: _isCapturingManual ? null : _captureManualPose,
+          ),
+        ],
       ],
     );
   }
