@@ -41,6 +41,7 @@ export interface GrpcFaceService {
     image_bytes: Buffer;
     image_format?: number;
     bbox?: GrpcBoundingBox;
+    landmarks?: GrpcLandmark[];
   }): Observable<{
     embedding: GrpcFaceEmbedding;
     success: boolean;

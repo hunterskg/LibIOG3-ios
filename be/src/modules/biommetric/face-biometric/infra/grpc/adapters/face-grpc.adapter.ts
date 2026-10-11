@@ -66,6 +66,7 @@ export class FaceGrpcAdapter
   async extractEmbedding(
     imageBuffer: Buffer,
     bbox?: BoundingBox | null,
+    landmarks?: FaceLandmarks | null,
   ): Promise<FaceEmbedding> {
     const res = await firstValueFrom(
       this.faceService.extractEmbedding({
@@ -78,6 +79,13 @@ export class FaceGrpcAdapter
               height: bbox.height,
               confidence: bbox.confidence,
             }
+          : undefined,
+        landmarks: landmarks?.points?.length
+          ? landmarks.points.map((p) => ({
+              x: p.x,
+              y: p.y,
+              index: p.index,
+            }))
           : undefined,
       }),
     );

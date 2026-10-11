@@ -267,8 +267,16 @@ export class FaceTestController {
 
       // 2. Kiểm tra ExtractEmbedding qua gRPC
       const [emb1, emb2] = await Promise.all([
-        this.faceGrpcAdapter.extractEmbedding(img1.buffer, faces1[0].bbox),
-        this.faceGrpcAdapter.extractEmbedding(img2.buffer, faces2[0].bbox),
+        this.faceGrpcAdapter.extractEmbedding(
+          img1.buffer,
+          faces1[0].bbox,
+          faces1[0].landmarks,
+        ),
+        this.faceGrpcAdapter.extractEmbedding(
+          img2.buffer,
+          faces2[0].bbox,
+          faces2[0].landmarks,
+        ),
       ]);
 
       // 3. Kiểm tra VerifyFace qua gRPC
@@ -342,9 +350,10 @@ export class FaceTestController {
         grpc_compat_status: 'ALL_PASS',
         elapsed_ms: elapsedMs,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       return {
-        error: `Lỗi kết nối hoặc xử lý gRPC: ${err.message || String(err)}`,
+        error: `Lỗi kết nối hoặc xử lý gRPC: ${message}`,
         matched: false,
         grpc_compat_status: 'FAILED',
         elapsed_ms: Math.round(performance.now() - start),
