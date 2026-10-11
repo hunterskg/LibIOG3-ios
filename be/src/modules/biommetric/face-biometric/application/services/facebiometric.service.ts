@@ -2,7 +2,7 @@
 https://docs.nestjs.com/providers#services
 */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { DataSource, Repository } from 'typeorm';
@@ -24,9 +24,15 @@ import { VectorUtils } from '../../../../../common/utils/vector.utils';
 import { DEFAULT_CACHE_TTL_SECONDS } from '../../../../infra/cache/constant';
 import { FaceProfile } from '../../domain/entities/face-profile.entity';
 import { FacePoseStatus } from '../../domain/enums/face-pose-status.enum';
+import { BaseService } from '../../../../../common/application/service/base.service';
+import { VerifyFaceService } from './verify-face.service';
+import { FaceEmbedding } from '../../domain/value-objects/face-embedding.vo';
 
 @Injectable()
-export class FaceBiometricService implements RegisterFaceUseCase {
+export class FaceBiometricService
+  extends BaseService
+  implements RegisterFaceUseCase
+{
   private static readonly REQUIRED_POSES: readonly FacePoseStatus[] = [
     FacePoseStatus.FRONTAL,
     FacePoseStatus.LEFT_PROFILE,
@@ -39,6 +45,7 @@ export class FaceBiometricService implements RegisterFaceUseCase {
     private readonly checkLivenessService: CheckLivenessService,
     private readonly detectFaceService: DetectFaceService,
     private readonly extractEmbeddingService: ExtractEmbeddingService,
+    private readonly verifyFaceService: VerifyFaceService,
     @InjectRepository(BiometricProfile)
     private readonly biometricProfileRepository: Repository<BiometricProfile>,
     @InjectRepository(FaceProfile)
@@ -46,7 +53,9 @@ export class FaceBiometricService implements RegisterFaceUseCase {
     @Inject(CACHE_SERVICE)
     private readonly cacheService: CacheService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) {
+    super(FaceBiometricService.name);
+  }
 
   private getRegisterFaceCacheKey(readerId: string, requestId: string): string {
     return `biometric:register:${readerId}:${requestId}`;
@@ -73,6 +82,10 @@ export class FaceBiometricService implements RegisterFaceUseCase {
       return RegisterFaceRes.of('RegistrationSuccess', req.requestId);
     }
 
+    this.logger.debug(
+      `Registering face for readerId=${req.readerId}, requestId=${req.requestId}, facePose=${req.facePose}`,
+    );
+
     const maxFaces = 1; // Only allow one face for registration
 
     // 1. Detect face
@@ -84,6 +97,20 @@ export class FaceBiometricService implements RegisterFaceUseCase {
     if (!faceDetected) {
       throw new FaceNotFoundException('No face detected in the image');
     }
+
+    this.logger.debug(
+      `Detected face with pose: ${faceDetected.pose?.getStatus()} - ${JSON.stringify(faceDetected.pose)}`,
+    );
+
+    // if (
+    //   req.facePose &&
+    //   faceDetected.pose &&
+    //   !faceDetected.pose.isInPose(req.facePose)
+    // ) {
+    //   throw new BadRequestException(
+    //     `Detected face pose (${faceDetected.pose.getStatus()}) does not match the expected pose (${req.facePose})`,
+    //   );
+    // }
 
     // 2. Check liveness (spoof check)
     const livenessRes = await this.checkLivenessService.execute(imageBuffer);
@@ -107,6 +134,22 @@ export class FaceBiometricService implements RegisterFaceUseCase {
     const cachedList = (cachedData || []).filter(
       (item) => item.pose !== req.facePose,
     );
+
+    // Check is same person with existing embeddings in cache
+    for (const cachedItem of cachedList) {
+      const { isMatched, similarity } = this.verifyFaceService.compareVectors(
+        embedding,
+        new FaceEmbedding(cachedItem.values, cachedItem.dimension),
+        0.55, // threshold
+      );
+
+      if (!isMatched) {
+        throw new BadRequestException(
+          `Detected face does not match previously registered face for pose ${cachedItem.pose}. Similarity: ${similarity}`,
+        );
+      }
+    }
+
     cachedList.push(FaceEmbeddingRes.of(embedding, req.facePose));
     await this.cacheService.set(
       sessionKey,
@@ -162,6 +205,10 @@ export class FaceBiometricService implements RegisterFaceUseCase {
         faceProfile.biometricProfile = profile;
       }
       await manager.save(faceProfile);
+
+      this.logger.debug(
+        `Saved biometric profile (id=${profile.id}) and face profile (id=${faceProfile.biometricProfileId}) to database`,
+      );
 
       return profile;
     });

@@ -37,7 +37,7 @@ export class Face {
     face.confidence = confidence;
     face.imagePath = imagePath;
     face.blurScore = blurScore;
-    face.pose = pose;
+    face.pose = pose ?? (landmarks ? FacePose.fromLandmarks(landmarks) : null);
     return face;
   }
 

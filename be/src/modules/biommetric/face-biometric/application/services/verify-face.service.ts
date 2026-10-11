@@ -36,6 +36,32 @@ export class VerifyFaceService extends BaseService {
   }
 
   /**
+   * So sánh trực tiếp 2 vector embedding với nhau.
+   */
+  compareVectors(
+    candidate: FaceEmbedding,
+    reference: FaceEmbedding,
+    threshold = DEFAULT_FACE_MATCH_THRESHOLD,
+  ): { isMatched: boolean; similarity: number } {
+    const candidateNorm = candidate.l2Normalize();
+    const referenceNorm = reference.l2Normalize();
+
+    if (candidateNorm.dimension !== referenceNorm.dimension) {
+      throw new EmbeddingMismatchException(
+        `Embedding dimension mismatch: candidate ${candidateNorm.dimension} vs reference ${referenceNorm.dimension}`,
+      );
+    }
+
+    const similarity = SimilarityCalculator.compute_cosine_similarity(
+      candidateNorm,
+      referenceNorm,
+    );
+    const isMatched = similarity >= threshold;
+
+    return { isMatched, similarity };
+  }
+
+  /**
    * @throws {FaceNotFoundException} if no face is detected in the image
    * @throws {MultipleFacesDetectedException} if multiple faces are detected and requireSingleFace is true
    * @throws {SpoofDetectedException} if a spoof is detected by the liveness detector
@@ -43,13 +69,22 @@ export class VerifyFaceService extends BaseService {
    * @returns An object containing the match result and similarity score
    */
   async execute(
-    imageBuffer: Buffer,
+    imageOrEmbedding: Buffer | FaceEmbedding,
     referenceEmbedding: FaceEmbedding,
     bbox?: BoundingBox | null,
     threshold = DEFAULT_FACE_MATCH_THRESHOLD,
     validateQuality = true,
     requireSingleFace = true,
   ): Promise<{ isMatched: boolean; similarity: number }> {
+    if (imageOrEmbedding instanceof FaceEmbedding) {
+      return this.compareVectors(
+        imageOrEmbedding,
+        referenceEmbedding,
+        threshold,
+      );
+    }
+
+    const imageBuffer = imageOrEmbedding;
     if (!imageBuffer || imageBuffer.length === 0) {
       throw new Error('imageBuffer is required and cannot be empty');
     }
@@ -79,27 +114,13 @@ export class VerifyFaceService extends BaseService {
       }
     }
 
+    // check is same people by embedding
     const candidateEmb = await this.embedder.extractEmbedding(
       imageBuffer,
       targetBbox,
       targetLandmarks,
     );
 
-    const candidateNorm = candidateEmb.l2Normalize();
-    const referenceNorm = referenceEmbedding.l2Normalize();
-
-    if (candidateNorm.dimension !== referenceNorm.dimension) {
-      throw new EmbeddingMismatchException(
-        `Embedding dimension mismatch: candidate ${candidateNorm.dimension} vs reference ${referenceNorm.dimension}`,
-      );
-    }
-
-    const similarity = SimilarityCalculator.compute_cosine_similarity(
-      candidateNorm,
-      referenceNorm,
-    );
-    const isMatched = similarity >= threshold;
-
-    return { isMatched, similarity };
+    return this.compareVectors(candidateEmb, referenceEmbedding, threshold);
   }
 }
