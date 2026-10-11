@@ -8,6 +8,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { IdempotentReq } from '../../../../common/dtos/req.dto';
+import { FacePoseStatus } from '../domain/enums/face-pose-status.enum';
 
 export class BoundingBoxReq {
   @ApiProperty({ description: 'Tọa độ X góc trên bên trái', example: 0.1 })
@@ -123,4 +125,28 @@ export class VerifyFaceReq {
   @IsNumber()
   @IsOptional()
   threshold?: number;
+}
+
+export class RegisterFaceReq extends IdempotentReq {
+  @ApiProperty({ description: 'Mã định danh bạn đọc', example: 'reader-123' })
+  @IsString()
+  @IsNotEmpty({ message: 'Mã định danh bạn đọc không được để trống' })
+  readerId!: string;
+
+  @ApiProperty({ description: 'Trạng thái pose khuôn mặt', example: 'FRONTAL' })
+  @IsString()
+  @IsNotEmpty({ message: 'Trạng thái dáng khuôn mặt không được để trống' })
+  facePose!: FacePoseStatus;
+
+  static of(
+    readerId: string,
+    requestId: string,
+    facePose: FacePoseStatus,
+  ): RegisterFaceReq {
+    const req = new RegisterFaceReq();
+    req.readerId = readerId;
+    req.requestId = requestId;
+    req.facePose = facePose;
+    return req;
+  }
 }

@@ -3,6 +3,7 @@ import { LivenessStatus } from '../domain/enums/liveness-status.enum';
 import { Face } from '../domain/entities/face.entity';
 import { LivenessResult } from '../domain/entities/liveness-result.entity';
 import { FaceEmbedding } from '../domain/value-objects/face-embedding.vo';
+import { FacePoseStatus } from '../domain/enums/face-pose-status.enum';
 
 export class BoundingBoxRes {
   @ApiProperty({ example: 0.1 })
@@ -131,4 +132,40 @@ export class VerifyFaceRes {
 
   @ApiProperty({ example: 0.88 })
   similarity!: number;
+}
+
+export class FaceEmbeddingRes {
+  @ApiProperty({ type: [Number], example: [0.01, -0.05, 0.12] })
+  values!: number[];
+
+  @ApiProperty({ example: 512 })
+  dimension!: number;
+
+  pose?: FacePoseStatus | null;
+
+  static of(
+    embedding: FaceEmbedding,
+    pose?: FacePoseStatus | null,
+  ): FaceEmbeddingRes {
+    const res = new FaceEmbeddingRes();
+    res.values = embedding.asVector();
+    res.dimension = embedding.dimension;
+    res.pose = pose ?? null;
+    return res;
+  }
+}
+
+export class RegisterFaceRes {
+  @ApiProperty({ example: 'face-1' })
+  message!: string;
+
+  @ApiProperty({ example: 'result-1' })
+  resultId!: string;
+
+  static of(message: string, resultId: string): RegisterFaceRes {
+    const res = new RegisterFaceRes();
+    res.message = message;
+    res.resultId = resultId;
+    return res;
+  }
 }
