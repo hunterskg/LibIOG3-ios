@@ -4,6 +4,7 @@ import { Face } from '../domain/entities/face.entity';
 import { LivenessResult } from '../domain/entities/liveness-result.entity';
 import { FaceEmbedding } from '../domain/value-objects/face-embedding.vo';
 import { FacePoseStatus } from '../domain/enums/face-pose-status.enum';
+import { BiometricStatus } from '../../domain/enums/biometric-status.enum';
 
 export class BoundingBoxRes {
   @ApiProperty({ example: 0.1 })
@@ -166,6 +167,52 @@ export class RegisterFaceRes {
     const res = new RegisterFaceRes();
     res.message = message;
     res.resultId = resultId;
+    return res;
+  }
+}
+
+export class FaceRegistrationStatusRes {
+  @ApiProperty({
+    description: 'Trạng thái đã đăng ký khuôn mặt hợp lệ hay chưa',
+    example: true,
+  })
+  isRegistered!: boolean;
+
+  @ApiPropertyOptional({
+    enum: BiometricStatus,
+    description: 'Trạng thái hồ sơ sinh trắc học',
+    example: BiometricStatus.ACTIVE,
+  })
+  status?: BiometricStatus;
+
+  @ApiPropertyOptional({
+    description: 'Thời điểm đăng ký hoặc cấp phép sinh trắc học',
+    example: '2026-10-11T12:00:00.000Z',
+  })
+  registeredAt?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Thời điểm cập nhật dữ liệu khuôn mặt gần nhất',
+    example: '2026-10-11T12:00:00.000Z',
+  })
+  updatedAt?: Date;
+
+  static notRegistered(): FaceRegistrationStatusRes {
+    const res = new FaceRegistrationStatusRes();
+    res.isRegistered = false;
+    return res;
+  }
+
+  static registered(
+    status: BiometricStatus,
+    registeredAt?: Date,
+    updatedAt?: Date,
+  ): FaceRegistrationStatusRes {
+    const res = new FaceRegistrationStatusRes();
+    res.isRegistered = status === BiometricStatus.ACTIVE;
+    res.status = status;
+    res.registeredAt = registeredAt;
+    res.updatedAt = updatedAt;
     return res;
   }
 }
