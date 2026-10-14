@@ -65,11 +65,6 @@ class _MyAppState extends State<MyApp> {
     );
     _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
 
-    _userApiService = UserApiService(_apiClient);
-    _userProvider = UserProvider(apiService: _userApiService);
-
-    _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
-
     _authProvider.checkAuth();
   }
 
