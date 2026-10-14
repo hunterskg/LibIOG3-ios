@@ -8,12 +8,21 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { AssignmentStatus } from '../enums/assignment-status.enum';
+import { DeviceStatus } from '../enums/device-status.enum';
 
 export class AssignDeviceReq {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
   @IsUUID()
   staffId!: string;
+
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+  @IsUUID()
+  gateId!: string;
+
+  @ApiPropertyOptional({ example: 'Staff Mobile Device' })
+  @IsString()
+  @IsOptional()
+  deviceName?: string;
 }
 
 export class ActivateDeviceReq {
@@ -45,8 +54,8 @@ export class QueryAssignmentReq {
   @IsOptional()
   staffId?: string;
 
-  @ApiPropertyOptional({ enum: AssignmentStatus })
-  @IsEnum(AssignmentStatus)
+  @ApiPropertyOptional({ enum: DeviceStatus })
+  @IsEnum(DeviceStatus)
   @IsOptional()
-  status?: AssignmentStatus;
+  status?: DeviceStatus;
 }

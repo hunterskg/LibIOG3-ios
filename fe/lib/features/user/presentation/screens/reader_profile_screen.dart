@@ -11,6 +11,7 @@ import 'package:fe/features/user/presentation/providers/user_provider.dart';
 import 'package:fe/shared/widgets/app_button.dart';
 import 'package:fe/shared/widgets/app_card.dart';
 import 'package:fe/shared/widgets/app_text_field.dart';
+import 'package:fe/shared/widgets/status_badge.dart';
 
 class ReaderProfileScreen extends StatefulWidget {
   const ReaderProfileScreen({super.key});
@@ -38,6 +39,7 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
         final userId = context.read<AuthProvider>().currentUser?.userId;
         if (userId != null && userId.isNotEmpty) {
           context.read<UserProvider>().loadMyReaderProfile(userId);
+          context.read<UserProvider>().loadFaceRegistrationStatus();
         }
       });
     }
@@ -100,6 +102,48 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _handleFaceItemTap() async {
+    await Navigator.pushNamed(context, AppRoutes.faceRegister);
+    if (!mounted) return;
+    await context.read<UserProvider>().loadFaceRegistrationStatus();
+  }
+
+  Widget _buildFaceTrailing(UserProvider userProvider) {
+    if (userProvider.isLoadingFaceStatus) {
+      return const SizedBox(
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+    final isRegistered = userProvider.faceStatus?.isRegistered ?? false;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isRegistered)
+          StatusBadge.faceRegistered()
+        else
+          StatusBadge.faceNotRegistered(),
+        const SizedBox(width: 4),
+        const Icon(
+          Icons.chevron_right_rounded,
+          color: AppColors.charcoal400,
+        ),
+      ],
+    );
+  }
+
+  String _buildFaceSubtitle(UserProvider userProvider) {
+    if (userProvider.isLoadingFaceStatus) {
+      return 'Đang kiểm tra dữ liệu...';
+    }
+    final isRegistered = userProvider.faceStatus?.isRegistered ?? false;
+    if (isRegistered) {
+      return 'Khuôn mặt đã kích hoạt cho cổng quét tự động';
+    }
+    return 'Chưa đăng ký khuôn mặt • Bấm để đăng ký ngay';
   }
 
   @override
@@ -300,6 +344,8 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                       child: const Icon(
                                         Icons.face_retouching_natural_rounded,
                                         color: AppColors.accent600,
+                                        semanticLabel:
+                                            'Trạng thái đăng ký khuôn mặt',
                                       ),
                                     ),
                                     title: Text(
@@ -309,21 +355,13 @@ class _ReaderProfileScreenState extends State<ReaderProfileScreen> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      'Đăng ký nhận diện khuôn mặt',
+                                      _buildFaceSubtitle(userProvider),
                                       style: AppTextStyles.bodySm.copyWith(
                                         color: AppColors.charcoal500,
                                       ),
                                     ),
-                                    trailing: const Icon(
-                                      Icons.chevron_right_rounded,
-                                      color: AppColors.charcoal400,
-                                    ),
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        AppRoutes.faceRegister,
-                                      );
-                                    },
+                                    trailing: _buildFaceTrailing(userProvider),
+                                    onTap: _handleFaceItemTap,
                                   ),
                                 ),
                               ],

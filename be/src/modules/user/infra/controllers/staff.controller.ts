@@ -17,7 +17,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { StaffService } from '../../application/services/staff.service';
+import { UserService } from '../../application/services/user.service';
 import {
   AssignRoleReq,
   QueryStaffReq,
@@ -37,7 +37,7 @@ import { CurrentUser } from '../../../auth/infra/decorators/current-user.decorat
 @UseGuards(JwtGuard, RoleGuard)
 @Controller('staffs')
 export class StaffController {
-  constructor(private readonly staffService: StaffService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   @Roles(Role.ADMIN)
@@ -50,7 +50,7 @@ export class StaffController {
   })
   @ApiResponse({ status: 409, description: 'Email already exists' })
   async createStaff(@Body() req: StaffCreateReq): Promise<StaffRes> {
-    return this.staffService.createStaff(req);
+    return this.userService.createStaff(req);
   }
 
   @Patch(':id')
@@ -73,7 +73,7 @@ export class StaffController {
     if (!isSelf && !isAdmin) {
       throw new ForbiddenException('You can only update your own profile');
     }
-    return this.staffService.updateStaff(id, req);
+    return this.userService.updateStaff(id, req);
   }
 
   @Patch(':id/role')
@@ -88,7 +88,7 @@ export class StaffController {
     @Body() req: AssignRoleReq,
     @CurrentUser() currentUser: UserRes,
   ): Promise<{ message: string }> {
-    await this.staffService.assignRole(id, req.role, currentUser.userId);
+    await this.userService.assignRole(id, req.role, currentUser.userId);
     return { message: 'Role assigned successfully' };
   }
 
@@ -103,7 +103,7 @@ export class StaffController {
   })
   @ApiResponse({ status: 404, description: 'Staff not found' })
   async getStaffById(@Param('id') id: string): Promise<StaffRes> {
-    return this.staffService.getStaffById(id);
+    return this.userService.getStaffById(id);
   }
 
   @Get()
@@ -118,6 +118,6 @@ export class StaffController {
     description: 'Staffs list retrieved successfully',
   })
   async getStaff(@Query() req: QueryStaffReq): Promise<Page<StaffRes>> {
-    return this.staffService.getStaff(req);
+    return this.userService.getStaff(req);
   }
 }

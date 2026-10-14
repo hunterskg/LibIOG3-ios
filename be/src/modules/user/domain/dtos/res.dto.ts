@@ -2,8 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../enums/role.enum';
 import { UserStatus } from '../enums/user-statis.enum';
 import { User } from '../entities/user.entity';
-import { Reader } from '../entities/reader.entity';
-import { Staff } from '../entities/staff.entity';
 
 export class UserRes {
   @ApiProperty({ example: '1' })
@@ -11,6 +9,9 @@ export class UserRes {
 
   @ApiProperty({ example: 'user@example.com' })
   email!: string;
+
+  @ApiPropertyOptional({ example: 'Nguyễn Văn A' })
+  fullName?: string;
 
   @ApiProperty({ enum: Role, example: Role.READER })
   role!: Role;
@@ -32,6 +33,7 @@ export class UserRes {
     const id = (user as User).id ?? (user as UserRes).userId;
     res.userId = id.toString();
     res.email = user.email;
+    res.fullName = (user as User).fullName ?? (user as any).fullName;
     res.role = user.role;
     res.status = (user as User).status ?? (user as UserRes).status;
     res.createdAt = (user as User).createdAt ?? (user as UserRes).createdAt;
@@ -67,15 +69,13 @@ export class ReaderRes {
   @ApiPropertyOptional({ type: () => UserRes })
   user!: UserRes;
 
-  static of(reader: Reader): ReaderRes {
+  static of(user: User): ReaderRes {
     const res = new ReaderRes();
-    res.id = reader.id.toString();
-    res.fullName = reader.fullName;
-    res.phone = reader.phone;
-    res.dateOfBirth = reader.dateOfBirth;
-    res.registeredAt = reader.registeredAt;
-    res.updatedAt = reader.updatedAt;
-    res.user = UserRes.of(reader.user);
+    res.id = user.id.toString();
+    res.fullName = user.fullName;
+    res.registeredAt = user.createdAt;
+    res.updatedAt = user.updatedAt;
+    res.user = UserRes.of(user);
     return res;
   }
 }
@@ -93,13 +93,12 @@ export class StaffRes {
   @ApiPropertyOptional({ type: () => UserRes })
   user!: UserRes;
 
-  static of(staff: Staff): StaffRes {
+  static of(user: User): StaffRes {
     const res = new StaffRes();
-    res.id = staff.id.toString();
-    res.name = staff.name;
-    res.createdAt = staff.createdAt;
-    res.user = UserRes.of(staff.user);
-
+    res.id = user.id.toString();
+    res.name = user.fullName;
+    res.createdAt = user.createdAt;
+    res.user = UserRes.of(user);
     return res;
   }
 }

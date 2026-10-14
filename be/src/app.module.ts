@@ -9,6 +9,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { QrModule } from './modules/qr/qr.module';
+import { CheckInOutModule } from './modules/checkin-out/checkin-out.module';
 
 @Module({
   imports: [
@@ -17,9 +19,11 @@ import { AppService } from './app.service';
     AuthModule,
     InfrastructureModule,
     UserModule,
+    QrModule,
     DeviceModule,
     AccessModule,
     NotificationModule,
+    CheckInOutModule,
   ],
   controllers: [AppController],
   providers: [AppService],

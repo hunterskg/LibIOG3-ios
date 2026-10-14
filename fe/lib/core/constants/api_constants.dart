@@ -24,6 +24,9 @@ abstract final class ApiConstants {
   static String staffById(String id) => '$staffs/$id';
   static String staffRole(String id) => '$staffs/$id/role';
 
+  //Checkin - Checkout
+  static const String qrTokens = '/qr-tokens';
+  static const String qrTokensVerify = '/qr-tokens/verify';
   static const String deviceAssignments = '/devices/assignments';
   static const String assignDevice = '/devices/assign';
   static const String activateDevice = '/devices/activate';
@@ -33,4 +36,10 @@ abstract final class ApiConstants {
 
   // Biometric endpoints
   static const String registerFace = '/biometric/face/register';
+  static const String faceStatus = '/biometric/face/status';
+
+  static String faceStatusOf({String? readerId}) {
+    if (readerId == null || readerId.isEmpty) return faceStatus;
+    return '$faceStatus?readerId=$readerId';
+  }
 }

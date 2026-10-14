@@ -27,7 +27,6 @@ import { ConfigService } from '@nestjs/config';
 import { InternalEventBus } from '../../../infra/event/application/internal-event-bus.interface';
 import { CacheService } from '../../../infra/cache/application/interface/cache-service.interface';
 import { UserService } from '../../../user/application/services/user.service';
-import { ReaderService } from '../../../user/application/services/reader.service';
 import { Role } from '../../../user/domain/enums/role.enum';
 import { UserStatus } from '../../../user/domain/enums/user-statis.enum';
 import { ReaderRes } from '../../../user/domain/dtos/res.dto';
@@ -41,7 +40,6 @@ describe('AuthService', () => {
   let internalEventBus: jest.Mocked<InternalEventBus>;
   let cacheService: jest.Mocked<CacheService>;
   let userService: jest.Mocked<UserService>;
-  let readerService: jest.Mocked<ReaderService>;
 
   beforeEach(() => {
     refreshTokenService = {
@@ -77,11 +75,8 @@ describe('AuthService', () => {
       getById: jest.fn(),
       getByIdForAuth: jest.fn(),
       updatePassword: jest.fn(),
-    } as unknown as jest.Mocked<UserService>;
-
-    readerService = {
       createReader: jest.fn(),
-    } as unknown as jest.Mocked<ReaderService>;
+    } as unknown as jest.Mocked<UserService>;
 
     authService = new AuthService(
       refreshTokenService,
@@ -90,7 +85,6 @@ describe('AuthService', () => {
       internalEventBus,
       cacheService,
       userService,
-      readerService,
     );
   });
 
@@ -153,7 +147,7 @@ describe('AuthService', () => {
       code: '123456',
     };
 
-    it('should verify email and call readerService.createReader to register reader', async () => {
+    it('should verify email and call userService.createReader to register reader', async () => {
       cacheService.get.mockResolvedValue(cachedData);
       userService.isEmailExist.mockResolvedValue(false);
 
@@ -171,11 +165,11 @@ describe('AuthService', () => {
         },
       };
 
-      readerService.createReader.mockResolvedValue(mockReaderRes);
+      userService.createReader.mockResolvedValue(mockReaderRes);
 
       const res = await authService.verifyEmail(verifyReq);
 
-      expect(readerService.createReader).toHaveBeenCalledWith({
+      expect(userService.createReader).toHaveBeenCalledWith({
         email: cachedData.email,
         password: cachedData.password,
         fullName: cachedData.displayName,

@@ -6,9 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Reader } from '../../../user/domain/entities/reader.entity';
-import { Staff } from '../../../user/domain/entities/staff.entity';
-import { DeviceAssignment } from '../../../device/domain/entities/device-assignment.entity';
+import { User } from '../../../user/domain/entities/user.entity';
+import { Device } from '../../../device/domain/entities/device.entity';
 import { Gate } from '../../../device/domain/entities/gate.entity';
 import { AccessAction } from '../enums/access-action.enum';
 import { AccessMethod } from '../enums/access-method.enum';
@@ -22,9 +21,9 @@ export class AccessLog {
   @Column({ name: 'reader_id', type: 'uuid' })
   readerId!: string;
 
-  @ManyToOne(() => Reader, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'reader_id' })
-  reader!: Reader;
+  reader!: User;
 
   @Column({ name: 'gate_id', type: 'uuid', nullable: true })
   gateId?: string;
@@ -33,19 +32,19 @@ export class AccessLog {
   @JoinColumn({ name: 'gate_id' })
   gate?: Gate;
 
-  @Column({ name: 'assignment_id', type: 'uuid', nullable: true })
-  assignmentId?: string;
+  @Column({ name: 'device_id', type: 'uuid' })
+  deviceId!: string;
 
-  @ManyToOne(() => DeviceAssignment, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'assignment_id' })
-  assignment?: DeviceAssignment;
+  @ManyToOne(() => Device, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'device_id' })
+  device!: Device;
 
   @Column({ name: 'staff_id', type: 'uuid', nullable: true })
   staffId?: string;
 
-  @ManyToOne(() => Staff, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'staff_id' })
-  staff?: Staff;
+  staff?: User;
 
   @Column({ type: 'enum', enum: AccessAction })
   action!: AccessAction;

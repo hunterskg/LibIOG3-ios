@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -20,9 +22,11 @@ import {
 } from '@nestjs/swagger';
 import { JwtGuard } from '../../../../auth/infra/guard/jwt.guard';
 import { CurrentUser } from '../../../../auth/infra/decorators/current-user.decorator';
+import { UserRes } from '../../../../user/domain/dtos/res.dto';
+import { Role } from '../../../../user/domain/enums/role.enum';
 import { FaceBiometricService } from '../../application/services/facebiometric.service';
 import { RegisterFaceReq } from '../../dtos/req.dto';
-import { RegisterFaceRes } from '../../dtos/res.dto';
+import { FaceRegistrationStatusRes, RegisterFaceRes } from '../../dtos/res.dto';
 import { FaceDomainExceptionInterceptor } from '../interceptors/face-domain-exception.interceptor';
 import { FacePoseStatus } from '../../domain/enums/face-pose-status.enum';
 
@@ -40,6 +44,27 @@ interface UploadedFile {
 @Controller('biometric/face')
 export class FaceBiometricController {
   constructor(private readonly faceBiometricService: FaceBiometricService) {}
+
+  @Get('status')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Kiểm tra trạng thái đăng ký khuôn mặt' })
+  @ApiResponse({
+    status: 200,
+    type: FaceRegistrationStatusRes,
+    description: 'Trạng thái đăng ký khuôn mặt',
+  })
+  @ApiResponse({ status: 401, description: 'Token không hợp lệ hoặc hết hạn' })
+  @ApiResponse({ status: 403, description: 'Truy cập trái phép' })
+  async getFaceStatus(
+    @CurrentUser() currentUser: UserRes,
+    @Query('readerId') readerId?: string,
+  ): Promise<FaceRegistrationStatusRes> {
+    const targetId =
+      currentUser.role === Role.READER || !readerId
+        ? currentUser.userId
+        : readerId;
+    return this.faceBiometricService.getFaceRegistrationStatus(targetId);
+  }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)

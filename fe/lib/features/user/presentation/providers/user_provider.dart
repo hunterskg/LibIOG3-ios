@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:fe/common/models/page_res.dart';
 import 'package:fe/core/network/api_exception.dart';
+import 'package:fe/features/biometric/data/services/face_biometric_service.dart';
 import 'package:fe/features/user/data/services/user_api_service.dart';
 import 'package:fe/features/user/domain/dtos/assign_role_req.dart';
 import 'package:fe/features/user/domain/dtos/reader_update_req.dart';
@@ -12,14 +13,26 @@ import 'package:fe/features/user/domain/models/staff_res.dart';
 
 class UserProvider extends ChangeNotifier {
   final UserApiService _apiService;
+  final FaceBiometricService? _faceBiometricService;
 
-  UserProvider({required UserApiService apiService}) : _apiService = apiService;
+  UserProvider({
+    required UserApiService apiService,
+    FaceBiometricService? faceBiometricService,
+  })  : _apiService = apiService,
+        _faceBiometricService = faceBiometricService;
 
   bool _isLoading = false;
   String? _errorMessage;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  // Face registration status
+  FaceRegistrationStatusRes? _faceStatus;
+  bool _isLoadingFaceStatus = false;
+
+  FaceRegistrationStatusRes? get faceStatus => _faceStatus;
+  bool get isLoadingFaceStatus => _isLoadingFaceStatus;
 
   // Profile states
   ReaderRes? _myReaderProfile;
@@ -55,6 +68,27 @@ class UserProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // --- Face registration status ---
+  Future<void> loadFaceRegistrationStatus({String? readerId}) async {
+    _isLoadingFaceStatus = true;
+    notifyListeners();
+
+    try {
+      if (_faceBiometricService == null) {
+        _faceStatus = const FaceRegistrationStatusRes(isRegistered: false);
+      } else {
+        _faceStatus = await _faceBiometricService.getRegistrationStatus(
+          readerId: readerId,
+        );
+      }
+    } catch (_) {
+      _faceStatus = const FaceRegistrationStatusRes(isRegistered: false);
+    } finally {
+      _isLoadingFaceStatus = false;
+      notifyListeners();
+    }
   }
 
   // --- Reader Profile ---

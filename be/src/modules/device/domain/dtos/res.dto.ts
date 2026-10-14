@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AssignmentStatus } from '../enums/assignment-status.enum';
-import { DeviceAssignment } from '../entities/device-assignment.entity';
+import { DeviceStatus } from '../enums/device-status.enum';
+import { Device } from '../entities/device.entity';
 
 export class DeviceAssignmentRes {
   @ApiProperty()
@@ -9,8 +9,11 @@ export class DeviceAssignmentRes {
   @ApiProperty()
   staffId!: string;
 
-  @ApiProperty({ enum: AssignmentStatus })
-  status!: AssignmentStatus;
+  @ApiPropertyOptional()
+  gateId?: string;
+
+  @ApiProperty({ enum: DeviceStatus })
+  status!: DeviceStatus;
 
   @ApiPropertyOptional()
   deviceFingerprint?: string;
@@ -21,8 +24,8 @@ export class DeviceAssignmentRes {
   @ApiPropertyOptional()
   devicePlatform?: string;
 
-  @ApiProperty()
-  expiresAt!: Date;
+  @ApiPropertyOptional()
+  expiresAt?: Date;
 
   @ApiPropertyOptional()
   activatedAt?: Date;
@@ -33,18 +36,19 @@ export class DeviceAssignmentRes {
   @ApiProperty()
   createdAt!: Date;
 
-  static of(assignment: DeviceAssignment): DeviceAssignmentRes {
+  static of(device: Device): DeviceAssignmentRes {
     const response = new DeviceAssignmentRes();
-    response.id = assignment.id;
-    response.staffId = assignment.staffId;
-    response.status = assignment.status;
-    response.deviceFingerprint = assignment.deviceFingerprint;
-    response.deviceName = assignment.deviceName;
-    response.devicePlatform = assignment.devicePlatform;
-    response.expiresAt = assignment.expiresAt;
-    response.activatedAt = assignment.activatedAt;
-    response.revokedAt = assignment.revokedAt;
-    response.createdAt = assignment.createdAt;
+    response.id = device.id;
+    response.staffId = device.staffId;
+    response.gateId = device.gateId;
+    response.status = device.status;
+    response.deviceFingerprint = device.deviceFingerprint ?? undefined;
+    response.deviceName = device.deviceName;
+    response.devicePlatform = device.devicePlatform ?? undefined;
+    response.expiresAt = device.expiredAt ?? undefined;
+    response.activatedAt = device.activatedAt ?? undefined;
+    response.revokedAt = device.revokedAt ?? undefined;
+    response.createdAt = device.createdAt;
     return response;
   }
 }
@@ -64,3 +68,5 @@ export class ActivateDeviceRes {
   @ApiProperty({ type: () => DeviceAssignmentRes })
   assignment!: DeviceAssignmentRes;
 }
+
+export { DeviceAssignmentRes as DeviceRes };

@@ -16,7 +16,11 @@ import { ExtractEmbeddingService } from './extract-embedding.service';
 import { FaceNotFoundException } from '../../domain/exceptions/face-not-found.exception';
 import { SpoofDetectedException } from '../../domain/exceptions/spoof-detected.exception';
 import { RegisterFaceUseCase } from '../usecases/register-face.usecase';
-import { FaceEmbeddingRes, RegisterFaceRes } from '../../dtos/res.dto';
+import {
+  FaceEmbeddingRes,
+  FaceRegistrationStatusRes,
+  RegisterFaceRes,
+} from '../../dtos/res.dto';
 import { RegisterFaceReq } from '../../dtos/req.dto';
 import { BiometricProfile } from '../../../domain/entities/biometric-profile.entity';
 import { BiometricStatus } from '../../../domain/enums/biometric-status.enum';
@@ -218,5 +222,31 @@ export class FaceBiometricService
 
     // 8. Return RegistrationSuccess
     return RegisterFaceRes.of('RegistrationSuccess', req.requestId);
+  }
+
+  async getFaceRegistrationStatus(
+    readerId: string,
+  ): Promise<FaceRegistrationStatusRes> {
+    const profile = await this.biometricProfileRepository.findOne({
+      where: { readerId },
+    });
+
+    if (!profile || !profile.isActive()) {
+      return FaceRegistrationStatusRes.notRegistered();
+    }
+
+    const faceProfile = await this.faceProfileRepository.findOne({
+      where: { biometricProfileId: profile.id },
+    });
+
+    if (!faceProfile) {
+      return FaceRegistrationStatusRes.notRegistered();
+    }
+
+    return FaceRegistrationStatusRes.registered(
+      profile.status,
+      profile.consentAt ?? profile.createdAt,
+      faceProfile.updatedAt ?? profile.updatedAt,
+    );
   }
 }
