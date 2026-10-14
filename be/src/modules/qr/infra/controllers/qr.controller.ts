@@ -13,24 +13,19 @@ import { VerifyQrTokenDto } from '../dto/verify-qr-token.dto';
 @UseGuards(JwtGuard, RoleGuard)
 @Controller('qr-tokens')
 export class QrController {
-    constructor(private readonly qrService: QrService) { }
+  constructor(private readonly qrService: QrService) {}
 
-    @Post()
-    @Roles(Role.READER)
-    @HttpCode(HttpStatus.CREATED)
-    createQrToken(@CurrentUser('userId') userId: string) {
-        return this.qrService.createQrToken(userId);
-    }
+  @Post()
+  @Roles(Role.READER)
+  @HttpCode(HttpStatus.CREATED)
+  createQrToken(@CurrentUser('userId') userId: string) {
+    return this.qrService.createQrToken(userId);
+  }
 
-    @Post('verify')
-    @Roles(Role.DEVICE)
-    @HttpCode(HttpStatus.OK)
-    verifyQrToken(@Body() dto: VerifyQrTokenDto) {
-        return this.qrService.verifyAndConsumeQrToken(dto.token);
-    }
-
+  @Post('verify')
+  @Roles(Role.DEVICE)
+  @HttpCode(HttpStatus.OK)
+  verifyQrToken(@Body() dto: VerifyQrTokenDto) {
+    return this.qrService.verifyAndConsumeQrToken(dto.token);
+  }
 }
-
-
-
-

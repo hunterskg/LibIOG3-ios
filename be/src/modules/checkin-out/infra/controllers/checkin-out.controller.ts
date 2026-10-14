@@ -1,10 +1,4 @@
-
-import {
-  Body,
-  Controller,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { CheckInOutService } from '../../application/services/checkin-out.service';
 import { CheckInOutDto } from '../dto/checkin-out.dto';
 import { JwtGuard } from '../../../auth/infra/guard/jwt.guard';
@@ -16,9 +10,7 @@ import { Role } from '../../../user/domain/enums/role.enum';
 @Controller('checkin-out')
 @UseGuards(JwtGuard, RoleGuard)
 export class CheckInOutController {
-  constructor(
-    private readonly checkInOutService: CheckInOutService,
-  ) { }
+  constructor(private readonly checkInOutService: CheckInOutService) {}
 
   @Post()
   @Roles(Role.STAFF)

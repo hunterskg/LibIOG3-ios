@@ -1,4 +1,5 @@
 import { Role } from '../../../domain/enums/role.enum';
+import { StaffRes } from '../../../domain/dtos/res.dto';
 
 /* 
     rules: only admin can assign role to staff
@@ -12,6 +13,6 @@ export interface AssignRoleUsecase {
   assignRole(
     staffId: string,
     role: Role,
-    currentAdminId: string,
-  ): Promise<void>;
+    currentAdminId?: string,
+  ): Promise<StaffRes>;
 }

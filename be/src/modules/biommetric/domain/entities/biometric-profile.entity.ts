@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { BiometricStatus } from '../enums/biometric-status.enum';
-import { Reader } from '../../../user/domain/entities/reader.entity';
+import { User } from '../../../user/domain/entities/user.entity';
 
 @Entity('biometric_profiles')
 export class BiometricProfile {
@@ -18,9 +18,9 @@ export class BiometricProfile {
   @Column({ name: 'reader_id', type: 'uuid' })
   readerId!: string;
 
-  @ManyToOne(() => Reader, { onDelete: 'CASCADE', nullable: true })
+  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'reader_id' })
-  reader?: Reader;
+  reader?: User;
 
   @Column({ name: 'provider_reference' })
   providerReference!: string;
@@ -39,7 +39,7 @@ export class BiometricProfile {
   status!: BiometricStatus;
 
   @Column({ name: 'consent_revoked_at', type: 'timestamp', nullable: true })
-  consentRevokedAt?: Date;
+  consentRevokedAt?: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
@@ -53,7 +53,7 @@ export class BiometricProfile {
     consentGiven: boolean,
     consentAt: Date,
     status: BiometricStatus,
-    consentRevokedAt?: Date,
+    consentRevokedAt?: Date | null,
   ): BiometricProfile {
     const profile = new BiometricProfile();
     profile.readerId = readerId;

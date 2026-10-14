@@ -16,7 +16,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ReaderService } from '../../application/services/reader.service';
+import { UserService } from '../../application/services/user.service';
 import { QueryReaderReq, ReaderUpdateReq } from '../../domain/dtos/req.dto';
 import { ReaderRes, UserRes } from '../../domain/dtos/res.dto';
 import { Role } from '../../domain/enums/role.enum';
@@ -31,7 +31,7 @@ import { CurrentUser } from '../../../auth/infra/decorators/current-user.decorat
 @UseGuards(JwtGuard, RoleGuard)
 @Controller('readers')
 export class ReaderController {
-  constructor(private readonly readerService: ReaderService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
@@ -53,7 +53,7 @@ export class ReaderController {
     if (!isSelf && !isAdmin) {
       throw new ForbiddenException('You can only update your own profile');
     }
-    return this.readerService.updateReader(id, req);
+    return this.userService.updateReader(id, req);
   }
 
   @Get(':id')
@@ -76,7 +76,7 @@ export class ReaderController {
     if (!isSelf && !isStaffOrAdmin) {
       throw new ForbiddenException('Access denied');
     }
-    return this.readerService.getReaderById(id);
+    return this.userService.getReaderById(id);
   }
 
   @Get()
@@ -91,6 +91,6 @@ export class ReaderController {
     description: 'Readers list retrieved successfully',
   })
   async getReader(@Query() req: QueryReaderReq): Promise<Page<ReaderRes>> {
-    return this.readerService.getReader(req);
+    return this.userService.getReader(req);
   }
 }

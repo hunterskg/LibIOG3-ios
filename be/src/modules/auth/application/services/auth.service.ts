@@ -42,7 +42,6 @@ import {
   InternalEventBus,
 } from '../../../infra/event/application/internal-event-bus.interface';
 import { UserService } from '../../../user/application/services/user.service';
-import { ReaderService } from '../../../user/application/services/reader.service';
 import { codeExpirationTime } from '../../domain/constant';
 
 @Injectable()
@@ -64,7 +63,6 @@ export class AuthService
     @Inject(CACHE_SERVICE)
     private readonly cacheService: CacheService,
     private readonly userService: UserService,
-    private readonly readerService: ReaderService,
   ) {
     super(AuthService.name);
   }
@@ -258,7 +256,7 @@ export class AuthService
       throw new ConflictException('Email already exists');
     }
 
-    const reader = await this.readerService.createReader({
+    const reader = await this.userService.createReader({
       email: cachedData.email,
       password: cachedData.password,
       fullName: cachedData.displayName || cachedData.email,

@@ -1,5 +1,4 @@
-export enum AssignmentStatus {
-  PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-  REVOKED = 'REVOKED',
-}
+export {
+  DeviceStatus,
+  DeviceStatus as AssignmentStatus,
+} from './device-status.enum';
