@@ -1,5 +1,5 @@
 export enum QrTokenStatus {
-  ACTIVE = 'active',
-  USED = 'used',
-  REVOKED = 'revoked',
+  ACTIVE = 'ACTIVE',
+  USED = 'USED',
+  REVOKED = 'REVOKED',
 }
