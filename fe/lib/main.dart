@@ -18,7 +18,9 @@ import 'routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   final tokenStorage = await SharedPreferencesTokenStorage.create();
+
   runApp(MyApp(tokenStorage: tokenStorage));
 }
 
@@ -43,11 +45,14 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
     _apiClient = ApiClient(
       baseUrl: ApiConstants.baseUrl,
       getAccessToken: () async => _authProvider.accessToken,
     );
+
     _authService = AuthService(_apiClient);
+
     _authProvider = AuthProvider(
       authService: _authService,
       tokenStorage: widget.tokenStorage,
@@ -59,6 +64,12 @@ class _MyAppState extends State<MyApp> {
       faceBiometricService: _faceBiometricService,
     );
     _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
+
+    _userApiService = UserApiService(_apiClient);
+    _userProvider = UserProvider(apiService: _userApiService);
+
+    _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
+
     _authProvider.checkAuth();
   }
 
@@ -68,34 +79,46 @@ class _MyAppState extends State<MyApp> {
     _authProvider.dispose();
     _userProvider.dispose();
     _deviceProvider.dispose();
+
     super.dispose();
+  }
+
+  String _getInitialRoute(AuthProvider auth) {
+    if (!auth.isAuthenticated) {
+      return AppRoutes.roleSelect;
+    }
+
+    switch (auth.currentUser?.role) {
+      case UserRole.reader:
+        return AppRoutes.readerHome;
+      case UserRole.staff:
+        return AppRoutes.staffHome;
+      case UserRole.admin:
+        return AppRoutes.adminHome;
+      case UserRole.device:
+        return AppRoutes.deviceHome;
+      default:
+        return AppRoutes.roleSelect;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<ApiClient>.value(value: _apiClient),
         ChangeNotifierProvider<AuthProvider>.value(value: _authProvider),
         ChangeNotifierProvider<UserProvider>.value(value: _userProvider),
         ChangeNotifierProvider<DeviceProvider>.value(value: _deviceProvider),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
-          final initialRoute = auth.isAuthenticated
-              ? (auth.currentUser?.role == UserRole.reader
-                    ? AppRoutes.readerHome
-                    : auth.currentUser?.role.value == 'admin'
-                    ? AppRoutes.adminHome
-                    : AppRoutes.staffHome)
-              : AppRoutes.roleSelect;
-
           return MaterialApp(
-            title: 'LibIO',
             debugShowCheckedModeBanner: false,
             theme: appLightTheme,
             darkTheme: appDarkTheme,
             themeMode: ThemeMode.light,
-            initialRoute: initialRoute,
+            initialRoute: _getInitialRoute(auth),
             routes: appRoutes,
           );
         },

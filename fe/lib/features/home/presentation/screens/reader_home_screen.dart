@@ -134,7 +134,12 @@ class _ReaderHomeContent extends StatelessWidget {
                           icon: Icons.search_rounded,
                           title: 'Mã checkout',
                           desc: 'Mã quét để checkout tại thư viện',
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.readerQr,
+                            );
+                          },
                         ),
                       ),
                     ],

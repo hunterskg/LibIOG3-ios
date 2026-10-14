@@ -24,6 +24,10 @@ import 'package:fe/features/user/presentation/screens/reader_profile_screen.dart
 import 'package:fe/features/user/presentation/screens/staff_detail_screen.dart';
 import 'package:fe/features/user/presentation/screens/staff_list_screen.dart';
 import 'package:fe/features/user/presentation/screens/staff_profile_screen.dart';
+import 'package:fe/features/qr/presentation/screens/reader_qr_screen.dart';
+import 'package:fe/core/network/api_client.dart';
+import 'package:provider/provider.dart';
+import 'package:fe/features/qr/presentation/screens/staff_scanner_screen.dart';
 import 'package:fe/features/device/presentation/screens/device_activation_screen.dart';
 import 'package:fe/features/biometric/presentation/screens/face_register_screen.dart';
 
@@ -63,6 +67,24 @@ Map<String, WidgetBuilder> get appRoutes => {
         ? args['id'] as String
         : '';
     return StaffDetailScreen(staffId: id);
+  },
+  AppRoutes.readerQr: (context) {
+    final apiClient = context.read<ApiClient>();
+
+    return ReaderQrScreen(apiClient: apiClient);
+  },
+  AppRoutes.staffScanner: (context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    final action = args is Map && args['action'] is String
+        ? args['action'] as String
+        : null;
+
+    if (action != 'CHECK_IN' && action != 'CHECK_OUT') {
+      throw FlutterError('StaffScannerScreen requires CHECK_IN or CHECK_OUT.');
+    }
+
+    return StaffScannerScreen(action: action!);
   },
   AppRoutes.deviceActivation: (context) => const DeviceActivationScreen(),
 };
