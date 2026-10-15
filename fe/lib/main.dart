@@ -14,6 +14,8 @@ import 'features/user/data/services/user_api_service.dart';
 import 'features/user/presentation/providers/user_provider.dart';
 import 'features/device/data/services/device_api_service.dart';
 import 'features/device/presentation/providers/device_provider.dart';
+import 'features/library/data/services/schedule_api_service.dart';
+import 'features/library/presentation/providers/schedule_provider.dart';
 import 'routes/app_routes.dart';
 
 void main() async {
@@ -41,6 +43,7 @@ class _MyAppState extends State<MyApp> {
   late final UserApiService _userApiService;
   late final UserProvider _userProvider;
   late final DeviceProvider _deviceProvider;
+  late final ScheduleProvider _scheduleProvider;
 
   @override
   void initState() {
@@ -64,6 +67,9 @@ class _MyAppState extends State<MyApp> {
       faceBiometricService: _faceBiometricService,
     );
     _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
+    _scheduleProvider = ScheduleProvider(
+      service: ScheduleApiService(_apiClient),
+    );
 
     _authProvider.checkAuth();
   }
@@ -74,6 +80,7 @@ class _MyAppState extends State<MyApp> {
     _authProvider.dispose();
     _userProvider.dispose();
     _deviceProvider.dispose();
+    _scheduleProvider.dispose();
 
     super.dispose();
   }
@@ -105,6 +112,9 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<AuthProvider>.value(value: _authProvider),
         ChangeNotifierProvider<UserProvider>.value(value: _userProvider),
         ChangeNotifierProvider<DeviceProvider>.value(value: _deviceProvider),
+        ChangeNotifierProvider<ScheduleProvider>.value(
+          value: _scheduleProvider,
+        ),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {

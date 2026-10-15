@@ -34,6 +34,14 @@ abstract final class ApiConstants {
       '$deviceAssignments/staff/$id';
   static String revokeDeviceAssignment(String id) => '$deviceAssignments/$id';
 
+  // Library schedule endpoints
+  static const String librarySchedules = '/library/schedules';
+  static const String librarySchedulesStatus = '/library/schedules/status';
+  static const String librarySchedulesWeekly = '/library/schedules/weekly';
+  static const String librarySchedulesSpecial = '/library/schedules/special';
+
+  static String libraryScheduleById(String id) => '$librarySchedules/$id';
+
   // Biometric endpoints
   static const String registerFace = '/biometric/face/register';
   static const String faceStatus = '/biometric/face/status';

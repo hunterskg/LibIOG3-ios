@@ -167,6 +167,37 @@ class _AdminHomeContent extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: AppSpacing.s4),
+                  Text('Quản lý thư viện', style: AppTextStyles.h3),
+                  const SizedBox(height: AppSpacing.s3),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.schedule_rounded,
+                          title: 'Lịch mở cửa',
+                          desc: 'Giờ mở theo tuần, lịch nghỉ đặc biệt',
+                          color: AppColors.accent600,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.scheduleList,
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.s3),
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.event_busy_rounded,
+                          title: 'Đóng cửa & Vi phạm',
+                          desc: 'Sắp có',
+                          color: AppColors.charcoal400,
+                          onTap: () {},
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: AppSpacing.s5),
                   Center(
                     child: SizedBox(
