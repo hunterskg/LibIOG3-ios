@@ -85,8 +85,8 @@ class _ReaderLoginScreenState extends State<ReaderLoginScreen> {
           children: [
             AppTextField(
               controller: _usernameCtrl,
-              labelText: 'Email hoặc tên đăng nhập',
-              hintText: 'Nhập email hoặc tên đăng nhập',
+              labelText: 'Email',
+              hintText: 'Nhập email ',
               prefixIcon: Icons.person_outline,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
