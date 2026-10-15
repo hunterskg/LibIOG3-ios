@@ -30,6 +30,9 @@ import 'package:provider/provider.dart';
 import 'package:fe/features/qr/presentation/screens/staff_scanner_screen.dart';
 import 'package:fe/features/device/presentation/screens/device_activation_screen.dart';
 import 'package:fe/features/biometric/presentation/screens/face_register_screen.dart';
+import 'package:fe/features/library/domain/models/library_schedule.dart';
+import 'package:fe/features/library/presentation/screens/schedule_screen.dart';
+import 'package:fe/features/library/presentation/screens/schedule_form_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -87,4 +90,11 @@ Map<String, WidgetBuilder> get appRoutes => {
     return StaffScannerScreen(action: action!);
   },
   AppRoutes.deviceActivation: (context) => const DeviceActivationScreen(),
+  AppRoutes.scheduleList: (context) => const ScheduleScreen(),
+  AppRoutes.scheduleForm: (context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    return ScheduleFormScreen(
+      existing: args is LibrarySchedule ? args : null,
+    );
+  },
 };

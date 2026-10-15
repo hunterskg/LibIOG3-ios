@@ -62,6 +62,11 @@ flowchart TD
     AdminHome -->|Manage readers| ReaderList
     AdminHome -->|Device monitor| DeviceMonitor[Device / Kiosk Monitor]
     AdminHome -->|Operation stats| OpsReport[Operation Report & Stats]
+    AdminHome -->|Opening hours| ScheduleScreen[Library Schedule Screen]
+    ScheduleScreen -->|Weekly hours tab| WeeklyHours[Weekly Hours Grid]
+    ScheduleScreen -->|Special days tab| SpecialDays[Special Days List]
+    SpecialDays -->|Add / Select| SpecialDayForm[Special Day Form]
+    SpecialDayForm -->|Save / Delete success| ScheduleScreen
 
     %% ==========================================
     %% DEVICE FLOW - SELF SERVICE KIOSK

@@ -30,4 +30,7 @@ abstract final class AppRoutes {
   static const String readerQr = '/reader/qr';
   static const String staffScanner = '/staff/scanner';
   static const String deviceActivation = '/staff/device-activation';
+
+  static const String scheduleList = '/admin/library/schedules';
+  static const String scheduleForm = '/admin/library/schedules/form';
 }

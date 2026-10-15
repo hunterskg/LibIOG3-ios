@@ -11,6 +11,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { QrModule } from './modules/qr/qr.module';
 import { CheckInOutModule } from './modules/checkin-out/checkin-out.module';
+import { LibraryModule } from './modules/library/library.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CheckInOutModule } from './modules/checkin-out/checkin-out.module';
     AccessModule,
     NotificationModule,
     CheckInOutModule,
+    LibraryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
