@@ -42,4 +42,7 @@ abstract final class ApiConstants {
     if (readerId == null || readerId.isEmpty) return faceStatus;
     return '$faceStatus?readerId=$readerId';
   }
+
+   // Face check-in/check-out
+  static const String faceCheckInOut = '/checkin-out/face';
 }

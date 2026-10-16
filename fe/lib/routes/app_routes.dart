@@ -30,6 +30,7 @@ import 'package:provider/provider.dart';
 import 'package:fe/features/qr/presentation/screens/staff_scanner_screen.dart';
 import 'package:fe/features/device/presentation/screens/device_activation_screen.dart';
 import 'package:fe/features/biometric/presentation/screens/face_register_screen.dart';
+import 'package:fe/features/biometric/presentation/screens/staff_face_scanner_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -73,18 +74,10 @@ Map<String, WidgetBuilder> get appRoutes => {
 
     return ReaderQrScreen(apiClient: apiClient);
   },
+
   AppRoutes.staffScanner: (context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-
-    final action = args is Map && args['action'] is String
-        ? args['action'] as String
-        : null;
-
-    if (action != 'CHECK_IN' && action != 'CHECK_OUT') {
-      throw FlutterError('StaffScannerScreen requires CHECK_IN or CHECK_OUT.');
-    }
-
-    return StaffScannerScreen(action: action!);
+    return const StaffScannerScreen();
   },
   AppRoutes.deviceActivation: (context) => const DeviceActivationScreen(),
+  AppRoutes.staffFaceScanner: (context) => const StaffFaceScannerScreen(),
 };

@@ -57,16 +57,15 @@ class _MyAppState extends State<MyApp> {
       authService: _authService,
       tokenStorage: widget.tokenStorage,
     );
+
     _faceBiometricService = FaceBiometricService(_apiClient);
+
     _userApiService = UserApiService(_apiClient);
+
     _userProvider = UserProvider(
       apiService: _userApiService,
       faceBiometricService: _faceBiometricService,
     );
-    _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
-
-    _userApiService = UserApiService(_apiClient);
-    _userProvider = UserProvider(apiService: _userApiService);
 
     _deviceProvider = DeviceProvider(service: DeviceApiService(_apiClient));
 

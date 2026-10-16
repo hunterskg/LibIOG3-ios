@@ -20,7 +20,7 @@ import { FaceBiometricController } from './infra/controllers/face-biometric.cont
 import { FaceDomainExceptionInterceptor } from './infra/interceptors/face-domain-exception.interceptor';
 import { FaceBiometricService } from './application/services/facebiometric.service';
 import { FaceProfile } from './domain/entities/face-profile.entity';
-
+import { IdentifyFaceService } from './application/services/identify-face.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([BiometricProfile, FaceProfile]),
@@ -57,6 +57,7 @@ import { FaceProfile } from './domain/entities/face-profile.entity';
     VerifyFaceService,
     FaceDomainExceptionInterceptor,
     FaceBiometricService,
+    IdentifyFaceService,
   ],
   exports: [
     CheckLivenessService,
@@ -66,6 +67,7 @@ import { FaceProfile } from './domain/entities/face-profile.entity';
     FaceGrpcAdapter,
     FaceDomainExceptionInterceptor,
     FaceBiometricService,
+    IdentifyFaceService,
   ],
 })
 export class FaceBiometricModule {}

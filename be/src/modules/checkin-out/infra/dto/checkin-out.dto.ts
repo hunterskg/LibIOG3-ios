@@ -1,10 +1,9 @@
-import { IsIn, IsString, Matches } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 
 export class CheckInOutDto {
   @IsString()
-  @Matches(/^[a-f0-9]{64}$/i)
+  @Matches(/^[a-fA-F0-9]{64}$/, {
+    message: 'QR token phải gồm 64 ký tự hex.',
+  })
   token!: string;
-
-  @IsIn(['CHECK_IN', 'CHECK_OUT'])
-  action!: 'CHECK_IN' | 'CHECK_OUT';
 }
