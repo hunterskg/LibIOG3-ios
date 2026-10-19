@@ -33,7 +33,10 @@ class InsightFaceDetector(FaceDetectorPort):
     def _get_app(self) -> Any:
         # ponytail: lazy load FaceAnalysis khi app chưa được inject để tránh load model khi init
         if self._app is None:
+            import onnxruntime as ort
             from insightface.app import FaceAnalysis
+
+            ctx_id = 0 if "CUDAExecutionProvider" in ort.get_available_providers() else -1
 
             kwargs: dict[str, Any] = {
                 "name": self._model_name,
@@ -42,7 +45,7 @@ class InsightFaceDetector(FaceDetectorPort):
             if self._model_root:
                 kwargs["root"] = self._model_root
             app = FaceAnalysis(**kwargs)
-            app.prepare(ctx_id=0, det_thresh=self._det_thresh, det_size=self._det_size)
+            app.prepare(ctx_id=ctx_id, det_thresh=self._det_thresh, det_size=self._det_size)
             self._app = app
         return self._app
 

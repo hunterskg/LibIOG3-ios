@@ -135,10 +135,7 @@ class _ReaderHomeContent extends StatelessWidget {
                           title: 'Mã checkout',
                           desc: 'Mã quét để checkout tại thư viện',
                           onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.readerQr,
-                            );
+                            Navigator.pushNamed(context, AppRoutes.readerQr);
                           },
                         ),
                       ),
@@ -184,11 +181,14 @@ class _ReaderHomeContent extends StatelessWidget {
             style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
           ),
         ),
-        Text(
-          value,
-          style: (isMono ? AppTextStyles.mono : AppTextStyles.body).copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppColors.charcoal900,
+        Expanded(
+          child: Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            style: (isMono ? AppTextStyles.mono : AppTextStyles.body).copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.charcoal900,
+            ),
           ),
         ),
       ],

@@ -41,7 +41,10 @@ class InsightFaceEmbedder(FaceEmbedderPort):
         if self._recognizer is None:
             import os
 
+            import onnxruntime as ort
             from insightface.model_zoo import get_model
+
+            ctx_id = 0 if "CUDAExecutionProvider" in ort.get_available_providers() else -1
 
             model_path = self._model_path
             kwargs: dict[str, Any] = {}
@@ -55,7 +58,7 @@ class InsightFaceEmbedder(FaceEmbedderPort):
                     model_path = default_path
             rec = get_model(model_path, **kwargs)
             if hasattr(rec, "prepare"):
-                rec.prepare(ctx_id=0)
+                rec.prepare(ctx_id=ctx_id)
             self._recognizer = rec
         return self._recognizer
 

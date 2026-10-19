@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from typing import Any
 
@@ -11,6 +12,8 @@ from app.ports.face_detector import (
 )
 from app.ports.face_embedder import EmbeddingMismatchException
 from app.ports.liveness_detector import SpoofDetectedException
+
+logger = logging.getLogger(__name__)
 
 DOMAIN_EXCEPTION_STATUS_MAP: dict[type[Exception], grpc.StatusCode] = {
     FaceNotFoundException: grpc.StatusCode.NOT_FOUND,
@@ -56,6 +59,7 @@ class GrpcErrorInterceptor(grpc.ServerInterceptor):  # type: ignore[misc]
                 except grpc.RpcError:
                     raise
                 except Exception as exc:  # noqa: BLE001 - Interceptor bắt ngoại lệ mức cao để map sang gRPC status
+                    logger.exception("gRPC method unhandled exception: %s", exc)
                     status_code, details = map_exception_to_grpc_status(exc)
                     context.abort(status_code, details)
 
