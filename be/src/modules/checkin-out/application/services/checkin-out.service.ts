@@ -3,244 +3,325 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
 import { createHash } from 'crypto';
+import { DataSource } from 'typeorm';
+import { AccessLog } from '../../../access/domain/entities/access-log.entity';
+import { AccessAction } from '../../../access/domain/enums/access-action.enum';
+import { AccessMethod } from '../../../access/domain/enums/access-method.enum';
+import { AccessResult } from '../../../access/domain/enums/access-result.enum';
+import { Device } from '../../../device/domain/entities/device.entity';
+import { Gate } from '../../../device/domain/entities/gate.entity';
+import { DeviceStatus } from '../../../device/domain/enums/device-status.enum';
+import { GateStatus } from '../../../device/domain/enums/gate-status.enum';
+import { QrToken } from '../../../qr/domain/entities/qr-token.entity';
 import { QrTokenStatus } from '../../../qr/domain/enums/qr-token-status.enum';
-
-export type CheckInOutAction = 'CHECK_IN' | 'CHECK_OUT';
-
-interface CheckInOutInput {
-  token: string;
-  action: CheckInOutAction;
-}
+import { Role } from '../../../user/domain/enums/role.enum';
+import { UserStatus } from '../../../user/domain/enums/user-statis.enum';
+import { User } from '../../../user/domain/entities/user.entity';
+import { CheckInOutDto } from '../../infra/dto/checkin-out.dto';
+import { AccessStateService, ReaderAccessState } from './access-state.service';
+import { IdentifyFaceService } from '../../../biommetric/face-biometric/application/services/identify-face.service';
 
 @Injectable()
 export class CheckInOutService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly accessStateService: AccessStateService,
+    private readonly identifyFaceService: IdentifyFaceService,
+  ) {}
 
-  async checkInOut(staffId: string, input: CheckInOutInput) {
-    const { token, action } = input;
+  async checkInOut(staffId: string, dto: CheckInOutDto) {
+    const now = new Date();
+    const tokenHash = createHash('sha256')
+      .update(dto.token)
+      .digest('hex');
 
-    if (!staffId) {
-      throw new UnauthorizedException('Không xác định được tài khoản Staff.');
-    }
+    return this.dataSource.transaction(async (manager) => {
+      const userRepository = manager.getRepository(User);
+      const qrTokenRepository = manager.getRepository(QrToken);
+      const deviceRepository = manager.getRepository(Device);
+      const gateRepository = manager.getRepository(Gate);
+      const accessLogRepository = manager.getRepository(AccessLog);
 
-    if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
-      throw new BadRequestException('QR token không hợp lệ.');
-    }
+      const staff = await userRepository.findOne({
+        where: {
+          id: staffId,
+          role: Role.STAFF,
+          status: UserStatus.ACTIVE,
+        },
+      });
 
-    if (action !== 'CHECK_IN' && action !== 'CHECK_OUT') {
-      throw new BadRequestException('Action phải là CHECK_IN hoặc CHECK_OUT.');
-    }
-
-    const tokenHash = createHash('sha256').update(token).digest('hex');
-
-    return this.dataSource.transaction(async (manager: EntityManager) => {
-      const qrRows = await manager.query(
-        `
-          SELECT
-            qt.id AS qr_id,
-            qt.reader_id,
-            qt.status AS qr_status,
-            qt.expires_at,
-            qt.used_at,
-            qt.revoked_at
-          FROM qr_tokens qt
-          WHERE qt.token_hash = $1
-          FOR UPDATE
-          `,
-        [tokenHash],
-      );
-
-      if (qrRows.length === 0) {
-        throw new UnauthorizedException('QR không tồn tại hoặc không hợp lệ.');
+      if (!staff) {
+        throw new ForbiddenException(
+          'Tài khoản nhân viên không hợp lệ hoặc đã bị vô hiệu hóa.',
+        );
       }
 
-      const qr = qrRows[0];
+      const qrToken = await qrTokenRepository
+        .createQueryBuilder('qr')
+        .innerJoinAndSelect('qr.reader', 'reader')
+        .where('qr.tokenHash = :tokenHash', { tokenHash })
+        .setLock('pessimistic_write')
+        .getOne();
+
+      if (!qrToken) {
+        throw new NotFoundException(
+          'QR token không tồn tại hoặc không hợp lệ.',
+        );
+      }
 
       if (
-        qr.qr_status !== QrTokenStatus.ACTIVE ||
-        qr.used_at !== null ||
-        qr.revoked_at !== null ||
-        new Date(qr.expires_at).getTime() <= Date.now()
+        qrToken.status !== QrTokenStatus.ACTIVE ||
+        qrToken.usedAt ||
+        qrToken.revokedAt ||
+        qrToken.expiresAt <= now
       ) {
-        throw new UnauthorizedException(
-          'QR đã hết hạn, đã sử dụng hoặc bị vô hiệu hóa.',
+        throw new BadRequestException(
+          'QR token đã hết hạn, đã bị thu hồi hoặc đã được sử dụng.',
         );
       }
 
-      const readerId: string = qr.reader_id;
+      const readerId = qrToken.reader?.id;
 
-      await manager.query(
-        `
-          SELECT pg_advisory_xact_lock(
-            hashtextextended($1::text, 0)
-          )
-          `,
-        [readerId],
-      );
+      if (!readerId) {
+        throw new BadRequestException(
+          'QR token không liên kết với Reader.',
+        );
+      }
 
-      const staffRows = await manager.query(
-        `
-          SELECT u.id
-          FROM users u
-          WHERE u.id = $1
-            AND u.role IN ('staff', 'admin')
-            AND u.status = 'active'
-          `,
-        [staffId],
-      );
+      const reader = await userRepository
+        .createQueryBuilder('reader')
+        .where('reader.id = :readerId', { readerId })
+        .andWhere('reader.role = :role', { role: Role.READER })
+        .setLock('pessimistic_write')
+        .getOne();
 
-      if (staffRows.length === 0) {
+      if (!reader) {
+        throw new NotFoundException('Không tìm thấy Reader.');
+      }
+
+      if (reader.status !== UserStatus.ACTIVE) {
         throw new ForbiddenException(
-          'Tài khoản không phải Staff đang hoạt động.',
+          'Tài khoản Reader đã bị vô hiệu hóa.',
         );
       }
 
-      const deviceRows = await manager.query(
-        `
-          SELECT
-            d.id AS device_id,
-            d.gate_id
-          FROM devices d
-          WHERE d.staff_id = $1
-            AND d.status = 'ACTIVE'
-            AND d.revoked_at IS NULL
-            AND (
-              d.expired_at IS NULL
-              OR d.expired_at > NOW()
-            )
-            AND d.gate_id IS NOT NULL
-          ORDER BY d.created_at DESC
-          LIMIT 1
-          `,
-        [staffId],
-      );
+      const device = await deviceRepository
+        .createQueryBuilder('device')
+        .where('device.staffId = :staffId', { staffId })
+        .andWhere('device.status = :status', {
+          status: DeviceStatus.ACTIVE,
+        })
+        .andWhere('device.revokedAt IS NULL')
+        .andWhere(
+          '(device.expiredAt IS NULL OR device.expiredAt > :now)',
+          { now },
+        )
+        .andWhere('device.gateId IS NOT NULL')
+        .orderBy('device.assignedAt', 'DESC')
+        .addOrderBy('device.createdAt', 'DESC')
+        .getOne();
 
-      if (deviceRows.length === 0) {
+      if (!device) {
         throw new ForbiddenException(
-          'Staff chưa có thiết bị hợp lệ được gắn với cổng.',
+          `Nhân viên có ID ${staffId} chưa có thiết bị hoạt động hợp lệ được gán.`,
         );
       }
 
-      const deviceId: string = deviceRows[0].device_id;
-      const gateId: string = deviceRows[0].gate_id;
+      const gate = await gateRepository.findOne({
+        where: {
+          id: device.gateId,
+          status: GateStatus.ACTIVE,
+        },
+      });
 
-      const latestLogs = await manager.query(
-        `
-          SELECT action, result
-          FROM access_logs
-          WHERE reader_id = $1
-            AND result = 'SUCCESS'
-          ORDER BY occurred_at DESC, created_at DESC, id DESC
-          LIMIT 1
-          `,
-        [readerId],
-      );
-
-      let currentState: 'IN' | 'OUT' = 'OUT';
-
-      if (latestLogs.length > 0) {
-        const latestAction = latestLogs[0].action;
-
-        if (latestAction === 'CHECK_IN') {
-          currentState = 'IN';
-        } else if (
-          latestAction === 'CHECK_OUT' ||
-          latestAction === 'AUTO_CHECK_OUT'
-        ) {
-          currentState = 'OUT';
-        }
+      if (!gate) {
+        throw new ForbiddenException(
+          'Cổng được gán cho thiết bị không hoạt động.',
+        );
       }
 
-      let reason: string | null = null;
-
-      if (action === 'CHECK_IN' && currentState === 'IN') {
-        reason = 'Reader đã check-in, không thể check-in lần nữa.';
-      } else if (action === 'CHECK_OUT' && currentState === 'OUT') {
-        reason = 'Reader chưa check-in hoặc đã check-out.';
-      }
-
-      const result = reason ? 'DENIED' : 'SUCCESS';
-
-      const logRows = await manager.query(
-        `
-          INSERT INTO access_logs (
-            reader_id,
-            gate_id,
-            device_id,
-            staff_id,
-            action,
-            method,
-            result,
-            reason,
-            occurred_at
-          )
-          VALUES (
-            $1, $2, $3, $4, $5, 'QR', $6, $7, NOW()
-          )
-          RETURNING
-            id,
-            reader_id,
-            gate_id,
-            device_id,
-            staff_id,
-            action,
-            method,
-            result,
-            reason,
-            occurred_at
-          `,
-        [readerId, gateId, deviceId, staffId, action, result, reason],
+      const currentState = await this.accessStateService.getCurrentState(
+        manager,
+        reader.id,
       );
 
-      const consumedRows = await manager.query(
-        `
-          UPDATE qr_tokens
-          SET used_at = NOW(),
-              status = $2
-          WHERE id = $1
-            AND status = $3
-            AND used_at IS NULL
-            AND revoked_at IS NULL
-            AND expires_at > NOW()
-          RETURNING id
-          `,
-        [qr.qr_id, QrTokenStatus.USED, QrTokenStatus.ACTIVE],
-      );
+      const accessAction =
+        currentState === ReaderAccessState.OUT
+          ? AccessAction.CHECK_IN
+          : AccessAction.CHECK_OUT;
 
-      if (consumedRows.length === 0) {
-        throw new UnauthorizedException('QR đã hết hạn hoặc đã được sử dụng.');
-      }
+      const newState =
+        accessAction === AccessAction.CHECK_IN
+          ? ReaderAccessState.IN
+          : ReaderAccessState.OUT;
 
-      const accessLog = logRows[0];
+      const accessLog = accessLogRepository.create({
+        readerId: reader.id,
+        staffId: staff.id,
+        deviceId: device.id,
+        gateId: gate.id,
+        action: accessAction,
+        method: AccessMethod.QR,
+        result: AccessResult.SUCCESS,
+        occurredAt: now,
+      });
+
+      const savedLog = await accessLogRepository.save(accessLog);
+
+      qrToken.status = QrTokenStatus.USED;
+      qrToken.usedAt = now;
+      await qrTokenRepository.save(qrToken);
 
       return {
-        success: result === 'SUCCESS',
+        success: true,
         message:
-          reason ??
-          (action === 'CHECK_IN'
+          accessAction === AccessAction.CHECK_IN
             ? 'Check-in thành công.'
-            : 'Check-out thành công.'),
+            : 'Check-out thành công.',
         data: {
-          accessLogId: accessLog.id,
-          readerId,
-          staffId,
-          gateId,
-          deviceId,
-          action: accessLog.action,
-          method: accessLog.method,
-          result: accessLog.result,
-          reason: accessLog.reason,
-          occurredAt: accessLog.occurred_at,
-          currentState:
-            result === 'DENIED'
-              ? currentState
-              : action === 'CHECK_IN'
-                ? 'IN'
-                : 'OUT',
+          accessLogId: savedLog.id,
+          readerId: reader.id,
+          staffId: staff.id,
+          deviceId: device.id,
+          gateId: gate.id,
+          action: savedLog.action,
+          method: savedLog.method,
+          result: savedLog.result,
+          state: newState,
+          occurredAt: savedLog.occurredAt,
+        },
+      };
+    });
+  }
+
+  async checkInOutByFace(staffId: string, imageBuffer: Buffer) {
+    const identity = await this.identifyFaceService.execute(imageBuffer);
+    const now = new Date();
+
+    return this.dataSource.transaction(async (manager) => {
+      const userRepository = manager.getRepository(User);
+      const deviceRepository = manager.getRepository(Device);
+      const gateRepository = manager.getRepository(Gate);
+      const accessLogRepository = manager.getRepository(AccessLog);
+
+      const staff = await userRepository.findOne({
+        where: {
+          id: staffId,
+          role: Role.STAFF,
+          status: UserStatus.ACTIVE,
+        },
+      });
+
+      if (!staff) {
+        throw new ForbiddenException(
+          'Tài khoản nhân viên không hợp lệ hoặc đã bị vô hiệu hóa.',
+        );
+      }
+
+      const reader = await userRepository
+        .createQueryBuilder('reader')
+        .where('reader.id = :readerId', {
+          readerId: identity.readerId,
+        })
+        .andWhere('reader.role = :role', {
+          role: Role.READER,
+        })
+        .setLock('pessimistic_write')
+        .getOne();
+
+      if (!reader) {
+        throw new NotFoundException('Không tìm thấy Reader.');
+      }
+
+      if (reader.status !== UserStatus.ACTIVE) {
+        throw new ForbiddenException(
+          'Tài khoản Reader đã bị vô hiệu hóa.',
+        );
+      }
+
+      const device = await deviceRepository
+        .createQueryBuilder('device')
+        .where('device.staffId = :staffId', { staffId })
+        .andWhere('device.status = :status', {
+          status: DeviceStatus.ACTIVE,
+        })
+        .andWhere('device.revokedAt IS NULL')
+        .andWhere(
+          '(device.expiredAt IS NULL OR device.expiredAt > :now)',
+          { now },
+        )
+        .andWhere('device.gateId IS NOT NULL')
+        .orderBy('device.assignedAt', 'DESC')
+        .addOrderBy('device.createdAt', 'DESC')
+        .getOne();
+
+      if (!device) {
+        throw new ForbiddenException(
+          `Nhân viên có ID ${staffId} chưa có thiết bị hoạt động hợp lệ được gán.`,
+        );
+      }
+
+      const gate = await gateRepository.findOne({
+        where: {
+          id: device.gateId,
+          status: GateStatus.ACTIVE,
+        },
+      });
+
+      if (!gate) {
+        throw new ForbiddenException(
+          'Cổng được gán cho thiết bị không hoạt động.',
+        );
+      }
+
+      const currentState = await this.accessStateService.getCurrentState(
+        manager,
+        reader.id,
+      );
+
+      const accessAction =
+        currentState === ReaderAccessState.OUT
+          ? AccessAction.CHECK_IN
+          : AccessAction.CHECK_OUT;
+
+      const newState =
+        accessAction === AccessAction.CHECK_IN
+          ? ReaderAccessState.IN
+          : ReaderAccessState.OUT;
+
+      const accessLog = accessLogRepository.create({
+        readerId: reader.id,
+        staffId: staff.id,
+        deviceId: device.id,
+        gateId: gate.id,
+        action: accessAction,
+        method: AccessMethod.FACE,
+        result: AccessResult.SUCCESS,
+        occurredAt: now,
+      });
+
+      const savedLog = await accessLogRepository.save(accessLog);
+
+      return {
+        success: true,
+        message:
+          accessAction === AccessAction.CHECK_IN
+            ? 'Face check-in thành công.'
+            : 'Face check-out thành công.',
+        data: {
+          accessLogId: savedLog.id,
+          readerId: reader.id,
+          staffId: staff.id,
+          deviceId: device.id,
+          gateId: gate.id,
+          action: savedLog.action,
+          method: savedLog.method,
+          result: savedLog.result,
+          state: newState,
+          occurredAt: savedLog.occurredAt,
+          similarity: identity.similarity,
         },
       };
     });

@@ -113,41 +113,41 @@ class _StaffHomeContent extends StatelessWidget {
                   const SizedBox(height: AppSpacing.s4),
                   Text('Nghiệp vụ quầy thư viện', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.check_circle_outline,
-                          title: 'Check-in',
-                          desc: 'Quét mã nhận diện bạn đọc',
-                          color: AppColors.success,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.staffScanner,
-                              arguments: {'action': 'CHECK_IN'},
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.s3),
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.menu_book_outlined,
-                          title: 'Lịch sử ra vào',
-                          desc: 'Theo dõi lượt vào và lượt ra',
-                          color: AppColors.info,
+                  _actionCard(
+                    icon: Icons.qr_code_scanner_rounded,
+                    title: 'Quét QR',
+                    desc: 'Quét mã độc giả để tự động check-in hoặc check-out',
+                    color: AppColors.success,
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.staffScanner);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.s3),
 
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.staffScanner,
-                              arguments: {'action': 'CHECK_OUT'},
-                            );
-                          },
+                  _actionCard(
+                    icon: Icons.face_retouching_natural,
+                    title: 'Quét khuôn mặt',
+                    desc: 'Nhận diện Reader để tự động check-in hoặc check-out',
+                    color: AppColors.accent500,
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.staffFaceScanner);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.s3),
+                  _actionCard(
+                    icon: Icons.menu_book_outlined,
+                    title: 'Lịch sử ra vào',
+                    desc: 'Theo dõi lượt vào và lượt ra',
+                    color: AppColors.info,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Chức năng lịch sử ra vào chưa được triển khai.',
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                   const SizedBox(height: AppSpacing.s4),
                   Text('Quản lý hệ thống', style: AppTextStyles.h3),
@@ -209,27 +209,9 @@ class _StaffHomeContent extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Chức năng quét mã khách hàng sẽ được bổ sung sau.',
-              ),
-            ),
-          );
-        },
-        backgroundColor: AppColors.accent600,
-        foregroundColor: AppColors.white,
-        elevation: 8,
-        child: const Icon(Icons.qr_code_scanner_rounded, size: 30),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         height: 72,
         color: AppColors.white,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -241,11 +223,11 @@ class _StaffHomeContent extends StatelessWidget {
                 color: AppColors.charcoal900,
               ),
             ),
-            const SizedBox(width: 52),
             IconButton(
               tooltip: 'Tài khoản',
-              onPressed: () =>
-                  Navigator.pushNamed(context, AppRoutes.staffProfile),
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.staffProfile);
+              },
               icon: const Icon(
                 Icons.account_circle_outlined,
                 color: AppColors.charcoal700,
