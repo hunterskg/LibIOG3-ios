@@ -56,6 +56,7 @@ export class VerifyFaceService extends BaseService {
       candidateNorm,
       referenceNorm,
     );
+
     const isMatched = similarity >= threshold;
 
     return { isMatched, similarity };

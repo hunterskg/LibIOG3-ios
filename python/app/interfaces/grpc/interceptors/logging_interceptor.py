@@ -42,11 +42,12 @@ class GrpcLoggingInterceptor(grpc.ServerInterceptor):  # type: ignore[misc]
                     return response
                 except Exception as exc:
                     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                    err_msg = str(exc) or type(exc).__name__
                     self._logger.error(
                         "gRPC call failed: %s after %.2fms - error: %s",
                         method,
                         elapsed_ms,
-                        exc,
+                        err_msg,
                     )
                     raise
 

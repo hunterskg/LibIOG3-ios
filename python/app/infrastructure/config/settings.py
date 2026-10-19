@@ -30,7 +30,7 @@ class AppSettings(BaseSettings):
     embedder_model_path: str = "models/embedder.onnx"
     liveness_model_path: str = "models/liveness.onnx"
     insightface_model_name: str = "buffalo_l"
-    model_root_dir: str = "models"
+    model_root_dir: str | None = None
     liveness_input_size: tuple[int, int] = (80, 80)
 
     def server_address(self) -> str:

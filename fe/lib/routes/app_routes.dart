@@ -33,6 +33,7 @@ import 'package:fe/features/biometric/presentation/screens/face_register_screen.
 import 'package:fe/features/library/domain/models/library_schedule.dart';
 import 'package:fe/features/library/presentation/screens/schedule_screen.dart';
 import 'package:fe/features/library/presentation/screens/schedule_form_screen.dart';
+import 'package:fe/features/biometric/presentation/screens/staff_face_scanner_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -76,25 +77,15 @@ Map<String, WidgetBuilder> get appRoutes => {
 
     return ReaderQrScreen(apiClient: apiClient);
   },
+
   AppRoutes.staffScanner: (context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-
-    final action = args is Map && args['action'] is String
-        ? args['action'] as String
-        : null;
-
-    if (action != 'CHECK_IN' && action != 'CHECK_OUT') {
-      throw FlutterError('StaffScannerScreen requires CHECK_IN or CHECK_OUT.');
-    }
-
-    return StaffScannerScreen(action: action!);
+    return const StaffScannerScreen();
   },
   AppRoutes.deviceActivation: (context) => const DeviceActivationScreen(),
   AppRoutes.scheduleList: (context) => const ScheduleScreen(),
   AppRoutes.scheduleForm: (context) {
     final args = ModalRoute.of(context)?.settings.arguments;
-    return ScheduleFormScreen(
-      existing: args is LibrarySchedule ? args : null,
-    );
+    return ScheduleFormScreen(existing: args is LibrarySchedule ? args : null);
   },
+  AppRoutes.staffFaceScanner: (context) => const StaffFaceScannerScreen(),
 };
