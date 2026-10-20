@@ -1,3 +1,4 @@
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { BiometricModule } from './modules/biommetric/biometric.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
@@ -15,6 +16,7 @@ import { LibraryModule } from './modules/library/library.module';
 
 @Module({
   imports: [
+    DashboardModule,
     BiometricModule,
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,

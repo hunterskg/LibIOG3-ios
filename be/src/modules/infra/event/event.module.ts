@@ -1,7 +1,12 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { INTERNAL_EVENT_BUS } from './application/internal-event-bus.interface';
+import {
+  INTERNAL_EVENT_BUS,
+  InternalEventBus,
+} from './application/internal-event-bus.interface';
 import { EventEmitterService } from './event-emitter/event-emitter.service';
+
+export { INTERNAL_EVENT_BUS, InternalEventBus };
 
 @Module({
   imports: [EventEmitterModule.forRoot()],

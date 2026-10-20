@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessLog } from '../access/domain/entities/access-log.entity';
@@ -10,23 +9,16 @@ import { FaceBiometricModule } from '../biommetric/face-biometric/facebiometric.
 import { CheckInOutService } from './application/services/checkin-out.service';
 import { AccessStateService } from './application/services/access-state.service';
 import { CheckInOutController } from './infra/controllers/checkin-out.controller';
+import { EventModule } from '../infra/event/event.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      QrToken,
-      Device,
-      Gate,
-      AccessLog,
-    ]),
+    TypeOrmModule.forFeature([User, QrToken, Device, Gate, AccessLog]),
     FaceBiometricModule,
+    EventModule,
   ],
   controllers: [CheckInOutController],
-  providers: [
-    CheckInOutService,
-    AccessStateService,
-  ],
+  providers: [CheckInOutService, AccessStateService],
   exports: [CheckInOutService],
 })
 export class CheckInOutModule {}
