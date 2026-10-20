@@ -20,9 +20,7 @@ import { Role } from '../../../user/domain/enums/role.enum';
 @UseGuards(JwtGuard, RoleGuard)
 @Roles(Role.STAFF)
 export class CheckInOutController {
-  constructor(
-    private readonly checkInOutService: CheckInOutService,
-  ) {}
+  constructor(private readonly checkInOutService: CheckInOutService) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -49,22 +47,15 @@ export class CheckInOutController {
       !/^[A-Za-z0-9+/]*={0,2}$/.test(imageBase64) ||
       imageBase64.length % 4 === 1
     ) {
-      throw new BadRequestException(
-        'Dữ liệu ảnh Base64 không hợp lệ.',
-      );
+      throw new BadRequestException('Dữ liệu ảnh Base64 không hợp lệ.');
     }
 
     const imageBuffer = Buffer.from(imageBase64, 'base64');
 
     if (!imageBuffer.length) {
-      throw new BadRequestException(
-        'Ảnh khuôn mặt không hợp lệ.',
-      );
+      throw new BadRequestException('Ảnh khuôn mặt không hợp lệ.');
     }
 
-    return this.checkInOutService.checkInOutByFace(
-      staffId,
-      imageBuffer,
-    );
+    return this.checkInOutService.checkInOutByFace(staffId, imageBuffer);
   }
 }
