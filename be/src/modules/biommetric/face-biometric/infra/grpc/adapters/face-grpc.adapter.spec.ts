@@ -8,41 +8,29 @@ import { mapFaceGrpcError } from './face-grpc.adapter';
 
 describe('mapFaceGrpcError', () => {
   it.each([
-    [3, BadRequestException],
-    [9, UnprocessableEntityException],
-    [5, UnprocessableEntityException],
-    [7, UnprocessableEntityException],
-    [14, InternalServerErrorException],
-    [4, InternalServerErrorException],
-    [13, InternalServerErrorException],
-    [123, InternalServerErrorException],
-  ])('maps gRPC code %i to HTTP exception', (code, ExceptionType) => {
-    expect(mapFaceGrpcError({ code, details: 'face error' })).toBeInstanceOf(
-      ExceptionType,
-    );
+    [3, BadRequestException, 'Bad input'],
+    [9, UnprocessableEntityException, 'Multiple faces'],
+    [5, UnprocessableEntityException, 'Face missing'],
+    [7, UnprocessableEntityException, 'Spoof detected'],
+  ])('maps gRPC code %s to HTTP 4xx and keeps details', (code, type, details) => {
+    const mapped = mapFaceGrpcError({ code, details });
+    expect(mapped).toBeInstanceOf(type);
+    expect((mapped as HttpException).getResponse()).toMatchObject({ message: details });
   });
 
-  it('prefers details and uses a safe fallback when details are empty', () => {
-    expect(
-      mapFaceGrpcError({ code: 9, details: '  ', message: 'message' }),
-    ).toEqual(
-      expect.objectContaining({ message: expect.stringContaining('message') }),
-    );
-    expect(mapFaceGrpcError({ code: 9 }).message).toBe(
-      'Ảnh khuôn mặt không đáp ứng yêu cầu.',
-    );
+  it('uses message then safe fallback when details are absent or empty', () => {
+    expect((mapFaceGrpcError({ code: 9, details: '', message: 'Message' }) as HttpException).getResponse())
+      .toMatchObject({ message: 'Message' });
+    expect((mapFaceGrpcError({ code: 9 }) as HttpException).getResponse())
+      .toMatchObject({ message: 'Ảnh khuôn mặt không đáp ứng yêu cầu.' });
   });
 
-  it('preserves existing HTTP exceptions', () => {
-    const error = new HttpException('existing', 401);
-    expect(mapFaceGrpcError(error)).toBe(error);
+  it.each([4, 13, 14, 99, undefined])('keeps server/unknown code %s as HTTP 500', (code) => {
+    expect(mapFaceGrpcError({ code })).toBeInstanceOf(InternalServerErrorException);
   });
 
-  it('does not expose transport details for server errors', () => {
-    expect(mapFaceGrpcError({ code: 14, details: 'private detail' })).toEqual(
-      expect.objectContaining({
-        message: expect.not.stringContaining('private detail'),
-      }),
-    );
+  it('preserves an existing HttpException instance', () => {
+    const original = new BadRequestException('Already HTTP');
+    expect(mapFaceGrpcError(original)).toBe(original);
   });
 });

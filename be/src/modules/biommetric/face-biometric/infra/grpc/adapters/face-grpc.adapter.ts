@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -22,7 +23,6 @@ import {
 } from '../../../domain/value-objects/landmark.vo';
 import { GrpcFaceService } from '../face-grpc.interface';
 import { randomUUID } from 'crypto';
-import { HttpException } from '@nestjs/common';
 
 export const FACE_GRPC_CLIENT = 'FACE_GRPC_CLIENT';
 
@@ -46,9 +46,7 @@ export function mapFaceGrpcError(error: unknown): Error {
         : undefined;
 
   if (code === 3) {
-    return new BadRequestException(
-      details ?? 'Dữ liệu khuôn mặt không hợp lệ.',
-    );
+    return new BadRequestException(details ?? 'Dữ liệu khuôn mặt không hợp lệ.');
   }
   if (code === 9 || code === 5 || code === 7) {
     const fallback =
@@ -80,6 +78,7 @@ export class FaceGrpcAdapter
   }
 
   onModuleInit() {
+    // Lấy instance của FaceService được định nghĩa trong face.proto
     this.faceService = this.client.getService<GrpcFaceService>('FaceService');
   }
 
@@ -91,13 +90,11 @@ export class FaceGrpcAdapter
     }
   }
 
+  // 1. Nhận diện khuôn mặt
   async detect(imageBuffer: Buffer): Promise<Face[]> {
     const res = await this.call(
       firstValueFrom(
-        this.faceService.detectFaces({
-          image_bytes: imageBuffer,
-          max_faces: 5,
-        }),
+        this.faceService.detectFaces({ image_bytes: imageBuffer, max_faces: 5 }),
       ),
     );
     if (!res.success) return [];
@@ -120,6 +117,7 @@ export class FaceGrpcAdapter
     );
   }
 
+  // 2. Trích xuất vector đặc trưng 512D
   async extractEmbedding(
     imageBuffer: Buffer,
     bbox?: BoundingBox | null,
@@ -151,6 +149,7 @@ export class FaceGrpcAdapter
     return new FaceEmbedding(res.embedding.values, res.embedding.dimension);
   }
 
+  // 3. Kiểm tra chống giả mạo
   async checkLiveness(imageBuffer: Buffer): Promise<LivenessResult> {
     const res = await this.call(
       firstValueFrom(
@@ -167,6 +166,7 @@ export class FaceGrpcAdapter
     return LivenessResult.create(randomUUID(), status, res.confidence, null);
   }
 
+  // 4. So khớp khuôn mặt
   async verify(
     imageBuffer: Buffer,
     referenceEmbedding: FaceEmbedding,

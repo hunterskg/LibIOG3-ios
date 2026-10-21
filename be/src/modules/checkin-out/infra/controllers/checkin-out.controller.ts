@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CheckInOutService } from '../../application/services/checkin-out.service';
 import { CheckInOutDto } from '../dto/checkin-out.dto';
@@ -15,6 +16,7 @@ import { Roles } from '../../../auth/infra/decorators/role.decorator';
 import { JwtGuard } from '../../../auth/infra/guard/jwt.guard';
 import { RoleGuard } from '../../../auth/infra/guard/role.guard';
 import { Role } from '../../../user/domain/enums/role.enum';
+import { FaceDomainExceptionInterceptor } from '../../../biommetric/face-biometric/infra/interceptors/face-domain-exception.interceptor';
 
 @Controller('checkin-out')
 @UseGuards(JwtGuard, RoleGuard)
@@ -32,6 +34,7 @@ export class CheckInOutController {
   }
 
   @Post('face')
+  @UseInterceptors(FaceDomainExceptionInterceptor)
   @HttpCode(HttpStatus.OK)
   async checkInOutByFace(
     @CurrentUser('userId') staffId: string,
