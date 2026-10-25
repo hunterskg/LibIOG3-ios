@@ -30,7 +30,12 @@ void main() {
         AppRoutes.staffList,
         AppRoutes.createStaff,
         AppRoutes.staffDetail,
+        AppRoutes.readerQr,
+        AppRoutes.staffScanner,
         AppRoutes.deviceActivation,
+        AppRoutes.scheduleList,
+        AppRoutes.scheduleForm,
+        AppRoutes.staffFaceScanner,
       ];
 
       for (final route in expected) {

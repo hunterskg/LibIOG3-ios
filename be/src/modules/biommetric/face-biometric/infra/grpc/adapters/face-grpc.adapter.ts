@@ -1,4 +1,12 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  OnModuleInit,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { FaceDetectorPort } from '../../../application/ports/face-detector.port';
@@ -17,6 +25,43 @@ import { GrpcFaceService } from '../face-grpc.interface';
 import { randomUUID } from 'crypto';
 
 export const FACE_GRPC_CLIENT = 'FACE_GRPC_CLIENT';
+
+type GrpcError = {
+  code?: unknown;
+  status?: unknown;
+  details?: unknown;
+  message?: unknown;
+};
+
+export function mapFaceGrpcError(error: unknown): Error {
+  if (error instanceof HttpException) return error;
+
+  const grpcError = error as GrpcError;
+  const code = grpcError?.code ?? grpcError?.status;
+  const details =
+    typeof grpcError?.details === 'string' && grpcError.details.trim()
+      ? grpcError.details
+      : typeof grpcError?.message === 'string' && grpcError.message.trim()
+        ? grpcError.message
+        : undefined;
+
+  if (code === 3) {
+    return new BadRequestException(details ?? 'Dữ liệu khuôn mặt không hợp lệ.');
+  }
+  if (code === 9 || code === 5 || code === 7) {
+    const fallback =
+      code === 5
+        ? 'Không tìm thấy khuôn mặt trong ảnh.'
+        : code === 7
+          ? 'Ảnh không vượt qua kiểm tra xác thực khuôn mặt.'
+          : 'Ảnh khuôn mặt không đáp ứng yêu cầu.';
+    return new UnprocessableEntityException(details ?? fallback);
+  }
+
+  return new InternalServerErrorException(
+    'Dịch vụ nhận diện khuôn mặt hiện không khả dụng.',
+  );
+}
 
 @Injectable()
 export class FaceGrpcAdapter
@@ -37,10 +82,20 @@ export class FaceGrpcAdapter
     this.faceService = this.client.getService<GrpcFaceService>('FaceService');
   }
 
+  private async call<T>(request: Promise<T>): Promise<T> {
+    try {
+      return await request;
+    } catch (error) {
+      throw mapFaceGrpcError(error);
+    }
+  }
+
   // 1. Nhận diện khuôn mặt
   async detect(imageBuffer: Buffer): Promise<Face[]> {
-    const res = await firstValueFrom(
-      this.faceService.detectFaces({ image_bytes: imageBuffer, max_faces: 5 }),
+    const res = await this.call(
+      firstValueFrom(
+        this.faceService.detectFaces({ image_bytes: imageBuffer, max_faces: 5 }),
+      ),
     );
     if (!res.success) return [];
 
@@ -68,34 +123,38 @@ export class FaceGrpcAdapter
     bbox?: BoundingBox | null,
     landmarks?: FaceLandmarks | null,
   ): Promise<FaceEmbedding> {
-    const res = await firstValueFrom(
-      this.faceService.extractEmbedding({
-        image_bytes: imageBuffer,
-        bbox: bbox
-          ? {
-              x: bbox.x,
-              y: bbox.y,
-              width: bbox.width,
-              height: bbox.height,
-              confidence: bbox.confidence,
-            }
-          : undefined,
-        landmarks: landmarks?.points?.length
-          ? landmarks.points.map((p) => ({
-              x: p.x,
-              y: p.y,
-              index: p.index,
-            }))
-          : undefined,
-      }),
+    const res = await this.call(
+      firstValueFrom(
+        this.faceService.extractEmbedding({
+          image_bytes: imageBuffer,
+          bbox: bbox
+            ? {
+                x: bbox.x,
+                y: bbox.y,
+                width: bbox.width,
+                height: bbox.height,
+                confidence: bbox.confidence,
+              }
+            : undefined,
+          landmarks: landmarks?.points?.length
+            ? landmarks.points.map((p) => ({
+                x: p.x,
+                y: p.y,
+                index: p.index,
+              }))
+            : undefined,
+        }),
+      ),
     );
     return new FaceEmbedding(res.embedding.values, res.embedding.dimension);
   }
 
   // 3. Kiểm tra chống giả mạo
   async checkLiveness(imageBuffer: Buffer): Promise<LivenessResult> {
-    const res = await firstValueFrom(
-      this.faceService.checkLiveness({ image_bytes: imageBuffer }),
+    const res = await this.call(
+      firstValueFrom(
+        this.faceService.checkLiveness({ image_bytes: imageBuffer }),
+      ),
     );
     const statusMap = [
       LivenessStatus.UNKNOWN,
@@ -113,15 +172,17 @@ export class FaceGrpcAdapter
     referenceEmbedding: FaceEmbedding,
     threshold = 0.68,
   ): Promise<{ matched: boolean; similarity: number }> {
-    const res = await firstValueFrom(
-      this.faceService.verifyFace({
-        image_bytes: imageBuffer,
-        reference_embedding: {
-          values: referenceEmbedding.values,
-          dimension: referenceEmbedding.dimension,
-        },
-        threshold,
-      }),
+    const res = await this.call(
+      firstValueFrom(
+        this.faceService.verifyFace({
+          image_bytes: imageBuffer,
+          reference_embedding: {
+            values: referenceEmbedding.values,
+            dimension: referenceEmbedding.dimension,
+          },
+          threshold,
+        }),
+      ),
     );
     return { matched: res.matched, similarity: res.similarity };
   }

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -22,6 +23,11 @@ import { User } from '../../../user/domain/entities/user.entity';
 import { CheckInOutDto } from '../../infra/dto/checkin-out.dto';
 import { AccessStateService, ReaderAccessState } from './access-state.service';
 import { IdentifyFaceService } from '../../../biommetric/face-biometric/application/services/identify-face.service';
+import {
+  INTERNAL_EVENT_BUS,
+  InternalEventBus,
+} from '../../../infra/event/application/internal-event-bus.interface';
+import { ReaderAccessEvent } from '../../domain/events/reader-access.event';
 
 @Injectable()
 export class CheckInOutService {
@@ -29,13 +35,13 @@ export class CheckInOutService {
     private readonly dataSource: DataSource,
     private readonly accessStateService: AccessStateService,
     private readonly identifyFaceService: IdentifyFaceService,
+    @Inject(INTERNAL_EVENT_BUS)
+    private readonly eventService: InternalEventBus,
   ) {}
 
   async checkInOut(staffId: string, dto: CheckInOutDto) {
     const now = new Date();
-    const tokenHash = createHash('sha256')
-      .update(dto.token)
-      .digest('hex');
+    const tokenHash = createHash('sha256').update(dto.token).digest('hex');
 
     return this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(User);
@@ -85,9 +91,7 @@ export class CheckInOutService {
       const readerId = qrToken.reader?.id;
 
       if (!readerId) {
-        throw new BadRequestException(
-          'QR token không liên kết với Reader.',
-        );
+        throw new BadRequestException('QR token không liên kết với Reader.');
       }
 
       const reader = await userRepository
@@ -102,9 +106,7 @@ export class CheckInOutService {
       }
 
       if (reader.status !== UserStatus.ACTIVE) {
-        throw new ForbiddenException(
-          'Tài khoản Reader đã bị vô hiệu hóa.',
-        );
+        throw new ForbiddenException('Tài khoản Reader đã bị vô hiệu hóa.');
       }
 
       const device = await deviceRepository
@@ -114,10 +116,9 @@ export class CheckInOutService {
           status: DeviceStatus.ACTIVE,
         })
         .andWhere('device.revokedAt IS NULL')
-        .andWhere(
-          '(device.expiredAt IS NULL OR device.expiredAt > :now)',
-          { now },
-        )
+        .andWhere('(device.expiredAt IS NULL OR device.expiredAt > :now)', {
+          now,
+        })
         .andWhere('device.gateId IS NOT NULL')
         .orderBy('device.assignedAt', 'DESC')
         .addOrderBy('device.createdAt', 'DESC')
@@ -173,6 +174,16 @@ export class CheckInOutService {
       qrToken.status = QrTokenStatus.USED;
       qrToken.usedAt = now;
       await qrTokenRepository.save(qrToken);
+
+      await this.eventService.publish(
+        new ReaderAccessEvent(
+          accessAction,
+          reader.id,
+          device.id,
+          savedLog.id,
+          now,
+        ),
+      );
 
       return {
         success: true,
@@ -236,9 +247,7 @@ export class CheckInOutService {
       }
 
       if (reader.status !== UserStatus.ACTIVE) {
-        throw new ForbiddenException(
-          'Tài khoản Reader đã bị vô hiệu hóa.',
-        );
+        throw new ForbiddenException('Tài khoản Reader đã bị vô hiệu hóa.');
       }
 
       const device = await deviceRepository
@@ -248,10 +257,9 @@ export class CheckInOutService {
           status: DeviceStatus.ACTIVE,
         })
         .andWhere('device.revokedAt IS NULL')
-        .andWhere(
-          '(device.expiredAt IS NULL OR device.expiredAt > :now)',
-          { now },
-        )
+        .andWhere('(device.expiredAt IS NULL OR device.expiredAt > :now)', {
+          now,
+        })
         .andWhere('device.gateId IS NOT NULL')
         .orderBy('device.assignedAt', 'DESC')
         .addOrderBy('device.createdAt', 'DESC')
@@ -303,6 +311,16 @@ export class CheckInOutService {
       });
 
       const savedLog = await accessLogRepository.save(accessLog);
+
+      await this.eventService.publish(
+        new ReaderAccessEvent(
+          accessAction,
+          reader.id,
+          device.id,
+          savedLog.id,
+          now,
+        ),
+      );
 
       return {
         success: true,

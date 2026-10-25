@@ -1,0 +1,31 @@
+﻿sequenceDiagram
+    autonumber
+    actor Client as Flutter App
+    participant AC as AuthController
+    participant AS as AuthService
+    participant US as UserService
+    participant JS as JwtService
+    participant RTS as RefreshTokenService
+    participant DB as Database (Postgres)
+
+    Client->>+AC: POST /auth/login (LoginReq)
+    AC->>+AS: login(LoginReq)
+    AS->>+US: getByEmailForAuth(email)
+    US->>+DB: Query user by email
+    DB-->>-US: UserAuthRes (passwordHash, isActive)
+    US-->>-AS: UserAuthRes
+
+    AS->>AS: bcrypt.compare(password, passwordHash)
+    alt Mật khẩu sai hoặc tài khoản không tồn tại
+        AS-->>AC: throw UnauthorizedException
+        AC-->>Client: 401 Unauthorized
+    else Xác thực thành công
+        AS->>+JS: signAsync({ sub: userId, role })
+        JS-->>-AS: accessToken
+        AS->>+RTS: createRefreshToken(userId, 7)
+        RTS->>+DB: INSERT refresh_tokens
+        DB-->>-RTS: Saved
+        RTS-->>-AS: RefreshTokenEntity
+        AS-->>-AC: AuthRes { accessToken, refreshToken, user }
+        AC-->>-Client: 200 OK AuthRes
+    end

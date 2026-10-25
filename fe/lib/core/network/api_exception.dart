@@ -23,6 +23,12 @@ class ApiException implements Exception {
           statusCode: status,
           raw: raw,
         );
+      case 422:
+        return ApiException(
+          'Ảnh khuôn mặt không đáp ứng yêu cầu xác thực.',
+          statusCode: status,
+          raw: raw,
+        );
       case 401:
         return ApiException(
           'Email hoặc mật khẩu không chính xác.',
