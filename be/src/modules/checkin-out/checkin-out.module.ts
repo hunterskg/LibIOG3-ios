@@ -10,15 +10,17 @@ import { CheckInOutService } from './application/services/checkin-out.service';
 import { AccessStateService } from './application/services/access-state.service';
 import { CheckInOutController } from './infra/controllers/checkin-out.controller';
 import { EventModule } from '../infra/event/event.module';
+import { LibraryModule } from '../library/library.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, QrToken, Device, Gate, AccessLog]),
     FaceBiometricModule,
     EventModule,
+    LibraryModule,
   ],
   controllers: [CheckInOutController],
   providers: [CheckInOutService, AccessStateService],
-  exports: [CheckInOutService],
+  exports: [CheckInOutService, AccessStateService],
 })
 export class CheckInOutModule {}

@@ -123,7 +123,6 @@ class _StaffHomeContent extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: AppSpacing.s3),
-
                   _actionCard(
                     icon: Icons.face_retouching_natural,
                     title: 'Quét khuôn mặt',
@@ -134,20 +133,38 @@ class _StaffHomeContent extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: AppSpacing.s3),
-                  _actionCard(
-                    icon: Icons.menu_book_outlined,
-                    title: 'Lịch sử ra vào',
-                    desc: 'Theo dõi lượt vào và lượt ra',
-                    color: AppColors.info,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Chức năng lịch sử ra vào chưa được triển khai.',
-                          ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.how_to_reg_rounded,
+                          title: 'Ra / Vào thủ công',
+                          desc: 'Duyệt tay cho bạn đọc kèm lý do',
+                          color: AppColors.accent600,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.manualAccess,
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(width: AppSpacing.s3),
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.menu_book_outlined,
+                          title: 'Lịch sử ra vào',
+                          desc: 'Theo dõi lượt vào và lượt ra',
+                          color: AppColors.info,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.accessHistory,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.s4),
                   Text('Quản lý hệ thống', style: AppTextStyles.h3),

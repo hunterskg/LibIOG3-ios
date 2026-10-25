@@ -148,11 +148,16 @@ class _AdminHomeContent extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _actionCard(
-                          icon: Icons.devices_other_rounded,
-                          title: 'Giám sát Kiosk / Thiết bị',
-                          desc: 'Kiểm tra trạng thái trạm tự phục vụ',
+                          icon: Icons.how_to_reg_rounded,
+                          title: 'Ra / Vào thủ công',
+                          desc: 'Duyệt Check-in / Check-out kèm lý do',
                           color: AppColors.info,
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.manualAccess,
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(width: AppSpacing.s3),
@@ -160,15 +165,20 @@ class _AdminHomeContent extends StatelessWidget {
                         child: _actionCard(
                           icon: Icons.bar_chart_rounded,
                           title: 'Báo cáo & Thống kê',
-                          desc: 'Tổng quan mượn trả & vận hành',
+                          desc: 'Tổng quan ra/vào & hiệu suất vận hành',
                           color: AppColors.success,
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.adminReports,
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.s4),
-                  Text('Quản lý thư viện', style: AppTextStyles.h3),
+                  Text('Quản lý thư viện & Vận hành', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
                   Row(
                     children: [
@@ -190,13 +200,28 @@ class _AdminHomeContent extends StatelessWidget {
                       Expanded(
                         child: _actionCard(
                           icon: Icons.event_busy_rounded,
-                          title: 'Đóng cửa & Vi phạm',
-                          desc: 'Sắp có',
-                          color: AppColors.charcoal400,
-                          onTap: () {},
+                          title: 'Đóng cửa & Auto Check-out',
+                          desc: 'Chốt đóng cửa & xử lý quên check-out',
+                          color: AppColors.warning,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.libraryClosure,
+                            );
+                          },
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: AppSpacing.s3),
+                  _actionCard(
+                    icon: Icons.history_edu_rounded,
+                    title: 'Lịch sử ra vào thư viện',
+                    desc: 'Tra cứu toàn bộ lượt QR, Khuôn mặt, Duyệt tay và Auto Check-out',
+                    color: AppColors.charcoal700,
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.accessHistory);
+                    },
                   ),
                   const SizedBox(height: AppSpacing.s5),
                   Center(

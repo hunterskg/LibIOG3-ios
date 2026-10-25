@@ -24,7 +24,7 @@ abstract final class ApiConstants {
   static String staffById(String id) => '$staffs/$id';
   static String staffRole(String id) => '$staffs/$id/role';
 
-  //Checkin - Checkout
+  // Checkin - Checkout
   static const String qrTokens = '/qr-tokens';
   static const String qrTokensVerify = '/qr-tokens/verify';
   static const String deviceAssignments = '/devices/assignments';
@@ -51,6 +51,15 @@ abstract final class ApiConstants {
     return '$faceStatus?readerId=$readerId';
   }
 
-   // Face check-in/check-out
+  // Face & Manual check-in/check-out
   static const String faceCheckInOut = '/checkin-out/face';
+  static const String manualCheckInOut = '/checkin-out/manual';
+  static String readerAccessState(String readerId) =>
+      '/checkin-out/reader-state/$readerId';
+
+  // Access logs, closure & reporting
+  static const String accessLogs = '/access/logs';
+  static const String activeReaders = '/access/active-readers';
+  static const String triggerClosure = '/access/closures/trigger';
+  static const String reportSummary = '/access/reports/summary';
 }
