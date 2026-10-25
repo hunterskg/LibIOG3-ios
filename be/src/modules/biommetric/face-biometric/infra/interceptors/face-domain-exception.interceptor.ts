@@ -1,12 +1,9 @@
 import {
   BadRequestException,
   CallHandler,
-  ConflictException,
   ExecutionContext,
-  ForbiddenException,
   Injectable,
   NestInterceptor,
-  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
@@ -24,10 +21,14 @@ export class FaceDomainExceptionInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((error: unknown) => {
         if (error instanceof FaceNotFoundException) {
-          return throwError(() => new NotFoundException(error.message));
+          return throwError(
+            () => new UnprocessableEntityException(error.message),
+          );
         }
         if (error instanceof MultipleFacesDetectedException) {
-          return throwError(() => new ConflictException(error.message));
+          return throwError(
+            () => new UnprocessableEntityException(error.message),
+          );
         }
         if (error instanceof LowFaceQualityException) {
           return throwError(
@@ -35,7 +36,9 @@ export class FaceDomainExceptionInterceptor implements NestInterceptor {
           );
         }
         if (error instanceof SpoofDetectedException) {
-          return throwError(() => new ForbiddenException(error.message));
+          return throwError(
+            () => new UnprocessableEntityException(error.message),
+          );
         }
         if (error instanceof EmbeddingMismatchException) {
           return throwError(() => new BadRequestException(error.message));

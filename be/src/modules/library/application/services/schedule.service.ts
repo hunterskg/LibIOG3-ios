@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -71,7 +75,9 @@ export class ScheduleService {
     const seen = new Set<number>();
     for (const day of days) {
       if (day.dayOfWeek < 0 || day.dayOfWeek > 6) {
-        throw new BadRequestException(`dayOfWeek không hợp lệ: ${day.dayOfWeek}`);
+        throw new BadRequestException(
+          `dayOfWeek không hợp lệ: ${day.dayOfWeek}`,
+        );
       }
       if (seen.has(day.dayOfWeek)) {
         throw new BadRequestException(`dayOfWeek trùng: ${day.dayOfWeek}`);
@@ -126,14 +132,17 @@ export class ScheduleService {
 
   async update(id: string, dto: UpdateScheduleDto): Promise<LibrarySchedule> {
     const schedule = await this.findOne(id);
-    const merged = { ...schedule, ...dto } as LibrarySchedule;
+    const merged = { ...schedule, ...dto };
     this.validatePayload(merged);
 
     if (dto.type !== undefined) schedule.type = dto.type;
     if (dto.dayOfWeek !== undefined) schedule.dayOfWeek = dto.dayOfWeek;
-    if (dto.specificDate !== undefined) schedule.specificDate = dto.specificDate;
-    if (dto.openTime !== undefined) schedule.openTime = this.normalizeTime(dto.openTime);
-    if (dto.closeTime !== undefined) schedule.closeTime = this.normalizeTime(dto.closeTime);
+    if (dto.specificDate !== undefined)
+      schedule.specificDate = dto.specificDate;
+    if (dto.openTime !== undefined)
+      schedule.openTime = this.normalizeTime(dto.openTime);
+    if (dto.closeTime !== undefined)
+      schedule.closeTime = this.normalizeTime(dto.closeTime);
     if (dto.isClosed !== undefined) schedule.isClosed = dto.isClosed;
     if (dto.note !== undefined) schedule.note = dto.note;
     if (dto.isActive !== undefined) schedule.isActive = dto.isActive;
@@ -180,7 +189,11 @@ export class ScheduleService {
       }));
 
     if (!matched) {
-      return { isOpen: false, reason: 'NO_SCHEDULE', checkedAt: at.toISOString() };
+      return {
+        isOpen: false,
+        reason: 'NO_SCHEDULE',
+        checkedAt: at.toISOString(),
+      };
     }
 
     if (matched.isClosed) {
@@ -195,8 +208,7 @@ export class ScheduleService {
     // Không khai báo giờ => coi như mở cả ngày.
     const open = matched.openTime;
     const close = matched.closeTime;
-    const withinHours =
-      !open || !close || (timeStr >= open && timeStr < close);
+    const withinHours = !open || !close || (timeStr >= open && timeStr < close);
 
     return {
       isOpen: withinHours,
@@ -214,11 +226,16 @@ export class ScheduleService {
     closeTime?: string | null;
     isClosed?: boolean | null;
   }): void {
-    if (dto.type === ScheduleType.WEEKLY && (dto.dayOfWeek === null || dto.dayOfWeek === undefined)) {
+    if (
+      dto.type === ScheduleType.WEEKLY &&
+      (dto.dayOfWeek === null || dto.dayOfWeek === undefined)
+    ) {
       throw new BadRequestException('WEEKLY schedule cần dayOfWeek (0-6)');
     }
     if (dto.type === ScheduleType.SPECIAL && !dto.specificDate) {
-      throw new BadRequestException('SPECIAL schedule cần specificDate (YYYY-MM-DD)');
+      throw new BadRequestException(
+        'SPECIAL schedule cần specificDate (YYYY-MM-DD)',
+      );
     }
 
     if (!dto.isClosed && dto.openTime && dto.closeTime) {

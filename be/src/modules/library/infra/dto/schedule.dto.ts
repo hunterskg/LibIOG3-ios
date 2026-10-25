@@ -37,7 +37,9 @@ export class CreateScheduleDto {
   openTime?: string;
 
   @IsOptional()
-  @Matches(TIME_REGEX, { message: 'closeTime phải có dạng HH:MM hoặc HH:MM:SS' })
+  @Matches(TIME_REGEX, {
+    message: 'closeTime phải có dạng HH:MM hoặc HH:MM:SS',
+  })
   closeTime?: string;
 
   @IsOptional()
@@ -64,7 +66,9 @@ export class WeeklyDayDto {
   openTime?: string;
 
   @IsOptional()
-  @Matches(TIME_REGEX, { message: 'closeTime phải có dạng HH:MM hoặc HH:MM:SS' })
+  @Matches(TIME_REGEX, {
+    message: 'closeTime phải có dạng HH:MM hoặc HH:MM:SS',
+  })
   closeTime?: string;
 }
 
@@ -95,7 +99,9 @@ export class UpdateScheduleDto {
   openTime?: string;
 
   @IsOptional()
-  @Matches(TIME_REGEX, { message: 'closeTime phải có dạng HH:MM hoặc HH:MM:SS' })
+  @Matches(TIME_REGEX, {
+    message: 'closeTime phải có dạng HH:MM hoặc HH:MM:SS',
+  })
   closeTime?: string;
 
   @IsOptional()
