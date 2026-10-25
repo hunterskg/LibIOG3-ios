@@ -1,0 +1,22 @@
+﻿sequenceDiagram
+    autonumber
+    actor Client as Flutter App
+    participant Guard as JwtGuard / JwtStrategy
+    participant US as UserService
+    participant Controller as Protected Controller
+    participant DB as Database (Postgres)
+
+    Client->>+Guard: Request API + Header (Bearer accessToken)
+    Guard->>Guard: Extract & verify JWT signature
+    alt Token không hợp lệ hoặc hết hạn
+        Guard-->>Client: 401 Unauthorized
+    else Token hợp lệ
+        Guard->>+US: getById(payload.sub)
+        US->>+DB: Query user by ID
+        DB-->>-US: UserRes
+        US-->>-Guard: UserRes (req.user = user)
+        Guard->>+Controller: canActivate: true
+        Controller->>+DB: Xử lý nghiệp vụ & truy vấn
+        DB-->>-Controller: Dữ liệu
+        Controller-->>-Client: 200 OK (Response Data)
+    end

@@ -1,0 +1,42 @@
+﻿sequenceDiagram
+    autonumber
+    actor Client as Flutter App
+    participant AC as AuthController
+    participant AS as AuthService
+    participant RTS as RefreshTokenService
+    participant US as UserService
+    participant JS as JwtService
+    participant DB as Database (Postgres)
+
+    Client->>+AC: POST /auth/refresh-token (RefreshTokenReq)
+    AC->>+AS: refreshToken(token)
+    AS->>+RTS: validateRefreshToken(token)
+    RTS->>+DB: Query refresh_tokens WHERE token = token
+    DB-->>-RTS: RefreshTokenEntity
+    RTS-->>-AS: Validated StoredToken
+
+    AS->>+US: getById(storedToken.userId)
+    US->>+DB: Query user by ID
+    DB-->>-US: User (isActive)
+    US-->>-AS: User
+
+    alt User không tồn tại hoặc inactive
+        AS-->>AC: throw UnauthorizedException
+        AC-->>Client: 401 Unauthorized
+    else Hợp lệ - Xoay vòng Token (Rotation)
+        AS->>+RTS: revokeRefreshToken(token)
+        RTS->>+DB: UPDATE refresh_tokens SET isRevoked = true
+        DB-->>-RTS: OK
+        RTS-->>-AS: Revoked
+
+        AS->>+JS: signAsync({ sub: user.userId, role })
+        JS-->>-AS: newAccessToken
+
+        AS->>+RTS: createRefreshToken(user.userId, 7)
+        RTS->>+DB: INSERT refresh_tokens
+        DB-->>-RTS: Saved
+        RTS-->>-AS: newRefreshToken
+
+        AS-->>-AC: AuthRes { accessToken, refreshToken, user }
+        AC-->>-Client: 200 OK AuthRes
+    end

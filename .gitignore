@@ -39,3 +39,5 @@ docs/architecture
 .vscode
 .pytest_cache
 
+.claude/worktrees
+

@@ -1,0 +1,72 @@
+﻿sequenceDiagram
+    autonumber
+    actor Client as Flutter App
+    participant AC as AuthController
+    participant Guard as JwtGuard / Strategy
+    participant AS as AuthService
+    participant US as UserService
+    participant JS as JwtService
+    participant RTS as RefreshTokenService
+    participant DB as Database (Postgres)
+
+    %% 1. LOGIN
+    note over Client, DB: 1. Đăng nhập (POST /auth/login)
+    Client->>+AC: login(LoginReq)
+    AC->>+AS: login(LoginReq)
+    AS->>+US: getByEmailForAuth(email)
+    US->>+DB: Query User by Email
+    DB-->>-US: UserAuthRes (passwordHash, isActive)
+    US-->>-AS: UserAuthRes
+    AS->>AS: bcrypt.compare(password, passwordHash)
+    alt Sai mật khẩu / không tồn tại
+        AS-->>AC: throw UnauthorizedException
+        AC-->>Client: 401 Unauthorized
+    else Xác thực thành công
+        AS->>+JS: signAsync({ sub: userId, role })
+        JS-->>-AS: accessToken
+        AS->>+RTS: createRefreshToken(userId, 7)
+        RTS->>+DB: INSERT refresh_tokens (token, userId, expiresAt)
+        DB-->>-RTS: Saved
+        RTS-->>-AS: RefreshTokenEntity
+        AS-->>-AC: AuthRes { accessToken, refreshToken, user }
+        AC-->>-Client: 200 OK AuthRes
+    end
+
+    %% 2. AUTHORIZATION
+    note over Client, DB: 2. Ủy quyền API bảo vệ (Bearer Token)
+    Client->>+Guard: Request + Header (Bearer accessToken)
+    Guard->>Guard: Extract & verify JWT signature
+    alt Token không hợp lệ / Hết hạn
+        Guard-->>Client: 401 Unauthorized
+    else Token hợp lệ
+        Guard->>+US: getById(payload.sub)
+        US->>+DB: Query User by Id
+        DB-->>-US: UserRes
+        US-->>-Guard: UserRes (req.user = user)
+        Guard-->>-Client: 200 OK (Chuyển tiếp Controller xử lý)
+    end
+
+    %% 3. REFRESH TOKEN
+    note over Client, DB: 3. Làm mới Token (POST /auth/refresh-token)
+    Client->>+AC: refreshToken(RefreshTokenReq)
+    AC->>+AS: refreshToken(token)
+    AS->>+RTS: validateRefreshToken(token)
+    RTS->>+DB: Query refresh_tokens WHERE token = token
+    DB-->>-RTS: RefreshTokenEntity
+    RTS-->>-AS: Validated StoredToken
+    AS->>+US: getById(storedToken.userId)
+    US->>+DB: Query User by Id
+    DB-->>-US: User (isActive)
+    US-->>-AS: User
+    AS->>+RTS: revokeRefreshToken(token)
+    RTS->>+DB: UPDATE refresh_tokens SET isRevoked = true
+    DB-->>-RTS: OK
+    RTS-->>-AS: Revoked
+    AS->>+JS: signAsync({ sub: user.userId, role })
+    JS-->>-AS: newAccessToken
+    AS->>+RTS: createRefreshToken(user.userId, 7)
+    RTS->>+DB: INSERT refresh_tokens
+    DB-->>-RTS: Saved
+    RTS-->>-AS: newRefreshToken
+    AS-->>-AC: AuthRes { accessToken, refreshToken, user }
+    AC-->>-Client: 200 OK AuthRes
