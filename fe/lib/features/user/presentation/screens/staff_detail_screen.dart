@@ -12,6 +12,7 @@ import 'package:fe/shared/widgets/app_card.dart';
 import 'package:fe/shared/widgets/app_text_field.dart';
 import 'package:fe/features/device/domain/models/device_assignment.dart';
 import 'package:fe/features/device/presentation/providers/device_provider.dart';
+import 'package:fe/features/gate/presentation/gate_provider.dart';
 
 class StaffDetailScreen extends StatefulWidget {
   final String staffId;
@@ -34,6 +35,7 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
       _initialized = true;
       context.read<UserProvider>().loadStaffDetail(widget.staffId);
       context.read<DeviceProvider>().loadForStaff(widget.staffId);
+      context.read<GateProvider>().load();
     }
   }
 
@@ -250,6 +252,13 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
             const SizedBox(height: 6),
             _infoRow('Nền tảng:', assignment.platform!),
           ],
+          const SizedBox(height: 6),
+          _infoRow(
+            'Cổng phụ trách:',
+            assignment.gateName == null
+                ? 'Chưa được phân công'
+                : '${assignment.gateCode ?? ''} · ${assignment.gateName}',
+          ),
           if (assignment.fingerprint != null) ...[
             const SizedBox(height: 6),
             _infoRow('Device ID:', assignment.fingerprint!, isMono: true),
@@ -272,6 +281,63 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _assignGate() async {
+    final gates = context
+        .read<GateProvider>()
+        .gates
+        .where((g) => g.status.name == 'active')
+        .toList();
+    if (gates.isEmpty) return;
+    String selected = gates.first.id;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, set) => AlertDialog(
+          title: const Text('Gán cổng cho nhân viên'),
+          content: DropdownButton<String>(
+            isExpanded: true,
+            value: selected,
+            items: gates
+                .map(
+                  (g) => DropdownMenuItem(
+                    value: g.id,
+                    child: Text('${g.code} — ${g.name}'),
+                  ),
+                )
+                .toList(),
+            onChanged: (v) => set(() => selected = v!),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Gán'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final ok = await context.read<GateProvider>().assign(
+      widget.staffId,
+      selected,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'Đã gán cổng'
+              : (context.read<GateProvider>().error ?? 'Gán cổng thất bại'),
+        ),
+      ),
+    );
+    await context.read<DeviceProvider>().loadForStaff(widget.staffId);
   }
 
   @override
@@ -392,14 +458,20 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                               ),
                             ),
                             TextButton.icon(
-              onPressed: deviceProvider.isLoading || deviceProvider.assignments.isEmpty
-                  ? null
-                  : () async {
-                      await deviceProvider.unbindStaff(widget.staffId);
-                      await deviceProvider.loadForStaff(widget.staffId);
-                    },
-              icon: const Icon(Icons.link_off_rounded),
-              label: const Text('Gỡ thiết bị'),
+                              onPressed:
+                                  deviceProvider.isLoading ||
+                                      deviceProvider.assignments.isEmpty
+                                  ? null
+                                  : () async {
+                                      await deviceProvider.unbindStaff(
+                                        widget.staffId,
+                                      );
+                                      await deviceProvider.loadForStaff(
+                                        widget.staffId,
+                                      );
+                                    },
+                              icon: const Icon(Icons.link_off_rounded),
+                              label: const Text('Gỡ thiết bị'),
                             ),
                           ],
                         ),
@@ -413,6 +485,17 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                               child: _assignmentCard(context, item),
                             ),
                           ),
+                        const SizedBox(height: AppSpacing.s2),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: deviceProvider.assignments.isEmpty
+                                ? null
+                                : _assignGate,
+                            icon: const Icon(Icons.door_front_door_outlined),
+                            label: const Text('Gán cổng'),
+                          ),
+                        ),
                         const SizedBox(height: AppSpacing.s2),
                         Row(
                           children: [

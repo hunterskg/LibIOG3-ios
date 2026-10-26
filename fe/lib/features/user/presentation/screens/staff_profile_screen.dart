@@ -10,6 +10,7 @@ import 'package:fe/features/user/presentation/providers/user_provider.dart';
 import 'package:fe/shared/widgets/app_button.dart';
 import 'package:fe/shared/widgets/app_card.dart';
 import 'package:fe/shared/widgets/app_text_field.dart';
+import 'package:fe/features/device/presentation/providers/device_provider.dart';
 
 class StaffProfileScreen extends StatefulWidget {
   const StaffProfileScreen({super.key});
@@ -33,6 +34,7 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
       final userId = context.read<AuthProvider>().currentUser?.userId;
       if (userId != null && userId.isNotEmpty) {
         context.read<UserProvider>().loadMyStaffProfile(userId);
+        context.read<DeviceProvider>().loadForStaff(userId);
       }
     }
   }
@@ -79,6 +81,10 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
     final userProvider = context.watch<UserProvider>();
     final profile = userProvider.myStaffProfile;
     final authUser = context.watch<AuthProvider>().currentUser;
+    final deviceAssignments = context.watch<DeviceProvider>().assignments;
+    final activeDevice = deviceAssignments
+        .where((d) => d.status.name == 'active')
+        .firstOrNull;
 
     return Scaffold(
       backgroundColor: AppColors.neutral50,
@@ -163,6 +169,13 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                               'Mã nhân viên:',
                               profile?.id ?? authUser?.userId ?? '---',
                               isMono: true,
+                            ),
+                            const SizedBox(height: AppSpacing.s2),
+                            _infoRow(
+                              'Cổng phụ trách:',
+                              activeDevice?.gateName == null
+                                  ? 'Chưa được phân công'
+                                  : '${activeDevice?.gateCode ?? ''} · ${activeDevice!.gateName}',
                             ),
                           ] else ...[
                             Form(

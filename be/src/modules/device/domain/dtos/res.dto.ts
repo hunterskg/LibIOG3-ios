@@ -12,6 +12,12 @@ export class DeviceAssignmentRes {
   @ApiPropertyOptional()
   gateId?: string;
 
+  @ApiPropertyOptional()
+  gateCode?: string;
+
+  @ApiPropertyOptional()
+  gateName?: string;
+
   @ApiProperty({ enum: DeviceStatus })
   status!: DeviceStatus;
 
@@ -38,6 +44,8 @@ export class DeviceAssignmentRes {
     response.id = device.id;
     response.staffId = device.staffId;
     response.gateId = device.gateId ?? undefined;
+    response.gateCode = device.gate?.code;
+    response.gateName = device.gate?.name;
     response.status = device.status;
     response.deviceFingerprint = device.deviceFingerprint ?? undefined;
     response.deviceName = device.deviceName;

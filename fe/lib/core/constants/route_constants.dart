@@ -39,4 +39,5 @@ abstract final class AppRoutes {
   static const String accessHistory = '/access/history';
   static const String libraryClosure = '/admin/library/closure';
   static const String adminReports = '/admin/reports';
+  static const String gateList = '/admin/gates';
 }

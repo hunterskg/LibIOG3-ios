@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   ForbiddenException,
@@ -6,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -28,11 +30,20 @@ import { JwtGuard } from '../../../auth/infra/guard/jwt.guard';
 import { RoleGuard } from '../../../auth/infra/guard/role.guard';
 import { Role } from '../../../user/domain/enums/role.enum';
 import { UserRes } from '../../../user/domain/dtos/res.dto';
+import { AssignGateReq } from '../../domain/dtos/gate.dto';
 
 @ApiTags('Devices')
 @Controller('devices')
 export class DeviceController {
   constructor(private readonly deviceService: DeviceService) {}
+
+  @Patch('staff/:staffId/gate')
+  @UseGuards(JwtGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth('access-token')
+  async assignGate(@Param('staffId') staffId: string, @Body() req: AssignGateReq): Promise<void> {
+    await this.deviceService.assignGate(staffId, req.gateId);
+  }
 
   @Delete('assignments/:id')
   @UseGuards(JwtGuard, RoleGuard)

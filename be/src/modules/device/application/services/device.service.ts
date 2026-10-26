@@ -15,6 +15,8 @@ import {
 } from '../../domain/dtos/res.dto';
 import { Device } from '../../domain/entities/device.entity';
 import { DeviceStatus } from '../../domain/enums/device-status.enum';
+import { Gate } from '../../domain/entities/gate.entity';
+import { GateStatus } from '../../domain/enums/gate-status.enum';
 
 @Injectable()
 export class DeviceService {
@@ -23,6 +25,8 @@ export class DeviceService {
     private readonly deviceRepo: Repository<Device>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Gate)
+    private readonly gateRepo: Repository<Gate>,
   ) {}
 
   async verifyOrBindStaffDevice(
@@ -55,6 +59,17 @@ export class DeviceService {
     await this.deviceRepo.save(device);
   }
 
+  async assignGate(staffId: string, gateId: string): Promise<void> {
+    const gate = await this.gateRepo.findOne({ where: { id: gateId, status: GateStatus.ACTIVE } });
+    if (!gate) throw new NotFoundException('Active gate not found');
+    const staff = await this.userRepo.findOne({ where: { id: staffId, role: Role.STAFF } });
+    if (!staff) throw new NotFoundException('Staff not found');
+    const device = await this.deviceRepo.findOne({ where: { staffId, status: DeviceStatus.ACTIVE } });
+    if (!device) throw new NotFoundException('Staff has no active device');
+    device.gateId = gateId;
+    await this.deviceRepo.save(device);
+  }
+
   async revoke(id: string): Promise<void> {
     const device = await this.deviceRepo.findOne({ where: { id } });
     if (!device) {
@@ -73,6 +88,7 @@ export class DeviceService {
         ...(req.status ? { status: req.status } : {}),
       },
       order: { createdAt: 'DESC' },
+      relations: { gate: true },
     });
     return devices.map(DeviceAssignmentRes.of);
   }
@@ -81,6 +97,7 @@ export class DeviceService {
     const devices = await this.deviceRepo.find({
       where: { staffId },
       order: { createdAt: 'DESC' },
+      relations: { gate: true },
     });
     return devices.map(DeviceAssignmentRes.of);
   }

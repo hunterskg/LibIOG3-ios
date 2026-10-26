@@ -1,9 +1,7 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 abstract final class ApiConstants {
-  // ponytail: đọc từ String.fromEnvironment('API_BASE_URL') để override khi build APK/web
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:3000',
-  );
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
 
   static const Duration timeout = Duration(seconds: 15);
 

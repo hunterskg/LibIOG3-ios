@@ -6,6 +6,9 @@ class DeviceAssignment {
   final String? fingerprint;
   final String? deviceName;
   final String? platform;
+  final String? gateId;
+  final String? gateCode;
+  final String? gateName;
   final DeviceAssignmentStatus status;
   final DateTime? expiresAt;
   final DateTime? activatedAt;
@@ -19,6 +22,9 @@ class DeviceAssignment {
     this.fingerprint,
     this.deviceName,
     this.platform,
+    this.gateId,
+    this.gateCode,
+    this.gateName,
     this.expiresAt,
     this.activatedAt,
     this.revokedAt,
@@ -41,6 +47,9 @@ class DeviceAssignment {
       fingerprint: json['deviceFingerprint']?.toString(),
       deviceName: json['deviceName']?.toString(),
       platform: json['devicePlatform']?.toString(),
+      gateId: json['gateId']?.toString(),
+      gateCode: json['gateCode']?.toString(),
+      gateName: json['gateName']?.toString(),
       status: status,
       expiresAt: date(json['expiresAt']),
       activatedAt: date(json['activatedAt']),

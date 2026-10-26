@@ -131,17 +131,19 @@ export class CheckInOutService {
           status: DeviceStatus.ACTIVE,
         })
         .andWhere('device.revokedAt IS NULL')
-        .andWhere('(device.expiredAt IS NULL OR device.expiredAt > :now)', {
-          now,
-        })
-        .andWhere('device.gateId IS NOT NULL')
         .orderBy('device.assignedAt', 'DESC')
         .addOrderBy('device.createdAt', 'DESC')
         .getOne();
 
       if (!device) {
         throw new ForbiddenException(
-          `Nhân viên có ID ${staffId} chưa có thiết bị hoạt động hợp lệ được gán.`,
+          'Nhân viên chưa đăng nhập trên thiết bị đã đăng ký. Hãy đăng nhập lại hoặc liên hệ quản trị viên để gỡ thiết bị cũ.',
+        );
+      }
+
+      if (!device.gateId) {
+        throw new ForbiddenException(
+          'Thiết bị đã đăng ký nhưng chưa được gán cổng. Yêu cầu quản trị viên gán cổng cho nhân viên trong phần Quản lý cổng.',
         );
       }
 
@@ -276,17 +278,19 @@ export class CheckInOutService {
           status: DeviceStatus.ACTIVE,
         })
         .andWhere('device.revokedAt IS NULL')
-        .andWhere('(device.expiredAt IS NULL OR device.expiredAt > :now)', {
-          now,
-        })
-        .andWhere('device.gateId IS NOT NULL')
         .orderBy('device.assignedAt', 'DESC')
         .addOrderBy('device.createdAt', 'DESC')
         .getOne();
 
       if (!device) {
         throw new ForbiddenException(
-          `Nhân viên có ID ${staffId} chưa có thiết bị hoạt động hợp lệ được gán.`,
+          'Nhân viên chưa đăng nhập trên thiết bị đã đăng ký. Hãy đăng nhập lại hoặc liên hệ quản trị viên để gỡ thiết bị cũ.',
+        );
+      }
+
+      if (!device.gateId) {
+        throw new ForbiddenException(
+          'Thiết bị đã đăng ký nhưng chưa được gán cổng. Yêu cầu quản trị viên gán cổng cho nhân viên trong phần Quản lý cổng.',
         );
       }
 
@@ -432,10 +436,6 @@ export class CheckInOutService {
       .where('device.staffId = :staffId', { staffId: actorId })
       .andWhere('device.status = :status', { status: DeviceStatus.ACTIVE })
       .andWhere('device.revokedAt IS NULL')
-      .andWhere('(device.expiredAt IS NULL OR device.expiredAt > :now)', {
-        now,
-      })
-      .andWhere('device.gateId IS NOT NULL')
       .orderBy('device.assignedAt', 'DESC')
       .addOrderBy('device.createdAt', 'DESC')
       .getOne();
@@ -444,12 +444,14 @@ export class CheckInOutService {
     if (!device) {
       device = await deviceRepository.findOne({
         where: { status: DeviceStatus.ACTIVE },
+        relations: { gate: true },
         order: { createdAt: 'DESC' },
       });
     }
     if (!device) {
       device = await deviceRepository.findOne({
         where: {},
+        relations: { gate: true },
         order: { createdAt: 'DESC' },
       });
     }
