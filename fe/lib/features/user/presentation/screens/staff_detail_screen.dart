@@ -66,37 +66,47 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Hủy'),
-            ),
-            Consumer<UserProvider>(
-              builder: (context, p, child) => AppButton(
-                text: 'Lưu',
-                isLoading: p.isLoading,
-                onPressed: () async {
-                  if (!_formKey.currentState!.validate()) return;
-                  final ok = await p.updateStaffInfo(
-                    widget.staffId,
-                    StaffUpdateReq(name: _nameCtrl.text.trim()),
-                  );
-                  if (dialogCtx.mounted) Navigator.pop(dialogCtx);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Cập nhật tên thành công'
-                              : (p.errorMessage ?? 'Cập nhật thất bại'),
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.danger,
-                      ),
-                    );
-                  }
-                },
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    text: 'Hủy',
+                    variant: AppButtonVariant.secondary,
+                    onPressed: () => Navigator.pop(dialogCtx),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s3),
+                Expanded(
+                  child: Consumer<UserProvider>(
+                    builder: (context, p, child) => AppButton(
+                      text: 'Lưu',
+                      isLoading: p.isLoading,
+                      onPressed: () async {
+                        if (!_formKey.currentState!.validate()) return;
+                        final ok = await p.updateStaffInfo(
+                          widget.staffId,
+                          StaffUpdateReq(name: _nameCtrl.text.trim()),
+                        );
+                        if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok
+                                    ? 'Cập nhật tên thành công'
+                                    : (p.errorMessage ?? 'Cập nhật thất bại'),
+                              ),
+                              backgroundColor: ok
+                                  ? AppColors.success
+                                  : AppColors.danger,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -158,33 +168,46 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Hủy'),
-            ),
-            Consumer<UserProvider>(
-              builder: (context, p, child) => AppButton(
-                text: 'Xác nhận',
-                isLoading: p.isLoading,
-                onPressed: () async {
-                  final ok = await p.assignRole(widget.staffId, selectedRole);
-                  if (dialogCtx.mounted) Navigator.pop(dialogCtx);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Phân quyền thành công'
-                              : (p.errorMessage ?? 'Phân quyền thất bại'),
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.danger,
-                      ),
-                    );
-                  }
-                },
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    text: 'Hủy',
+                    variant: AppButtonVariant.secondary,
+                    onPressed: () => Navigator.pop(dialogCtx),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s3),
+                Expanded(
+                  child: Consumer<UserProvider>(
+                    builder: (context, p, child) => AppButton(
+                      text: 'Xác nhận',
+                      isLoading: p.isLoading,
+                      onPressed: () async {
+                        final ok = await p.assignRole(
+                          widget.staffId,
+                          selectedRole,
+                        );
+                        if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok
+                                    ? 'Phân quyền thành công'
+                                    : (p.errorMessage ?? 'Phân quyền thất bại'),
+                              ),
+                              backgroundColor: ok
+                                  ? AppColors.success
+                                  : AppColors.danger,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );

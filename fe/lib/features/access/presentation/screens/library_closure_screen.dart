@@ -174,7 +174,7 @@ class _LibraryClosureScreenState extends State<LibraryClosureScreen> {
       child: Scaffold(
         backgroundColor: AppColors.neutral50,
         appBar: AppBar(
-          title: const Text('Đóng cửa Thư viện & Auto Check-out'),
+          title: const Text('Đóng cửa & Auto Check-out'),
           backgroundColor: AppColors.white,
           foregroundColor: AppColors.charcoal900,
           elevation: 0,
@@ -202,9 +202,11 @@ class _LibraryClosureScreenState extends State<LibraryClosureScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  alignment: WrapAlignment.spaceBetween,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
                                     Text(
                                       'Chốt đóng cửa & Giải phóng bạn đọc',

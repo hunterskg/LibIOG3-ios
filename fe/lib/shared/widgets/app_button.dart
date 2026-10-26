@@ -64,10 +64,24 @@ class AppButton extends StatelessWidget {
       content = Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Icon(icon, size: 18), const SizedBox(width: 8), Text(text)],
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       );
     } else {
-      content = Text(text);
+      content = Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
     }
 
     Widget btn;
