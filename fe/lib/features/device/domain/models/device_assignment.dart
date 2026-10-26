@@ -3,7 +3,6 @@ enum DeviceAssignmentStatus { pending, active, revoked }
 class DeviceAssignment {
   final String id;
   final String staffId;
-  final String? activationCode;
   final String? fingerprint;
   final String? deviceName;
   final String? platform;
@@ -16,7 +15,6 @@ class DeviceAssignment {
   const DeviceAssignment({
     required this.id,
     required this.staffId,
-    this.activationCode,
     required this.status,
     this.fingerprint,
     this.deviceName,
@@ -40,7 +38,6 @@ class DeviceAssignment {
     return DeviceAssignment(
       id: json['id']?.toString() ?? '',
       staffId: json['staffId']?.toString() ?? '',
-      activationCode: json['activationCode']?.toString(),
       fingerprint: json['deviceFingerprint']?.toString(),
       deviceName: json['deviceName']?.toString(),
       platform: json['devicePlatform']?.toString(),

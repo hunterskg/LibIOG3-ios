@@ -29,6 +29,21 @@ export class LoginReq {
   @IsString()
   @IsNotEmpty()
   password!: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  deviceFingerprint?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  deviceName?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  devicePlatform?: string;
 }
 
 export class RegisterReq {

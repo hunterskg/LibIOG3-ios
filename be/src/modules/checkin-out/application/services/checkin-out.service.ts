@@ -147,7 +147,7 @@ export class CheckInOutService {
 
       const gate = await gateRepository.findOne({
         where: {
-          id: device.gateId,
+          id: device.gateId!,
           status: GateStatus.ACTIVE,
         },
       });
@@ -292,7 +292,7 @@ export class CheckInOutService {
 
       const gate = await gateRepository.findOne({
         where: {
-          id: device.gateId,
+          id: device.gateId!,
           status: GateStatus.ACTIVE,
         },
       });
@@ -480,7 +480,6 @@ export class CheckInOutService {
         deviceRepository.create({
           staffId: actorId,
           gateId: gate.id,
-          activationCode: 'MANUAL',
           deviceName: 'Quầy thủ thư (Manual Desk)',
           devicePlatform: 'WEB/ADMIN',
           status: DeviceStatus.ACTIVE,

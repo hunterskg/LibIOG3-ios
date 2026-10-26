@@ -148,7 +148,6 @@ export class AccessService {
           deviceRepo.create({
             staffId: admin.id,
             gateId: fallbackGate.id,
-            activationCode: 'MANUAL',
             deviceName: 'Quầy thủ thư (Manual Desk)',
             devicePlatform: 'WEB/ADMIN',
             status: DeviceStatus.ACTIVE,

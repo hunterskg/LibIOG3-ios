@@ -22,15 +22,12 @@ export class Device {
   @JoinColumn({ name: 'staff_id' })
   staff!: User;
 
-  @Column({ name: 'gate_id', type: 'uuid' })
-  gateId!: string;
+  @Column({ name: 'gate_id', type: 'uuid', nullable: true })
+  gateId?: string | null;
 
   @ManyToOne(() => Gate, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'gate_id' })
   gate!: Gate;
-
-  @Column({ name: 'activation_code', type: 'varchar', length: 100 })
-  activationCode!: string;
 
   @Column({ name: 'device_fingerprint', type: 'text', nullable: true })
   deviceFingerprint?: string | null;
@@ -49,12 +46,12 @@ export class Device {
   @Column({
     type: 'enum',
     enum: DeviceStatus,
-    default: DeviceStatus.PENDING,
+    default: DeviceStatus.ACTIVE,
   })
   status!: DeviceStatus;
 
-  @Column({ name: 'assigned_by', type: 'uuid' })
-  assignedById!: string;
+  @Column({ name: 'assigned_by', type: 'uuid', nullable: true })
+  assignedById?: string | null;
 
   @ManyToOne(() => User, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'assigned_by' })
@@ -72,9 +69,6 @@ export class Device {
 
   @Column({ name: 'activated_at', type: 'timestamp', nullable: true })
   activatedAt?: Date | null;
-
-  @Column({ name: 'expired_at', type: 'timestamp', nullable: true })
-  expiredAt?: Date | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;

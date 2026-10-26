@@ -43,6 +43,8 @@ import {
 } from '../../../infra/event/application/internal-event-bus.interface';
 import { UserService } from '../../../user/application/services/user.service';
 import { codeExpirationTime } from '../../domain/constant';
+import { DeviceService } from '../../../device/application/services/device.service';
+import { Role } from '../../../user/domain/enums/role.enum';
 
 @Injectable()
 export class AuthService
@@ -63,6 +65,7 @@ export class AuthService
     @Inject(CACHE_SERVICE)
     private readonly cacheService: CacheService,
     private readonly userService: UserService,
+    private readonly deviceService: DeviceService,
   ) {
     super(AuthService.name);
   }
@@ -126,6 +129,18 @@ export class AuthService
     );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid username or password');
+    }
+
+    if (user.role === Role.STAFF) {
+      if (!req.deviceFingerprint) {
+        throw new BadRequestException('Device fingerprint is required');
+      }
+      await this.deviceService.verifyOrBindStaffDevice(
+        user.userId,
+        req.deviceFingerprint,
+        req.deviceName,
+        req.devicePlatform,
+      );
     }
 
     return this.generateAuthRes(user);

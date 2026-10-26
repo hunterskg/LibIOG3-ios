@@ -28,7 +28,6 @@ import 'package:fe/features/qr/presentation/screens/reader_qr_screen.dart';
 import 'package:fe/core/network/api_client.dart';
 import 'package:provider/provider.dart';
 import 'package:fe/features/qr/presentation/screens/staff_scanner_screen.dart';
-import 'package:fe/features/device/presentation/screens/device_activation_screen.dart';
 import 'package:fe/features/biometric/presentation/screens/face_register_screen.dart';
 import 'package:fe/features/library/domain/models/library_schedule.dart';
 import 'package:fe/features/library/presentation/screens/schedule_screen.dart';
@@ -85,7 +84,6 @@ Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.staffScanner: (context) {
     return const StaffScannerScreen();
   },
-  AppRoutes.deviceActivation: (context) => const DeviceActivationScreen(),
   AppRoutes.scheduleList: (context) => const ScheduleScreen(),
   AppRoutes.scheduleForm: (context) {
     final args = ModalRoute.of(context)?.settings.arguments;

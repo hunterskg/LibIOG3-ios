@@ -32,7 +32,6 @@ void main() {
         AppRoutes.staffDetail,
         AppRoutes.readerQr,
         AppRoutes.staffScanner,
-        AppRoutes.deviceActivation,
         AppRoutes.scheduleList,
         AppRoutes.scheduleForm,
         AppRoutes.staffFaceScanner,

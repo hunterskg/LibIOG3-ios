@@ -215,53 +215,6 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
     );
   }
 
-  Future<void> _assignDevice() async {
-    final assignment = await context.read<DeviceProvider>().assign(
-      widget.staffId,
-    );
-    if (!mounted) return;
-    if (assignment == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<DeviceProvider>().errorMessage ??
-                'Không thể cấp thiết bị',
-          ),
-          backgroundColor: AppColors.danger,
-        ),
-      );
-      return;
-    }
-    await context.read<DeviceProvider>().loadForStaff(widget.staffId);
-    if (!mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Mã cấp thiết bị'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              assignment.activationCode ?? '---',
-              style: AppTextStyles.h1.copyWith(letterSpacing: 8),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Gửi mã 6 số này cho nhân viên. Mã có hiệu lực trong 24 giờ.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _assignmentCard(BuildContext context, DeviceAssignment assignment) {
     final active = assignment.status == DeviceAssignmentStatus.active;
     final device = assignment.deviceName ?? 'Chưa kích hoạt';
@@ -293,8 +246,6 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          if (assignment.activationCode != null)
-            _infoRow('Mã kích hoạt:', assignment.activationCode!, isMono: true),
           if (assignment.platform != null) ...[
             const SizedBox(height: 6),
             _infoRow('Nền tảng:', assignment.platform!),
@@ -441,11 +392,14 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                               ),
                             ),
                             TextButton.icon(
-                              onPressed: deviceProvider.isLoading
-                                  ? null
-                                  : _assignDevice,
-                              icon: const Icon(Icons.add_link_rounded),
-                              label: const Text('Cấp mã'),
+              onPressed: deviceProvider.isLoading || deviceProvider.assignments.isEmpty
+                  ? null
+                  : () async {
+                      await deviceProvider.unbindStaff(widget.staffId);
+                      await deviceProvider.loadForStaff(widget.staffId);
+                    },
+              icon: const Icon(Icons.link_off_rounded),
+              label: const Text('Gỡ thiết bị'),
                             ),
                           ],
                         ),

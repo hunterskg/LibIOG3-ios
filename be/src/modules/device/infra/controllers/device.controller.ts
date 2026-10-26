@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Delete,
   ForbiddenException,
@@ -7,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -19,13 +17,9 @@ import {
 } from '@nestjs/swagger';
 import { DeviceService } from '../../application/services/device.service';
 import {
-  ActivateDeviceReq,
-  AssignDeviceReq,
   QueryAssignmentReq,
 } from '../../domain/dtos/req.dto';
 import {
-  ActivateDeviceRes,
-  AssignDeviceRes,
   DeviceAssignmentRes,
 } from '../../domain/dtos/res.dto';
 import { CurrentUser } from '../../../auth/infra/decorators/current-user.decorator';
@@ -40,29 +34,6 @@ import { UserRes } from '../../../user/domain/dtos/res.dto';
 export class DeviceController {
   constructor(private readonly deviceService: DeviceService) {}
 
-  @Post('assign')
-  @UseGuards(JwtGuard, RoleGuard)
-  @Roles(Role.ADMIN)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({
-    summary: 'Assign a device activation code to staff (Admin only)',
-  })
-  @ApiResponse({ status: 201, type: AssignDeviceRes })
-  @HttpCode(HttpStatus.CREATED)
-  assign(
-    @Body() req: AssignDeviceReq,
-    @CurrentUser('userId') adminId: string,
-  ): Promise<AssignDeviceRes> {
-    return this.deviceService.assign(req, adminId);
-  }
-
-  @Post('activate')
-  @ApiOperation({ summary: 'Activate a device with an activation code' })
-  @ApiResponse({ status: 200, type: ActivateDeviceRes })
-  activate(@Body() req: ActivateDeviceReq): Promise<ActivateDeviceRes> {
-    return this.deviceService.activate(req);
-  }
-
   @Delete('assignments/:id')
   @UseGuards(JwtGuard, RoleGuard)
   @Roles(Role.ADMIN)
@@ -71,6 +42,15 @@ export class DeviceController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async revoke(@Param('id') id: string): Promise<void> {
     await this.deviceService.revoke(id);
+  }
+
+  @Delete('staff/:staffId/unbind')
+  @UseGuards(JwtGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth('access-token')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unbind(@Param('staffId') staffId: string): Promise<void> {
+    await this.deviceService.unbindStaff(staffId);
   }
 
   @Get('assignments')
