@@ -34,6 +34,10 @@ import 'package:fe/features/library/domain/models/library_schedule.dart';
 import 'package:fe/features/library/presentation/screens/schedule_screen.dart';
 import 'package:fe/features/library/presentation/screens/schedule_form_screen.dart';
 import 'package:fe/features/biometric/presentation/screens/staff_face_scanner_screen.dart';
+import 'package:fe/features/access/presentation/screens/manual_access_screen.dart';
+import 'package:fe/features/access/presentation/screens/access_history_screen.dart';
+import 'package:fe/features/access/presentation/screens/library_closure_screen.dart';
+import 'package:fe/features/access/presentation/screens/admin_report_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -88,4 +92,14 @@ Map<String, WidgetBuilder> get appRoutes => {
     return ScheduleFormScreen(existing: args is LibrarySchedule ? args : null);
   },
   AppRoutes.staffFaceScanner: (context) => const StaffFaceScannerScreen(),
+  AppRoutes.manualAccess: (context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final readerId = (args is Map && args['readerId'] is String)
+        ? args['readerId'] as String
+        : null;
+    return ManualAccessScreen(initialReaderId: readerId);
+  },
+  AppRoutes.accessHistory: (context) => const AccessHistoryScreen(),
+  AppRoutes.libraryClosure: (context) => const LibraryClosureScreen(),
+  AppRoutes.adminReports: (context) => const AdminReportScreen(),
 };
