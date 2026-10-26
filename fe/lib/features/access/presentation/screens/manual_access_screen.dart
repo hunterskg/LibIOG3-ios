@@ -177,7 +177,7 @@ class _ManualAccessScreenState extends State<ManualAccessScreen> {
       child: Scaffold(
         backgroundColor: AppColors.neutral50,
         appBar: AppBar(
-          title: const Text('Ra / Vào Thủ Công (Manual Access)'),
+          title: const Text('Ra / Vào Thủ Công'),
           backgroundColor: AppColors.white,
           foregroundColor: AppColors.charcoal900,
           elevation: 0,
@@ -325,14 +325,15 @@ class _ManualAccessScreenState extends State<ManualAccessScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                Expanded(
-                                  child: Text(
-                                    '2. Xác nhận trạng thái & Lý do duyệt',
-                                    style: AppTextStyles.h3,
-                                  ),
+                                Text(
+                                  '2. Xác nhận trạng thái & Lý do duyệt',
+                                  style: AppTextStyles.h3,
                                 ),
                                 StatusBadge(
                                   label: isCurrentlyIn

@@ -114,45 +114,58 @@ class _ReaderDetailScreenState extends State<ReaderDetailScreen> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Hủy'),
-            ),
-            Consumer<UserProvider>(
-              builder: (context, p, child) => AppButton(
-                text: 'Lưu',
-                isLoading: p.isLoading,
-                onPressed: () async {
-                  if (!_formKey.currentState!.validate()) return;
-                  final req = ReaderUpdateReq(
-                    fullName: _fullNameCtrl.text.trim().isNotEmpty
-                        ? _fullNameCtrl.text.trim()
-                        : null,
-                    phone: _phoneCtrl.text.trim().isNotEmpty
-                        ? _phoneCtrl.text.trim()
-                        : null,
-                    dateOfBirth: _dobCtrl.text.trim().isNotEmpty
-                        ? _dobCtrl.text.trim()
-                        : null,
-                  );
-                  final ok = await p.adminUpdateReader(widget.readerId, req);
-                  if (dialogCtx.mounted) Navigator.pop(dialogCtx);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? 'Cập nhật độc giả thành công'
-                              : (p.errorMessage ?? 'Cập nhật thất bại'),
-                        ),
-                        backgroundColor: ok
-                            ? AppColors.success
-                            : AppColors.danger,
-                      ),
-                    );
-                  }
-                },
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    text: 'Hủy',
+                    variant: AppButtonVariant.secondary,
+                    onPressed: () => Navigator.pop(dialogCtx),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s3),
+                Expanded(
+                  child: Consumer<UserProvider>(
+                    builder: (context, p, child) => AppButton(
+                      text: 'Lưu',
+                      isLoading: p.isLoading,
+                      onPressed: () async {
+                        if (!_formKey.currentState!.validate()) return;
+                        final req = ReaderUpdateReq(
+                          fullName: _fullNameCtrl.text.trim().isNotEmpty
+                              ? _fullNameCtrl.text.trim()
+                              : null,
+                          phone: _phoneCtrl.text.trim().isNotEmpty
+                              ? _phoneCtrl.text.trim()
+                              : null,
+                          dateOfBirth: _dobCtrl.text.trim().isNotEmpty
+                              ? _dobCtrl.text.trim()
+                              : null,
+                        );
+                        final ok = await p.adminUpdateReader(
+                          widget.readerId,
+                          req,
+                        );
+                        if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok
+                                    ? 'Cập nhật độc giả thành công'
+                                    : (p.errorMessage ?? 'Cập nhật thất bại'),
+                              ),
+                              backgroundColor: ok
+                                  ? AppColors.success
+                                  : AppColors.danger,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );

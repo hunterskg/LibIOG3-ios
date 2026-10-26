@@ -105,7 +105,7 @@ class _AdminReportScreenState extends State<AdminReportScreen> {
       child: Scaffold(
         backgroundColor: AppColors.neutral50,
         appBar: AppBar(
-          title: const Text('Báo cáo & Thống kê Vận hành'),
+          title: const Text('Báo cáo & Thống kê'),
           backgroundColor: AppColors.white,
           foregroundColor: AppColors.charcoal900,
           elevation: 0,
@@ -115,7 +115,7 @@ class _AdminReportScreenState extends State<AdminReportScreen> {
                 Navigator.pushNamed(context, AppRoutes.accessHistory);
               },
               icon: const Icon(Icons.history_rounded, size: 18),
-              label: const Text('Xem chi tiết Log'),
+              label: const Text('Chi tiết Log'),
             ),
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
@@ -143,8 +143,11 @@ class _AdminReportScreenState extends State<AdminReportScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // Bộ chọn khoảng thời gian
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 'Khoảng thời gian thống kê',
@@ -163,52 +166,58 @@ class _AdminReportScreenState extends State<AdminReportScreen> {
                           const SizedBox(height: AppSpacing.s3),
 
                           // 4 Thẻ chỉ số KPI
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _kpiCard(
-                                  title: 'Đang trong thư viện',
-                                  value: '$currentInside',
-                                  subtitle: 'Bạn đọc đang IN',
-                                  color: AppColors.info,
-                                  icon: Icons.people_alt_rounded,
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(
+                                  child: _kpiCard(
+                                    title: 'Đang trong thư viện',
+                                    value: '$currentInside',
+                                    subtitle: 'Bạn đọc đang IN',
+                                    color: AppColors.info,
+                                    icon: Icons.people_alt_rounded,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: AppSpacing.s3),
-                              Expanded(
-                                child: _kpiCard(
-                                  title: 'Tổng lượt Check-in',
-                                  value: '$totalCheckIns',
-                                  subtitle: 'Trong $_daysRange ngày',
-                                  color: AppColors.success,
-                                  icon: Icons.login_rounded,
+                                const SizedBox(width: AppSpacing.s3),
+                                Expanded(
+                                  child: _kpiCard(
+                                    title: 'Tổng lượt Check-in',
+                                    value: '$totalCheckIns',
+                                    subtitle: 'Trong $_daysRange ngày',
+                                    color: AppColors.success,
+                                    icon: Icons.login_rounded,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.s3),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _kpiCard(
-                                  title: 'Tổng lượt Check-out',
-                                  value: '$totalCheckOuts',
-                                  subtitle: 'Check-out hợp lệ',
-                                  color: AppColors.accent600,
-                                  icon: Icons.logout_rounded,
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(
+                                  child: _kpiCard(
+                                    title: 'Tổng lượt Check-out',
+                                    value: '$totalCheckOuts',
+                                    subtitle: 'Check-out hợp lệ',
+                                    color: AppColors.accent600,
+                                    icon: Icons.logout_rounded,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: AppSpacing.s3),
-                              Expanded(
-                                child: _kpiCard(
-                                  title: 'Tự động Check-out',
-                                  value: '$totalAutoOuts',
-                                  subtitle: 'Quên check-out cuối ngày',
-                                  color: AppColors.warning,
-                                  icon: Icons.timer_off_outlined,
+                                const SizedBox(width: AppSpacing.s3),
+                                Expanded(
+                                  child: _kpiCard(
+                                    title: 'Tự động Check-out',
+                                    value: '$totalAutoOuts',
+                                    subtitle: 'Quên check-out',
+                                    color: AppColors.warning,
+                                    icon: Icons.timer_off_outlined,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: AppSpacing.s4),
