@@ -14,9 +14,10 @@ class ApiClient {
 
   ApiClient({
     http.Client? client,
-    this.baseUrl = ApiConstants.baseUrl,
+    String? baseUrl,
     this.getAccessToken,
-  }) : _client = client ?? http.Client();
+  }) : _client = client ?? http.Client(),
+        baseUrl = baseUrl ?? ApiConstants.baseUrl;
 
   Map<String, String> _defaultHeaders([String? token]) => {
     'Content-Type': 'application/json',
@@ -43,6 +44,7 @@ class ApiClient {
     }
 
     try {
+      print('Base URL: $baseUrl');
       final response = await _client
           .post(
             _uri(path),

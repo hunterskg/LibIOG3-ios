@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import 'package:fe/core/network/api_exception.dart';
 import 'package:fe/core/storage/token_storage.dart';
@@ -86,8 +87,26 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
 
     try {
+      String fingerprint = 'flutter-${defaultTargetPlatform.name}';
+      String platform = defaultTargetPlatform.name;
+      String? name;
+      final info = DeviceInfoPlugin();
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final data = await info.androidInfo;
+        fingerprint = data.id;
+        platform = 'android';
+        name = '${data.manufacturer} ${data.model}';
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final data = await info.iosInfo;
+        fingerprint = data.identifierForVendor ?? data.name;
+        platform = 'ios';
+        name = data.name;
+      }
       final res = await authService.login(
-        LoginReq(email: username.trim(), password: password),
+        LoginReq(email: username.trim(), password: password,
+          deviceFingerprint: expectedRole == UserRole.staff ? fingerprint : null,
+          deviceName: expectedRole == UserRole.staff ? name : null,
+          devicePlatform: expectedRole == UserRole.staff ? platform : null),
       );
 
       // Phân quyền theo cổng đăng nhập

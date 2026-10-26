@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 
 import { RefreshToken } from './domain/refresh-token.entity';
 import { UserModule } from '../user/user.module';
+import { DeviceModule } from '../device/device.module';
 
 import { AuthController } from './infra/controllers/auth.controller';
 import { AuthService } from './application/services/auth.service';
@@ -27,6 +28,7 @@ import { JwtStrategy } from './infra/strategies/jwt.strategy';
       }),
     }),
     UserModule,
+    DeviceModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, RefreshTokenService, JwtStrategy],

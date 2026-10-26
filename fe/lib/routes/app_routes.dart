@@ -28,7 +28,6 @@ import 'package:fe/features/qr/presentation/screens/reader_qr_screen.dart';
 import 'package:fe/core/network/api_client.dart';
 import 'package:provider/provider.dart';
 import 'package:fe/features/qr/presentation/screens/staff_scanner_screen.dart';
-import 'package:fe/features/device/presentation/screens/device_activation_screen.dart';
 import 'package:fe/features/biometric/presentation/screens/face_register_screen.dart';
 import 'package:fe/features/library/domain/models/library_schedule.dart';
 import 'package:fe/features/library/presentation/screens/schedule_screen.dart';
@@ -38,6 +37,7 @@ import 'package:fe/features/access/presentation/screens/manual_access_screen.dar
 import 'package:fe/features/access/presentation/screens/access_history_screen.dart';
 import 'package:fe/features/access/presentation/screens/library_closure_screen.dart';
 import 'package:fe/features/access/presentation/screens/admin_report_screen.dart';
+import 'package:fe/features/gate/presentation/gate_list_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -85,7 +85,6 @@ Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.staffScanner: (context) {
     return const StaffScannerScreen();
   },
-  AppRoutes.deviceActivation: (context) => const DeviceActivationScreen(),
   AppRoutes.scheduleList: (context) => const ScheduleScreen(),
   AppRoutes.scheduleForm: (context) {
     final args = ModalRoute.of(context)?.settings.arguments;
@@ -102,4 +101,5 @@ Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.accessHistory: (context) => const AccessHistoryScreen(),
   AppRoutes.libraryClosure: (context) => const LibraryClosureScreen(),
   AppRoutes.adminReports: (context) => const AdminReportScreen(),
+  AppRoutes.gateList: (context) => const GateListScreen(),
 };

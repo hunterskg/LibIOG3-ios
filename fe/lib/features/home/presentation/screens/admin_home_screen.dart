@@ -230,9 +230,19 @@ class _AdminHomeContent extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.s3),
                   _actionCard(
+                    icon: Icons.door_front_door_outlined,
+                    title: 'Quản lý cổng',
+                    desc: 'Tạo cổng, theo dõi và đổi trạng thái hoạt động',
+                    color: AppColors.info,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.gateList),
+                  ),
+                  const SizedBox(height: AppSpacing.s3),
+                  _actionCard(
                     icon: Icons.history_edu_rounded,
                     title: 'Lịch sử ra vào thư viện',
-                    desc: 'Tra cứu toàn bộ lượt QR, Khuôn mặt, Duyệt tay và Auto Check-out',
+                    desc:
+                        'Tra cứu toàn bộ lượt QR, Khuôn mặt, Duyệt tay và Auto Check-out',
                     color: AppColors.charcoal700,
                     onTap: () {
                       Navigator.pushNamed(context, AppRoutes.accessHistory);
