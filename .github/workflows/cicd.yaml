@@ -146,6 +146,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           envs: BE_ENV,PYTHON_ENV
           script: |
+            set -e
             cd ${{ secrets.VPS_TARGET_DIR }}
             printf "%s\n" "$BE_ENV" > be/.env
             printf "%s\n" "$PYTHON_ENV" > python/.env

@@ -181,5 +181,29 @@ void main() {
       expect(provider.isLoading, isFalse);
       expect(provider.errorMessage, isNotNull);
     });
+
+    test('refreshOccupancy fetches occupancy independently', () async {
+      final mockService = MockDashboardApiService();
+      final provider = DashboardProvider(apiService: mockService);
+
+      await provider.fetchOccupancy();
+
+      expect(provider.isLoadingOccupancy, isFalse);
+      expect(provider.occupancy, isNotNull);
+      expect(provider.occupancy!.currentOccupants, 125);
+    });
+
+    test('custom date range updates filter and custom range', () async {
+      final mockService = MockDashboardApiService();
+      final provider = DashboardProvider(apiService: mockService);
+
+      final start = DateTime(2026, 10, 20);
+      final end = DateTime(2026, 10, 27);
+      provider.setCustomRange(start, end);
+
+      expect(provider.selectedFilter, DashboardTimeFilter.custom);
+      expect(provider.customStartDate, start);
+      expect(provider.customEndDate, end);
+    });
   });
 }

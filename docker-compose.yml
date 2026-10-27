@@ -42,19 +42,15 @@ services:
     container_name: libio-backend
     restart: unless-stopped
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-8020}:${PORT:-8020}"
     env_file:
       - path: ./be/.env
         required: false
       - path: ./be/.env.example
         required: false
     environment:
-      DB_HOST: postgres
-      REDIS_HOST: redis
       PYTHON_GRPC_URL: python-face:50051
     depends_on:
-      - postgres
-      - redis
       - python-face
 
 volumes:
