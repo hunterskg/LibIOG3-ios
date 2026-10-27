@@ -46,7 +46,9 @@ export function mapFaceGrpcError(error: unknown): Error {
         : undefined;
 
   if (code === 3) {
-    return new BadRequestException(details ?? 'Dữ liệu khuôn mặt không hợp lệ.');
+    return new BadRequestException(
+      details ?? 'Dữ liệu khuôn mặt không hợp lệ.',
+    );
   }
   if (code === 9 || code === 5 || code === 7) {
     const fallback =
@@ -94,7 +96,10 @@ export class FaceGrpcAdapter
   async detect(imageBuffer: Buffer): Promise<Face[]> {
     const res = await this.call(
       firstValueFrom(
-        this.faceService.detectFaces({ image_bytes: imageBuffer, max_faces: 5 }),
+        this.faceService.detectFaces({
+          image_bytes: imageBuffer,
+          max_faces: 5,
+        }),
       ),
     );
     if (!res.success) return [];

@@ -35,6 +35,12 @@ void main() {
         AppRoutes.scheduleList,
         AppRoutes.scheduleForm,
         AppRoutes.staffFaceScanner,
+        AppRoutes.manualAccess,
+        AppRoutes.accessHistory,
+        AppRoutes.libraryClosure,
+        AppRoutes.adminReports,
+        AppRoutes.gateList,
+        AppRoutes.adminDashboard,
       ];
 
       for (final route in expected) {

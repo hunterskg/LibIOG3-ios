@@ -78,6 +78,8 @@ class FakeAuthService extends AuthService {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('AuthProvider Role Isolation & Login', () {
     late MockTokenStorage tokenStorage;
     late FakeAuthService authService;

@@ -1,11 +1,19 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Gate } from '../../domain/entities/gate.entity';
 import { Device } from '../../domain/entities/device.entity';
 import { GateStatus } from '../../domain/enums/gate-status.enum';
 import { DeviceStatus } from '../../domain/enums/device-status.enum';
-import { CreateGateReq, GateRes, UpdateGateReq } from '../../domain/dtos/gate.dto';
+import {
+  CreateGateReq,
+  GateRes,
+  UpdateGateReq,
+} from '../../domain/dtos/gate.dto';
 
 @Injectable()
 export class GateService {
@@ -18,11 +26,15 @@ export class GateService {
     const code = req.code.trim();
     const exists = await this.gateRepo.findOne({ where: { code } });
     if (exists) throw new ConflictException('Gate code already exists');
-    return GateRes.of(await this.gateRepo.save(this.gateRepo.create({ ...req, code })));
+    return GateRes.of(
+      await this.gateRepo.save(this.gateRepo.create({ ...req, code })),
+    );
   }
 
   async list(): Promise<GateRes[]> {
-    return (await this.gateRepo.find({ order: { createdAt: 'DESC' } })).map(GateRes.of);
+    return (await this.gateRepo.find({ order: { createdAt: 'DESC' } })).map(
+      GateRes.of,
+    );
   }
 
   async listStaff(gateId: string) {
@@ -61,5 +73,4 @@ export class GateService {
       await manager.remove(Gate, gate);
     });
   }
-
 }

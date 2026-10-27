@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CheckInOutStatisticUsecase } from '../usecases/check-in-out-statistic.usecase';
+import { OccupancyStatisticUsecase } from '../usecases/occupancy-statistic.usecase';
 import { CheckInOutDashboardReq } from '../../dto/req.dto';
-import { CheckInOutDashboardRes } from '../../dto/res.dto';
+import {
+  CheckInOutDashboardRes,
+  OccupancyDashboardRes,
+} from '../../dto/res.dto';
 import { AccessLog } from '../../../access/domain/entities/access-log.entity';
 import { AccessAction } from '../../../access/domain/enums/access-action.enum';
 import { AccessResult } from '../../../access/domain/enums/access-result.enum';
+import { getCapacityStatus } from '../../domain/enums/capacity-status.enum';
 
 interface RawBucketStats {
   startDate: Date | string;
@@ -15,11 +21,55 @@ interface RawBucketStats {
 }
 
 @Injectable()
-export class DashboardService implements CheckInOutStatisticUsecase {
+export class DashboardService
+  implements CheckInOutStatisticUsecase, OccupancyStatisticUsecase
+{
   constructor(
     @InjectRepository(AccessLog)
     private readonly accessLogRepo: Repository<AccessLog>,
+    private readonly configService: ConfigService,
   ) {}
+
+  async getCurrentOccupancy(): Promise<OccupancyDashboardRes> {
+    const rawResult = await this.accessLogRepo.query<
+      Array<{ count?: number | string }>
+    >(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM (
+        SELECT action,
+               ROW_NUMBER() OVER (
+                 PARTITION BY reader_id
+                 ORDER BY occurred_at DESC, created_at DESC, id DESC
+               ) AS rn
+        FROM access_logs
+        WHERE result = $1
+      ) t
+      WHERE t.rn = 1 AND t.action = $2
+      `,
+      [AccessResult.SUCCESS, AccessAction.CHECK_IN],
+    );
+
+    const currentOccupants = Number(rawResult[0]?.count ?? 0);
+    const configuredCapacity = this.configService.get<number>(
+      'LIBRARY_MAX_CAPACITY',
+      500,
+    );
+    const maxCapacity =
+      Number(configuredCapacity) > 0 ? Number(configuredCapacity) : 500;
+
+    const rawRate = (currentOccupants / maxCapacity) * 100;
+    const occupancyRate = Number(rawRate.toFixed(1));
+    const status = getCapacityStatus(occupancyRate);
+
+    return {
+      currentOccupants,
+      maxCapacity,
+      occupancyRate,
+      status,
+      updatedAt: new Date(),
+    };
+  }
 
   async getCheckInOutStatistic(
     req: CheckInOutDashboardReq,

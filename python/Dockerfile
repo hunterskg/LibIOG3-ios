@@ -15,6 +15,7 @@ COPY pyproject.toml uv.lock* ./
 RUN uv pip install --system --no-cache -r pyproject.toml
 
 COPY . .
+RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/face/v1/face.proto
 
 EXPOSE 50051
 

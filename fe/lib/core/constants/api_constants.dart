@@ -1,7 +1,13 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 abstract final class ApiConstants {
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
+  static String get baseUrl {
+    try {
+      return dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
+    } catch (_) {
+      return 'http://localhost:3000';
+    }
+  }
 
   static const Duration timeout = Duration(seconds: 15);
 
@@ -59,4 +65,8 @@ abstract final class ApiConstants {
   static const String activeReaders = '/access/active-readers';
   static const String triggerClosure = '/access/closures/trigger';
   static const String reportSummary = '/access/reports/summary';
+
+  // Dashboard endpoints
+  static const String dashboardOccupancy = '/dashboard/occupancy';
+  static const String dashboardCheckInOutStatistic = '/dashboard/check-in-out-statistic';
 }

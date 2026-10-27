@@ -76,7 +76,8 @@ export class CheckInOutController {
   @Roles(Role.STAFF, Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Kiểm tra trạng thái hiện tại (IN/OUT) của bạn đọc (Staff & Admin)',
+    summary:
+      'Kiểm tra trạng thái hiện tại (IN/OUT) của bạn đọc (Staff & Admin)',
   })
   async getReaderState(
     @Param('readerId', new ParseUUIDPipe()) readerId: string,

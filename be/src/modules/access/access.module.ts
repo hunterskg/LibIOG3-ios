@@ -10,13 +10,7 @@ import { AccessController } from './infra/controllers/access.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      AccessLog,
-      User,
-      Device,
-      Gate,
-      LibrarySchedule,
-    ]),
+    TypeOrmModule.forFeature([AccessLog, User, Device, Gate, LibrarySchedule]),
   ],
   controllers: [AccessController],
   providers: [AccessService],

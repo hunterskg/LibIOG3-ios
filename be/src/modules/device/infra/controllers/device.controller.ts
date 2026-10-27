@@ -18,12 +18,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { DeviceService } from '../../application/services/device.service';
-import {
-  QueryAssignmentReq,
-} from '../../domain/dtos/req.dto';
-import {
-  DeviceAssignmentRes,
-} from '../../domain/dtos/res.dto';
+import { QueryAssignmentReq } from '../../domain/dtos/req.dto';
+import { DeviceAssignmentRes } from '../../domain/dtos/res.dto';
 import { CurrentUser } from '../../../auth/infra/decorators/current-user.decorator';
 import { Roles } from '../../../auth/infra/decorators/role.decorator';
 import { JwtGuard } from '../../../auth/infra/guard/jwt.guard';
@@ -41,7 +37,10 @@ export class DeviceController {
   @UseGuards(JwtGuard, RoleGuard)
   @Roles(Role.ADMIN)
   @ApiBearerAuth('access-token')
-  async assignGate(@Param('staffId') staffId: string, @Body() req: AssignGateReq): Promise<void> {
+  async assignGate(
+    @Param('staffId') staffId: string,
+    @Body() req: AssignGateReq,
+  ): Promise<void> {
     await this.deviceService.assignGate(staffId, req.gateId);
   }
 

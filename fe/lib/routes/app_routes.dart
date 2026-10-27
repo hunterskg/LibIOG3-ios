@@ -38,6 +38,7 @@ import 'package:fe/features/access/presentation/screens/access_history_screen.da
 import 'package:fe/features/access/presentation/screens/library_closure_screen.dart';
 import 'package:fe/features/access/presentation/screens/admin_report_screen.dart';
 import 'package:fe/features/gate/presentation/gate_list_screen.dart';
+import 'package:fe/features/dashboard/screens/admin_dashboard_screen.dart';
 
 Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.roleSelect: (context) => const RoleSelectScreen(),
@@ -102,4 +103,5 @@ Map<String, WidgetBuilder> get appRoutes => {
   AppRoutes.libraryClosure: (context) => const LibraryClosureScreen(),
   AppRoutes.adminReports: (context) => const AdminReportScreen(),
   AppRoutes.gateList: (context) => const GateListScreen(),
+  AppRoutes.adminDashboard: (context) => const AdminDashboardScreen(),
 };
