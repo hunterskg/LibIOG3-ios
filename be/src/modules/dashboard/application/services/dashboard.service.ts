@@ -82,6 +82,12 @@ export class DashboardService
       return [];
     }
 
+    const now = new Date();
+    const effectiveEnd = end > now ? now : end;
+    if (start >= effectiveEnd) {
+      return [];
+    }
+
     // ponytail: raw SQL window function; upgrade path: snapshot table if log volume explodes
     const initialOccupancyRaw = await this.accessLogRepo.query<
       Array<{ count?: number | string }>
@@ -126,7 +132,7 @@ export class DashboardService
         AccessAction.CHECK_OUT,
         AccessAction.AUTO_CHECK_OUT,
         start,
-        end,
+        effectiveEnd,
         step,
       ],
     );
@@ -134,6 +140,11 @@ export class DashboardService
     const results: CheckInOutDashboardRes[] = [];
 
     for (const row of rows) {
+      const bucketDate = new Date(row.startDate);
+      if (bucketDate > now) {
+        continue;
+      }
+
       const checkInCount = Number(row.checkInCount || 0);
       const checkOutCount = Number(row.checkOutCount || 0);
       const peak = currentOccupancy + checkInCount;
@@ -147,7 +158,7 @@ export class DashboardService
       );
 
       results.push({
-        startDate: new Date(row.startDate),
+        startDate: bucketDate,
         intervalMin,
         checkInCount,
         checkOutCount,
