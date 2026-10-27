@@ -87,6 +87,9 @@ void main() {
     expect(find.text('Biểu đồ biến động Check-in / Check-out'), findsOneWidget);
     expect(find.text('Check-in'), findsOneWidget);
 
+    // Verify right Y-axis unit exists for bar chart
+    expect(find.text('lượt'), findsOneWidget);
+
     // Verify detail list expandable toggle exists and works
     final expandBtn = find.text('Xem tất cả 30 mốc');
     expect(expandBtn, findsOneWidget);
