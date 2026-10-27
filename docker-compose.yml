@@ -30,7 +30,10 @@ services:
     ports:
       - "${GRPC_PORT:-50051}:50051"
     env_file:
-      - ./python/.env.example
+      - path: ./python/.env
+        required: false
+      - path: ./python/.env.example
+        required: false
 
   be:
     build:
@@ -40,6 +43,11 @@ services:
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"
+    env_file:
+      - path: ./be/.env
+        required: false
+      - path: ./be/.env.example
+        required: false
     environment:
       DB_HOST: postgres
       REDIS_HOST: redis
