@@ -27,6 +27,7 @@ import { ConfigService } from '@nestjs/config';
 import { InternalEventBus } from '../../../infra/event/application/internal-event-bus.interface';
 import { CacheService } from '../../../infra/cache/application/interface/cache-service.interface';
 import { UserService } from '../../../user/application/services/user.service';
+import { DeviceService } from '../../../device/application/services/device.service';
 import { Role } from '../../../user/domain/enums/role.enum';
 import { UserStatus } from '../../../user/domain/enums/user-statis.enum';
 import { ReaderRes } from '../../../user/domain/dtos/res.dto';
@@ -40,6 +41,7 @@ describe('AuthService', () => {
   let internalEventBus: jest.Mocked<InternalEventBus>;
   let cacheService: jest.Mocked<CacheService>;
   let userService: jest.Mocked<UserService>;
+  let deviceService: jest.Mocked<DeviceService>;
 
   beforeEach(() => {
     refreshTokenService = {
@@ -78,6 +80,8 @@ describe('AuthService', () => {
       createReader: jest.fn(),
     } as unknown as jest.Mocked<UserService>;
 
+    deviceService = {} as unknown as jest.Mocked<DeviceService>;
+
     authService = new AuthService(
       refreshTokenService,
       jwtService,
@@ -85,6 +89,7 @@ describe('AuthService', () => {
       internalEventBus,
       cacheService,
       userService,
+      deviceService,
     );
   });
 

@@ -117,6 +117,14 @@ class _AdminHomeContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s4),
+                  _actionCard(
+                    icon: Icons.dashboard_rounded,
+                    title: 'Bảng điều khiển (Dashboard)',
+                    desc: 'Sức chứa hiện tại & Thống kê ra vào theo chuỗi thời gian',
+                    color: AppColors.accent600,
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.adminDashboard),
+                  ),
+                  const SizedBox(height: AppSpacing.s4),
                   Text('Quản lý hệ thống', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
                   IntrinsicHeight(

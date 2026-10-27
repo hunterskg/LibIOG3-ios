@@ -7,12 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../../user/domain/entities/user.entity';
 import { Role } from '../../../user/domain/enums/role.enum';
-import {
-  QueryAssignmentReq,
-} from '../../domain/dtos/req.dto';
-import {
-  DeviceAssignmentRes,
-} from '../../domain/dtos/res.dto';
+import { QueryAssignmentReq } from '../../domain/dtos/req.dto';
+import { DeviceAssignmentRes } from '../../domain/dtos/res.dto';
 import { Device } from '../../domain/entities/device.entity';
 import { DeviceStatus } from '../../domain/enums/device-status.enum';
 import { Gate } from '../../domain/entities/gate.entity';
@@ -35,24 +31,40 @@ export class DeviceService {
     deviceName?: string,
     platform?: string,
   ): Promise<void> {
-    const existing = await this.deviceRepo.findOne({ where: { staffId, status: DeviceStatus.ACTIVE } });
+    const existing = await this.deviceRepo.findOne({
+      where: { staffId, status: DeviceStatus.ACTIVE },
+    });
     if (existing) {
       if (existing.deviceFingerprint !== fingerprint) {
-        throw new ConflictException('Tài khoản đã được gắn với thiết bị khác. Liên hệ Admin để đổi thiết bị.');
+        throw new ConflictException(
+          'Tài khoản đã được gắn với thiết bị khác. Liên hệ Admin để đổi thiết bị.',
+        );
       }
       return;
     }
-    const used = await this.deviceRepo.findOne({ where: { deviceFingerprint: fingerprint, status: DeviceStatus.ACTIVE } });
-    if (used && used.staffId !== staffId) throw new ConflictException('Thiết bị đã được gắn với tài khoản khác');
-    await this.deviceRepo.save(this.deviceRepo.create({
-      staffId, gateId: null,
-      deviceFingerprint: fingerprint, deviceName: deviceName || 'Staff Device', devicePlatform: platform,
-      status: DeviceStatus.ACTIVE, assignedById: staffId, activatedAt: new Date(),
-    }));
+    const used = await this.deviceRepo.findOne({
+      where: { deviceFingerprint: fingerprint, status: DeviceStatus.ACTIVE },
+    });
+    if (used && used.staffId !== staffId)
+      throw new ConflictException('Thiết bị đã được gắn với tài khoản khác');
+    await this.deviceRepo.save(
+      this.deviceRepo.create({
+        staffId,
+        gateId: null,
+        deviceFingerprint: fingerprint,
+        deviceName: deviceName || 'Staff Device',
+        devicePlatform: platform,
+        status: DeviceStatus.ACTIVE,
+        assignedById: staffId,
+        activatedAt: new Date(),
+      }),
+    );
   }
 
   async unbindStaff(staffId: string): Promise<void> {
-    const device = await this.deviceRepo.findOne({ where: { staffId, status: DeviceStatus.ACTIVE } });
+    const device = await this.deviceRepo.findOne({
+      where: { staffId, status: DeviceStatus.ACTIVE },
+    });
     if (!device) throw new NotFoundException('Staff has no active device');
     device.status = DeviceStatus.REVOKED;
     device.revokedAt = new Date();
@@ -60,11 +72,17 @@ export class DeviceService {
   }
 
   async assignGate(staffId: string, gateId: string): Promise<void> {
-    const gate = await this.gateRepo.findOne({ where: { id: gateId, status: GateStatus.ACTIVE } });
+    const gate = await this.gateRepo.findOne({
+      where: { id: gateId, status: GateStatus.ACTIVE },
+    });
     if (!gate) throw new NotFoundException('Active gate not found');
-    const staff = await this.userRepo.findOne({ where: { id: staffId, role: Role.STAFF } });
+    const staff = await this.userRepo.findOne({
+      where: { id: staffId, role: Role.STAFF },
+    });
     if (!staff) throw new NotFoundException('Staff not found');
-    const device = await this.deviceRepo.findOne({ where: { staffId, status: DeviceStatus.ACTIVE } });
+    const device = await this.deviceRepo.findOne({
+      where: { staffId, status: DeviceStatus.ACTIVE },
+    });
     if (!device) throw new NotFoundException('Staff has no active device');
     device.gateId = gateId;
     await this.deviceRepo.save(device);
@@ -101,5 +119,4 @@ export class DeviceService {
     });
     return devices.map(DeviceAssignmentRes.of);
   }
-
 }

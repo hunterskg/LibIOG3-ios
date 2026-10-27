@@ -19,6 +19,8 @@ import 'features/library/data/services/schedule_api_service.dart';
 import 'features/library/presentation/providers/schedule_provider.dart';
 import 'features/gate/data/gate_api_service.dart';
 import 'features/gate/presentation/gate_provider.dart';
+import 'features/dashboard/services/dashboard_api_service.dart';
+import 'features/dashboard/providers/dashboard_provider.dart';
 import 'routes/app_routes.dart';
 
 void main() async {
@@ -49,6 +51,7 @@ class _MyAppState extends State<MyApp> {
   late final DeviceProvider _deviceProvider;
   late final ScheduleProvider _scheduleProvider;
   late final GateProvider _gateProvider;
+  late final DashboardProvider _dashboardProvider;
 
   @override
   void initState() {
@@ -79,6 +82,9 @@ class _MyAppState extends State<MyApp> {
       service: ScheduleApiService(_apiClient),
     );
     _gateProvider = GateProvider(GateApiService(_apiClient));
+    _dashboardProvider = DashboardProvider(
+      apiService: DashboardApiService(_apiClient),
+    );
 
     _authProvider.checkAuth();
   }
@@ -91,6 +97,7 @@ class _MyAppState extends State<MyApp> {
     _deviceProvider.dispose();
     _scheduleProvider.dispose();
     _gateProvider.dispose();
+    _dashboardProvider.dispose();
 
     super.dispose();
   }
@@ -126,6 +133,9 @@ class _MyAppState extends State<MyApp> {
           value: _scheduleProvider,
         ),
         ChangeNotifierProvider<GateProvider>.value(value: _gateProvider),
+        ChangeNotifierProvider<DashboardProvider>.value(
+          value: _dashboardProvider,
+        ),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {

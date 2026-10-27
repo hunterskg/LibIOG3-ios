@@ -149,7 +149,7 @@ export class CheckInOutService {
 
       const gate = await gateRepository.findOne({
         where: {
-          id: device.gateId!,
+          id: device.gateId,
           status: GateStatus.ACTIVE,
         },
       });
@@ -296,7 +296,7 @@ export class CheckInOutService {
 
       const gate = await gateRepository.findOne({
         where: {
-          id: device.gateId!,
+          id: device.gateId,
           status: GateStatus.ACTIVE,
         },
       });
@@ -515,10 +515,7 @@ export class CheckInOutService {
         },
       });
 
-      if (
-        !actor ||
-        (actor.role !== Role.STAFF && actor.role !== Role.ADMIN)
-      ) {
+      if (!actor || (actor.role !== Role.STAFF && actor.role !== Role.ADMIN)) {
         throw new ForbiddenException(
           'Tài khoản nhân viên/quản trị viên không hợp lệ hoặc đã bị vô hiệu hóa.',
         );
