@@ -120,7 +120,7 @@ describe('DashboardService', () => {
         checkInCount: 1,
         checkOutCount: 1,
         peakPeopleCount: 3,
-        lowestPeopleCount: 2,
+        lowestPeopleCount: 1,
       });
 
       expect(result[1]).toEqual({

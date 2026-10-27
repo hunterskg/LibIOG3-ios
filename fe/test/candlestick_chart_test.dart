@@ -203,6 +203,10 @@ void main() {
       // Verify Tooltip widgets exist for each candle
       expect(find.byType(Tooltip), findsNWidgets(2));
 
+      // Verify right Y-axis scale values exist
+      expect(find.text('35'), findsOneWidget); // max scale
+      expect(find.text('người'), findsOneWidget); // unit label
+
       scrollController.dispose();
     });
   });

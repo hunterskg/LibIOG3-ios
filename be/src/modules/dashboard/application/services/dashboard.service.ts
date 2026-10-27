@@ -148,10 +148,7 @@ export class DashboardService
       const checkInCount = Number(row.checkInCount || 0);
       const checkOutCount = Number(row.checkOutCount || 0);
       const peak = currentOccupancy + checkInCount;
-      const lowest = Math.min(
-        currentOccupancy,
-        Math.max(0, currentOccupancy + checkInCount - checkOutCount),
-      );
+      const lowest = Math.max(0, currentOccupancy - checkOutCount);
       currentOccupancy = Math.max(
         0,
         currentOccupancy + checkInCount - checkOutCount,

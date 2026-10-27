@@ -21,34 +21,111 @@ class CandlestickChartView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 200,
-      child: Scrollbar(
-        controller: scrollController,
-        thumbVisibility: true,
-        trackVisibility: true,
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(
-            dragDevices: {
-              PointerDeviceKind.touch,
-              PointerDeviceKind.mouse,
-              PointerDeviceKind.trackpad,
-              PointerDeviceKind.stylus,
-            },
-          ),
-          child: SingleChildScrollView(
-            controller: scrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Scrollbar(
+              controller: scrollController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.trackpad,
+                    PointerDeviceKind.stylus,
+                  },
+                ),
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: candleList.map((candle) {
+                      return _buildCandleColumn(candle);
+                    }).toList(),
+                  ),
+                ),
+              ),
             ),
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: candleList.map((candle) {
-                return _buildCandleColumn(candle);
-              }).toList(),
-            ),
           ),
+          _buildRightYAxis(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRightYAxis() {
+    final effectiveMax = maxScale <= 0 ? 1 : maxScale;
+    final midVal = (effectiveMax / 2).round();
+
+    return Container(
+      width: 44,
+      padding: const EdgeInsets.only(bottom: 12),
+      decoration: const BoxDecoration(
+        border: Border(
+          left: BorderSide(color: AppColors.neutral200, width: 1),
         ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SizedBox(
+            height: 120.0,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    '$effectiveMax',
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.charcoal600,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    '$midVal',
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      color: AppColors.charcoal400,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    '0',
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      color: AppColors.charcoal400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'người',
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 9,
+              color: AppColors.charcoal400,
+            ),
+            maxLines: 1,
+          ),
+        ],
       ),
     );
   }
