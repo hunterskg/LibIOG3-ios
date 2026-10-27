@@ -1,9 +1,7 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 abstract final class ApiConstants {
-  // ponytail: đọc từ String.fromEnvironment('API_BASE_URL') để override khi build APK/web
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:3000',
-  );
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
 
   static const Duration timeout = Duration(seconds: 15);
 
@@ -24,15 +22,14 @@ abstract final class ApiConstants {
   static String staffById(String id) => '$staffs/$id';
   static String staffRole(String id) => '$staffs/$id/role';
 
-  //Checkin - Checkout
+  // Checkin - Checkout
   static const String qrTokens = '/qr-tokens';
   static const String qrTokensVerify = '/qr-tokens/verify';
   static const String deviceAssignments = '/devices/assignments';
-  static const String assignDevice = '/devices/assign';
-  static const String activateDevice = '/devices/activate';
   static String staffDeviceAssignments(String id) =>
       '$deviceAssignments/staff/$id';
   static String revokeDeviceAssignment(String id) => '$deviceAssignments/$id';
+  static String unbindStaffDevice(String id) => '/devices/staff/$id/unbind';
 
   // Library schedule endpoints
   static const String librarySchedules = '/library/schedules';
@@ -51,6 +48,15 @@ abstract final class ApiConstants {
     return '$faceStatus?readerId=$readerId';
   }
 
-   // Face check-in/check-out
+  // Face & Manual check-in/check-out
   static const String faceCheckInOut = '/checkin-out/face';
+  static const String manualCheckInOut = '/checkin-out/manual';
+  static String readerAccessState(String readerId) =>
+      '/checkin-out/reader-state/$readerId';
+
+  // Access logs, closure & reporting
+  static const String accessLogs = '/access/logs';
+  static const String activeReaders = '/access/active-readers';
+  static const String triggerClosure = '/access/closures/trigger';
+  static const String reportSummary = '/access/reports/summary';
 }

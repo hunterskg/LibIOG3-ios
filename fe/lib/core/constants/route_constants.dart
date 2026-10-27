@@ -30,8 +30,14 @@ abstract final class AppRoutes {
   static const String readerQr = '/reader/qr';
   static const String staffScanner = '/staff/scanner';
   static const String staffFaceScanner = '/staff/face-scanner';
-  static const String deviceActivation = '/staff/device-activation';
 
   static const String scheduleList = '/admin/library/schedules';
   static const String scheduleForm = '/admin/library/schedules/form';
+
+  // Manual Access, Closure, Access History & Reporting
+  static const String manualAccess = '/access/manual';
+  static const String accessHistory = '/access/history';
+  static const String libraryClosure = '/admin/library/closure';
+  static const String adminReports = '/admin/reports';
+  static const String gateList = '/admin/gates';
 }

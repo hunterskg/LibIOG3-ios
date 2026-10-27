@@ -130,17 +130,6 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
               onPressed: auth.isLoading ? null : _onLogin,
               isLoading: auth.isLoading,
             ),
-            const SizedBox(height: AppSpacing.s2),
-            OutlinedButton.icon(
-              onPressed: auth.isLoading
-                  ? null
-                  : () => Navigator.pushNamed(
-                      context,
-                      AppRoutes.deviceActivation,
-                    ),
-              icon: const Icon(Icons.phonelink_lock_outlined),
-              label: const Text('Kích hoạt điện thoại bằng mã 6 số'),
-            ),
             const SizedBox(height: AppSpacing.s3),
             Center(
               child: TextButton(

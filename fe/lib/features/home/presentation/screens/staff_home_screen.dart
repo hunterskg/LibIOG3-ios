@@ -52,13 +52,16 @@ class _StaffHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              'LibIO Quản lý quầy',
-              style: AppTextStyles.h2.copyWith(color: AppColors.charcoal900),
+            Flexible(
+              child: Text(
+                'LibIO Quản lý quầy',
+                style: AppTextStyles.h2.copyWith(color: AppColors.charcoal900),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             const StatusBadge(
-              label: 'Thủ thư / Nhân viên',
+              label: 'Nhân viên',
               color: AppColors.success,
               backgroundColor: AppColors.successLight,
               icon: Icons.badge_outlined,
@@ -123,7 +126,6 @@ class _StaffHomeContent extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: AppSpacing.s3),
-
                   _actionCard(
                     icon: Icons.face_retouching_natural,
                     title: 'Quét khuôn mặt',
@@ -134,53 +136,80 @@ class _StaffHomeContent extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: AppSpacing.s3),
-                  _actionCard(
-                    icon: Icons.menu_book_outlined,
-                    title: 'Lịch sử ra vào',
-                    desc: 'Theo dõi lượt vào và lượt ra',
-                    color: AppColors.info,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Chức năng lịch sử ra vào chưa được triển khai.',
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.how_to_reg_rounded,
+                            title: 'Ra / Vào thủ công',
+                            desc: 'Duyệt tay cho bạn đọc kèm lý do',
+                            color: AppColors.accent600,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.manualAccess,
+                              );
+                            },
                           ),
                         ),
-                      );
-                    },
+                        const SizedBox(width: AppSpacing.s3),
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.menu_book_outlined,
+                            title: 'Lịch sử ra vào',
+                            desc: 'Theo dõi lượt vào và lượt ra',
+                            color: AppColors.info,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.accessHistory,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.s4),
                   Text('Quản lý hệ thống', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.badge_outlined,
-                          title: 'Hồ sơ nhân viên',
-                          desc: 'Xem & sửa tên hiển thị',
-                          color: AppColors.charcoal700,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.staffProfile,
-                            );
-                          },
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.badge_outlined,
+                            title: 'Hồ sơ nhân viên',
+                            desc: 'Xem & sửa tên hiển thị',
+                            color: AppColors.charcoal700,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.staffProfile,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.s3),
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.people_outline_rounded,
-                          title: 'Quản lý bạn đọc',
-                          desc: 'Xem danh sách & sửa thông tin',
-                          color: AppColors.charcoal700,
-                          onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.readerList);
-                          },
+                        const SizedBox(width: AppSpacing.s3),
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.people_outline_rounded,
+                            title: 'Quản lý bạn đọc',
+                            desc: 'Xem danh sách & sửa thông tin',
+                            color: AppColors.charcoal700,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.readerList,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.s5),
                   Center(
@@ -241,19 +270,25 @@ class _StaffHomeContent extends StatelessWidget {
 
   Widget _infoRow(String label, String value, {bool isMono = false}) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 160,
+          width: 130,
           child: Text(
             label,
             style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
           ),
         ),
-        Text(
-          value,
-          style: (isMono ? AppTextStyles.mono : AppTextStyles.body).copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppColors.charcoal900,
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: (isMono ? AppTextStyles.mono : AppTextStyles.body).copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.charcoal900,
+            ),
           ),
         ),
       ],

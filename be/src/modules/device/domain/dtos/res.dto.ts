@@ -12,6 +12,12 @@ export class DeviceAssignmentRes {
   @ApiPropertyOptional()
   gateId?: string;
 
+  @ApiPropertyOptional()
+  gateCode?: string;
+
+  @ApiPropertyOptional()
+  gateName?: string;
+
   @ApiProperty({ enum: DeviceStatus })
   status!: DeviceStatus;
 
@@ -23,9 +29,6 @@ export class DeviceAssignmentRes {
 
   @ApiPropertyOptional()
   devicePlatform?: string;
-
-  @ApiPropertyOptional()
-  expiresAt?: Date;
 
   @ApiPropertyOptional()
   activatedAt?: Date;
@@ -40,33 +43,18 @@ export class DeviceAssignmentRes {
     const response = new DeviceAssignmentRes();
     response.id = device.id;
     response.staffId = device.staffId;
-    response.gateId = device.gateId;
+    response.gateId = device.gateId ?? undefined;
+    response.gateCode = device.gate?.code;
+    response.gateName = device.gate?.name;
     response.status = device.status;
     response.deviceFingerprint = device.deviceFingerprint ?? undefined;
     response.deviceName = device.deviceName;
     response.devicePlatform = device.devicePlatform ?? undefined;
-    response.expiresAt = device.expiredAt ?? undefined;
     response.activatedAt = device.activatedAt ?? undefined;
     response.revokedAt = device.revokedAt ?? undefined;
     response.createdAt = device.createdAt;
     return response;
   }
-}
-
-export class AssignDeviceRes {
-  @ApiProperty({ type: () => DeviceAssignmentRes })
-  assignment!: DeviceAssignmentRes;
-
-  @ApiProperty({ example: '482913' })
-  activationCode!: string;
-}
-
-export class ActivateDeviceRes {
-  @ApiProperty({ example: 'Device activated successfully' })
-  message!: string;
-
-  @ApiProperty({ type: () => DeviceAssignmentRes })
-  assignment!: DeviceAssignmentRes;
 }
 
 export { DeviceAssignmentRes as DeviceRes };

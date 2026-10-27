@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/constants/api_constants.dart';
 import 'core/constants/route_constants.dart';
@@ -16,10 +17,13 @@ import 'features/device/data/services/device_api_service.dart';
 import 'features/device/presentation/providers/device_provider.dart';
 import 'features/library/data/services/schedule_api_service.dart';
 import 'features/library/presentation/providers/schedule_provider.dart';
+import 'features/gate/data/gate_api_service.dart';
+import 'features/gate/presentation/gate_provider.dart';
 import 'routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
 
   final tokenStorage = await SharedPreferencesTokenStorage.create();
 
@@ -44,6 +48,7 @@ class _MyAppState extends State<MyApp> {
   late final UserProvider _userProvider;
   late final DeviceProvider _deviceProvider;
   late final ScheduleProvider _scheduleProvider;
+  late final GateProvider _gateProvider;
 
   @override
   void initState() {
@@ -73,6 +78,7 @@ class _MyAppState extends State<MyApp> {
     _scheduleProvider = ScheduleProvider(
       service: ScheduleApiService(_apiClient),
     );
+    _gateProvider = GateProvider(GateApiService(_apiClient));
 
     _authProvider.checkAuth();
   }
@@ -84,6 +90,7 @@ class _MyAppState extends State<MyApp> {
     _userProvider.dispose();
     _deviceProvider.dispose();
     _scheduleProvider.dispose();
+    _gateProvider.dispose();
 
     super.dispose();
   }
@@ -118,6 +125,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<ScheduleProvider>.value(
           value: _scheduleProvider,
         ),
+        ChangeNotifierProvider<GateProvider>.value(value: _gateProvider),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {

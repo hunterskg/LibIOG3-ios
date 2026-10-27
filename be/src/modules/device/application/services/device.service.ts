@@ -1,28 +1,22 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomInt } from 'node:crypto';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../../../user/domain/entities/user.entity';
 import { Role } from '../../../user/domain/enums/role.enum';
 import {
-  ActivateDeviceReq,
-  AssignDeviceReq,
   QueryAssignmentReq,
 } from '../../domain/dtos/req.dto';
 import {
-  ActivateDeviceRes,
-  AssignDeviceRes,
   DeviceAssignmentRes,
 } from '../../domain/dtos/res.dto';
 import { Device } from '../../domain/entities/device.entity';
 import { DeviceStatus } from '../../domain/enums/device-status.enum';
-
-const ACTIVATION_CODE_TTL_MS = 24 * 60 * 60 * 1000;
+import { Gate } from '../../domain/entities/gate.entity';
+import { GateStatus } from '../../domain/enums/gate-status.enum';
 
 @Injectable()
 export class DeviceService {
@@ -31,98 +25,49 @@ export class DeviceService {
     private readonly deviceRepo: Repository<Device>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly dataSource: DataSource,
+    @InjectRepository(Gate)
+    private readonly gateRepo: Repository<Gate>,
   ) {}
 
-  async assign(
-    req: AssignDeviceReq,
-    adminId: string,
-  ): Promise<AssignDeviceRes> {
-    const user = await this.userRepo.findOne({
-      where: { id: req.staffId },
-    });
-
-    if (!user || (user.role !== Role.STAFF && user.role !== Role.ADMIN)) {
-      throw new NotFoundException('Staff not found');
-    }
-
-    const device = await this.dataSource.transaction(async (manager) => {
-      await manager.update(
-        Device,
-        { staffId: req.staffId, status: DeviceStatus.ACTIVE },
-        { status: DeviceStatus.REVOKED, revokedAt: new Date() },
-      );
-
-      const pendingDevices = await manager.find(Device, {
-        where: { staffId: req.staffId, status: DeviceStatus.PENDING },
-      });
-      for (const pending of pendingDevices) {
-        pending.status = DeviceStatus.REVOKED;
-        pending.revokedAt = new Date();
+  async verifyOrBindStaffDevice(
+    staffId: string,
+    fingerprint: string,
+    deviceName?: string,
+    platform?: string,
+  ): Promise<void> {
+    const existing = await this.deviceRepo.findOne({ where: { staffId, status: DeviceStatus.ACTIVE } });
+    if (existing) {
+      if (existing.deviceFingerprint !== fingerprint) {
+        throw new ConflictException('Tài khoản đã được gắn với thiết bị khác. Liên hệ Admin để đổi thiết bị.');
       }
-      await manager.save(Device, pendingDevices);
-
-      const code = await this.createUniqueCode(manager);
-
-      return manager.save(
-        Device,
-        manager.create(Device, {
-          staffId: req.staffId,
-          gateId: req.gateId,
-          deviceName: req.deviceName || 'Staff Device',
-          assignedById: adminId,
-          activationCode: code,
-          status: DeviceStatus.PENDING,
-          expiredAt: new Date(Date.now() + ACTIVATION_CODE_TTL_MS),
-        }),
-      );
-    });
-
-    return {
-      activationCode: device.activationCode,
-      assignment: DeviceAssignmentRes.of(device),
-    };
+      return;
+    }
+    const used = await this.deviceRepo.findOne({ where: { deviceFingerprint: fingerprint, status: DeviceStatus.ACTIVE } });
+    if (used && used.staffId !== staffId) throw new ConflictException('Thiết bị đã được gắn với tài khoản khác');
+    await this.deviceRepo.save(this.deviceRepo.create({
+      staffId, gateId: null,
+      deviceFingerprint: fingerprint, deviceName: deviceName || 'Staff Device', devicePlatform: platform,
+      status: DeviceStatus.ACTIVE, assignedById: staffId, activatedAt: new Date(),
+    }));
   }
 
-  async activate(req: ActivateDeviceReq): Promise<ActivateDeviceRes> {
-    const device = await this.deviceRepo.findOne({
-      where: { activationCode: req.activationCode },
-    });
+  async unbindStaff(staffId: string): Promise<void> {
+    const device = await this.deviceRepo.findOne({ where: { staffId, status: DeviceStatus.ACTIVE } });
+    if (!device) throw new NotFoundException('Staff has no active device');
+    device.status = DeviceStatus.REVOKED;
+    device.revokedAt = new Date();
+    await this.deviceRepo.save(device);
+  }
 
-    if (!device || device.status !== DeviceStatus.PENDING) {
-      throw new BadRequestException(
-        'Activation code is invalid or already used',
-      );
-    }
-    if (device.expiredAt && device.expiredAt <= new Date()) {
-      throw new BadRequestException('Activation code has expired');
-    }
-
-    const activeFingerprint = await this.deviceRepo.findOne({
-      where: {
-        deviceFingerprint: req.deviceFingerprint,
-        status: DeviceStatus.ACTIVE,
-      },
-    });
-    if (activeFingerprint) {
-      throw new ConflictException(
-        'Device is already assigned to another account',
-      );
-    }
-
-    device.deviceFingerprint = req.deviceFingerprint;
-    if (req.deviceName) {
-      device.deviceName = req.deviceName;
-    }
-    device.devicePlatform = req.devicePlatform;
-    device.status = DeviceStatus.ACTIVE;
-    device.activatedAt = new Date();
-    const saved = await this.deviceRepo.save(device);
-
-    return {
-      message: 'Device activated successfully',
-      assignment: DeviceAssignmentRes.of(saved),
-    };
+  async assignGate(staffId: string, gateId: string): Promise<void> {
+    const gate = await this.gateRepo.findOne({ where: { id: gateId, status: GateStatus.ACTIVE } });
+    if (!gate) throw new NotFoundException('Active gate not found');
+    const staff = await this.userRepo.findOne({ where: { id: staffId, role: Role.STAFF } });
+    if (!staff) throw new NotFoundException('Staff not found');
+    const device = await this.deviceRepo.findOne({ where: { staffId, status: DeviceStatus.ACTIVE } });
+    if (!device) throw new NotFoundException('Staff has no active device');
+    device.gateId = gateId;
+    await this.deviceRepo.save(device);
   }
 
   async revoke(id: string): Promise<void> {
@@ -143,6 +88,7 @@ export class DeviceService {
         ...(req.status ? { status: req.status } : {}),
       },
       order: { createdAt: 'DESC' },
+      relations: { gate: true },
     });
     return devices.map(DeviceAssignmentRes.of);
   }
@@ -151,19 +97,9 @@ export class DeviceService {
     const devices = await this.deviceRepo.find({
       where: { staffId },
       order: { createdAt: 'DESC' },
+      relations: { gate: true },
     });
     return devices.map(DeviceAssignmentRes.of);
   }
 
-  private async createUniqueCode(
-    manager: ReturnType<DataSource['createEntityManager']>,
-  ): Promise<string> {
-    for (;;) {
-      const code = randomInt(100000, 1000000).toString();
-      const existing = await manager.findOne(Device, {
-        where: { activationCode: code, status: DeviceStatus.PENDING },
-      });
-      if (!existing) return code;
-    }
-  }
 }

@@ -52,11 +52,14 @@ class _AdminHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              'LibIO Quản trị',
-              style: AppTextStyles.h2.copyWith(color: AppColors.charcoal900),
+            Flexible(
+              child: Text(
+                'LibIO Quản trị',
+                style: AppTextStyles.h2.copyWith(color: AppColors.charcoal900),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             const StatusBadge(
               label: 'Quản trị viên',
               color: AppColors.accent600,
@@ -116,87 +119,134 @@ class _AdminHomeContent extends StatelessWidget {
                   const SizedBox(height: AppSpacing.s4),
                   Text('Quản lý hệ thống', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.admin_panel_settings_outlined,
-                          title: 'Quản lý nhân sự',
-                          desc: 'Thêm nhân viên & phân quyền',
-                          color: AppColors.accent600,
-                          onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.staffList);
-                          },
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.admin_panel_settings_outlined,
+                            title: 'Quản lý nhân sự',
+                            desc: 'Thêm nhân viên & phân quyền',
+                            color: AppColors.accent600,
+                            onTap: () {
+                              Navigator.pushNamed(context, AppRoutes.staffList);
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.s3),
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.people_outline_rounded,
-                          title: 'Quản lý bạn đọc',
-                          desc: 'Xem danh sách & sửa thông tin',
-                          color: AppColors.charcoal700,
-                          onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.readerList);
-                          },
+                        const SizedBox(width: AppSpacing.s3),
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.people_outline_rounded,
+                            title: 'Quản lý bạn đọc',
+                            desc: 'Xem danh sách & sửa thông tin',
+                            color: AppColors.charcoal700,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.readerList,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.s3),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.devices_other_rounded,
-                          title: 'Giám sát Kiosk / Thiết bị',
-                          desc: 'Kiểm tra trạng thái trạm tự phục vụ',
-                          color: AppColors.info,
-                          onTap: () {},
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.how_to_reg_rounded,
+                            title: 'Ra / Vào thủ công',
+                            desc: 'Duyệt Check-in / Check-out kèm lý do',
+                            color: AppColors.info,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.manualAccess,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.s3),
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.bar_chart_rounded,
-                          title: 'Báo cáo & Thống kê',
-                          desc: 'Tổng quan mượn trả & vận hành',
-                          color: AppColors.success,
-                          onTap: () {},
+                        const SizedBox(width: AppSpacing.s3),
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.bar_chart_rounded,
+                            title: 'Báo cáo & Thống kê',
+                            desc: 'Tổng quan ra/vào & hiệu suất vận hành',
+                            color: AppColors.success,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.adminReports,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.s4),
-                  Text('Quản lý thư viện', style: AppTextStyles.h3),
+                  Text('Quản lý thư viện & Vận hành', style: AppTextStyles.h3),
                   const SizedBox(height: AppSpacing.s3),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.schedule_rounded,
-                          title: 'Lịch mở cửa',
-                          desc: 'Giờ mở theo tuần, lịch nghỉ đặc biệt',
-                          color: AppColors.accent600,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.scheduleList,
-                            );
-                          },
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.schedule_rounded,
+                            title: 'Lịch mở cửa',
+                            desc: 'Giờ mở theo tuần, lịch nghỉ đặc biệt',
+                            color: AppColors.accent600,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.scheduleList,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.s3),
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.event_busy_rounded,
-                          title: 'Đóng cửa & Vi phạm',
-                          desc: 'Sắp có',
-                          color: AppColors.charcoal400,
-                          onTap: () {},
+                        const SizedBox(width: AppSpacing.s3),
+                        Expanded(
+                          child: _actionCard(
+                            icon: Icons.event_busy_rounded,
+                            title: 'Đóng cửa & Auto-Out',
+                            desc: 'Chốt đóng cửa & xử lý quên check-out',
+                            color: AppColors.warning,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.libraryClosure,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s3),
+                  _actionCard(
+                    icon: Icons.door_front_door_outlined,
+                    title: 'Quản lý cổng',
+                    desc: 'Tạo cổng, theo dõi và đổi trạng thái hoạt động',
+                    color: AppColors.info,
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.gateList),
+                  ),
+                  const SizedBox(height: AppSpacing.s3),
+                  _actionCard(
+                    icon: Icons.history_edu_rounded,
+                    title: 'Lịch sử ra vào thư viện',
+                    desc:
+                        'Tra cứu toàn bộ lượt QR, Khuôn mặt, Duyệt tay và Auto Check-out',
+                    color: AppColors.charcoal700,
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.accessHistory);
+                    },
                   ),
                   const SizedBox(height: AppSpacing.s5),
                   Center(
@@ -230,19 +280,25 @@ class _AdminHomeContent extends StatelessWidget {
 
   Widget _infoRow(String label, String value, {bool isMono = false}) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 160,
+          width: 130,
           child: Text(
             label,
             style: AppTextStyles.bodySm.copyWith(color: AppColors.charcoal500),
           ),
         ),
-        Text(
-          value,
-          style: (isMono ? AppTextStyles.mono : AppTextStyles.body).copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppColors.charcoal900,
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: (isMono ? AppTextStyles.mono : AppTextStyles.body).copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.charcoal900,
+            ),
           ),
         ),
       ],
