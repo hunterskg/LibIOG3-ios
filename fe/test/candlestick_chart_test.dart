@@ -11,82 +11,89 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('2. Single item calculates open, close, high, low, netChange correctly', () {
-      final stat = CheckInOutStatisticModel(
-        startDate: DateTime.utc(2026, 10, 27, 8, 0),
-        intervalMin: 60,
-        checkInCount: 25,
-        checkOutCount: 5,
-        peakPeopleCount: 30,
-        lowestPeopleCount: 10,
-      );
-
-      final result = computeCandleData([stat]);
-      expect(result.length, 1);
-
-      final candle = result.first;
-      expect(candle.startDate, stat.startDate);
-      expect(candle.intervalMin, 60);
-      expect(candle.high, 30);
-      expect(candle.low, 10);
-      expect(candle.checkInCount, 25);
-      expect(candle.checkOutCount, 5);
-      expect(candle.netChange, 20);
-
-      // Open = lowestPeopleCount = 10
-      expect(candle.open, 10);
-      // Close = (open + netChange).clamp(low, high) = (10 + 20).clamp(10, 30) = 30
-      expect(candle.close, 30);
-      expect(candle.isBullish, isTrue);
-    });
-
-    test('3. Multiple items inherit open_i = close_{i-1} clamped to [low, high]', () {
-      final stats = [
-        CheckInOutStatisticModel(
+    test(
+      '2. Single item calculates open, close, high, low, netChange correctly',
+      () {
+        final stat = CheckInOutStatisticModel(
           startDate: DateTime.utc(2026, 10, 27, 8, 0),
           intervalMin: 60,
-          checkInCount: 15,
+          checkInCount: 25,
           checkOutCount: 5,
-          peakPeopleCount: 25,
-          lowestPeopleCount: 5,
-        ),
-        CheckInOutStatisticModel(
-          startDate: DateTime.utc(2026, 10, 27, 9, 0),
-          intervalMin: 60,
-          checkInCount: 10,
-          checkOutCount: 12,
           peakPeopleCount: 30,
           lowestPeopleCount: 10,
-        ),
-        CheckInOutStatisticModel(
-          startDate: DateTime.utc(2026, 10, 27, 10, 0),
-          intervalMin: 60,
-          checkInCount: 5,
-          checkOutCount: 5,
-          peakPeopleCount: 20,
-          lowestPeopleCount: 18, // Clamp test: prev close was outside [18, 20]
-        ),
-      ];
+        );
 
-      final result = computeCandleData(stats);
-      expect(result.length, 3);
+        final result = computeCandleData([stat]);
+        expect(result.length, 1);
 
-      // Item 0: open = low = 5, net = 10, close = 15
-      expect(result[0].open, 5);
-      expect(result[0].close, 15);
+        final candle = result.first;
+        expect(candle.startDate, stat.startDate);
+        expect(candle.intervalMin, 60);
+        expect(candle.high, 30);
+        expect(candle.low, 10);
+        expect(candle.checkInCount, 25);
+        expect(candle.checkOutCount, 5);
+        expect(candle.netChange, 20);
 
-      // Item 1: inherits open = result[0].close = 15 clamped to [10, 30] -> 15
-      // net = -2, close = (15 - 2).clamp(10, 30) = 13
-      expect(result[1].open, 15);
-      expect(result[1].close, 13);
-      expect(result[1].isBullish, isFalse);
+        // Open = lowestPeopleCount = 10
+        expect(candle.open, 10);
+        // Close = (open + netChange).clamp(low, high) = (10 + 20).clamp(10, 30) = 30
+        expect(candle.close, 30);
+        expect(candle.isBullish, isTrue);
+      },
+    );
 
-      // Item 2: prev close = 13, clamped to [18, 20] -> open = 18
-      // net = 0, close = (18 + 0).clamp(18, 20) = 18
-      expect(result[2].open, 18);
-      expect(result[2].close, 18);
-      expect(result[2].isBullish, isTrue);
-    });
+    test(
+      '3. Multiple items inherit open_i = close_{i-1} clamped to [low, high]',
+      () {
+        final stats = [
+          CheckInOutStatisticModel(
+            startDate: DateTime.utc(2026, 10, 27, 8, 0),
+            intervalMin: 60,
+            checkInCount: 15,
+            checkOutCount: 5,
+            peakPeopleCount: 25,
+            lowestPeopleCount: 5,
+          ),
+          CheckInOutStatisticModel(
+            startDate: DateTime.utc(2026, 10, 27, 9, 0),
+            intervalMin: 60,
+            checkInCount: 10,
+            checkOutCount: 12,
+            peakPeopleCount: 30,
+            lowestPeopleCount: 10,
+          ),
+          CheckInOutStatisticModel(
+            startDate: DateTime.utc(2026, 10, 27, 10, 0),
+            intervalMin: 60,
+            checkInCount: 5,
+            checkOutCount: 5,
+            peakPeopleCount: 20,
+            lowestPeopleCount:
+                18, // Clamp test: prev close was outside [18, 20]
+          ),
+        ];
+
+        final result = computeCandleData(stats);
+        expect(result.length, 3);
+
+        // Item 0: open = low = 5, net = 10, close = 15
+        expect(result[0].open, 5);
+        expect(result[0].close, 15);
+
+        // Item 1: inherits open = result[0].close = 15 clamped to [10, 30] -> 15
+        // net = -2, close = (15 - 2).clamp(10, 30) = 13
+        expect(result[1].open, 15);
+        expect(result[1].close, 13);
+        expect(result[1].isBullish, isFalse);
+
+        // Item 2: prev close = 13, clamped to [18, 20] -> open = 18
+        // net = 0, close = (18 + 0).clamp(18, 20) = 18
+        expect(result[2].open, 18);
+        expect(result[2].close, 18);
+        expect(result[2].isBullish, isTrue);
+      },
+    );
 
     test('4. Doji candle when open == close', () {
       final stat = CheckInOutStatisticModel(
@@ -149,7 +156,9 @@ void main() {
   });
 
   group('CandlestickChartView Widget Tests', () {
-    testWidgets('Renders exact number of candle items and X-axis labels', (tester) async {
+    testWidgets('Renders exact number of candle items and X-axis labels', (
+      tester,
+    ) async {
       final candles = [
         CandleData(
           startDate: DateTime.utc(2026, 10, 27, 8, 0),

@@ -69,9 +69,7 @@ class CandlestickChartView extends StatelessWidget {
       width: 44,
       padding: const EdgeInsets.only(bottom: 12),
       decoration: const BoxDecoration(
-        border: Border(
-          left: BorderSide(color: AppColors.neutral200, width: 1),
-        ),
+        border: Border(left: BorderSide(color: AppColors.neutral200, width: 1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -138,10 +136,15 @@ class CandlestickChartView extends StatelessWidget {
         ? DateFormat('dd/MM').format(candle.startDate.toLocal())
         : DateFormat('HH:mm').format(candle.startDate.toLocal());
 
-    final timeFull = DateFormat('HH:mm dd/MM').format(candle.startDate.toLocal());
-    final netSign = candle.netChange >= 0 ? '+${candle.netChange}' : '${candle.netChange}';
+    final timeFull = DateFormat(
+      'HH:mm dd/MM',
+    ).format(candle.startDate.toLocal());
+    final netSign = candle.netChange >= 0
+        ? '+${candle.netChange}'
+        : '${candle.netChange}';
 
-    final tooltipMsg = 'Thời gian: $timeFull\n'
+    final tooltipMsg =
+        'Thời gian: $timeFull\n'
         'Cao nhất: ${candle.high} | Thấp nhất: ${candle.low}\n'
         'Đầu kỳ: ${candle.open} → Cuối kỳ: ${candle.close}\n'
         'Vào: +${candle.checkInCount} | Ra: -${candle.checkOutCount}\n'
@@ -186,10 +189,7 @@ class CandlestickPainter extends CustomPainter {
   final CandleData candle;
   final int maxScale;
 
-  const CandlestickPainter({
-    required this.candle,
-    required this.maxScale,
-  });
+  const CandlestickPainter({required this.candle, required this.maxScale});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -212,11 +212,7 @@ class CandlestickPainter extends CustomPainter {
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
-    canvas.drawLine(
-      Offset(centerX, yHigh),
-      Offset(centerX, yLow),
-      wickPaint,
-    );
+    canvas.drawLine(Offset(centerX, yHigh), Offset(centerX, yLow), wickPaint);
 
     final isBullish = candle.isBullish;
     final bodyColor = isBullish ? AppColors.success : AppColors.danger;
