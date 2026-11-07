@@ -87,6 +87,17 @@ jobs:
       - name: Run unit tests
         run: flutter test
 
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-apk-${{ github.sha }}
+          path: fe/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
+
   docker-build:
     name: Docker Build Check
     runs-on: ubuntu-latest
