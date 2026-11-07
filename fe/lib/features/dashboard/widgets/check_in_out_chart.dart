@@ -212,6 +212,189 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
           ),
           const SizedBox(height: AppSpacing.s2),
           _buildDetailList(widget.stats, isCandle),
+<<<<<<< HEAD
+=======
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewModeToggle() {
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.neutral300),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildToggleButton(
+            mode: ChartViewMode.bar,
+            icon: Icons.bar_chart_rounded,
+            tooltip: 'Biểu đồ cột',
+          ),
+          _buildToggleButton(
+            mode: ChartViewMode.candlestick,
+            icon: Icons.candlestick_chart_rounded,
+            tooltip: 'Biểu đồ nến',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleButton({
+    required ChartViewMode mode,
+    required IconData icon,
+    required String tooltip,
+  }) {
+    final isSelected = _viewMode == mode;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: () {
+          if (_viewMode != mode) {
+            setState(() {
+              _viewMode = mode;
+            });
+          }
+        },
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: isSelected ? AppColors.charcoal900 : AppColors.charcoal500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBarChart(BuildContext context, int maxCount) {
+    return SizedBox(
+      height: 200,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Scrollbar(
+              controller: _scrollController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.trackpad,
+                    PointerDeviceKind.stylus,
+                  },
+                ),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: widget.stats.map((stat) {
+                      return _buildBarGroup(stat, maxCount);
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          _buildRightYAxis(maxCount, 'lượt'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRightYAxis(int maxCount, String unit) {
+    final effectiveMax = maxCount <= 0 ? 1 : maxCount;
+    final midVal = (effectiveMax / 2).round();
+
+    return Container(
+      width: 44,
+      padding: const EdgeInsets.only(bottom: 12),
+      decoration: const BoxDecoration(
+        border: Border(
+          left: BorderSide(color: AppColors.neutral200, width: 1),
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SizedBox(
+            height: 120.0,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    '$effectiveMax',
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.charcoal600,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    '$midVal',
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      color: AppColors.charcoal400,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    '0',
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      color: AppColors.charcoal400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            unit,
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 9,
+              color: AppColors.charcoal400,
+            ),
+            maxLines: 1,
+          ),
+>>>>>>> origin/main
         ],
       ),
     );
