@@ -9,10 +9,7 @@ import '../models/check_in_out_statistic_model.dart';
 import '../models/candle_data.dart';
 import 'candlestick_chart_view.dart';
 
-enum ChartViewMode {
-  bar,
-  candlestick,
-}
+enum ChartViewMode { bar, candlestick }
 
 class CheckInOutChart extends StatefulWidget {
   final List<CheckInOutStatisticModel> stats;
@@ -120,7 +117,9 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
                       isCandle
                           ? 'Biểu đồ nến biến động số người'
                           : 'Biểu đồ biến động Check-in / Check-out',
-                      style: AppTextStyles.h3.copyWith(color: AppColors.charcoal900),
+                      style: AppTextStyles.h3.copyWith(
+                        color: AppColors.charcoal900,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -212,8 +211,6 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
           ),
           const SizedBox(height: AppSpacing.s2),
           _buildDetailList(widget.stats, isCandle),
-<<<<<<< HEAD
-=======
         ],
       ),
     );
@@ -338,9 +335,7 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
       width: 44,
       padding: const EdgeInsets.only(bottom: 12),
       decoration: const BoxDecoration(
-        border: Border(
-          left: BorderSide(color: AppColors.neutral200, width: 1),
-        ),
+        border: Border(left: BorderSide(color: AppColors.neutral200, width: 1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -394,111 +389,7 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
             ),
             maxLines: 1,
           ),
->>>>>>> origin/main
         ],
-      ),
-    );
-  }
-
-  Widget _buildViewModeToggle() {
-    return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: AppColors.neutral100,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.neutral300),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildToggleButton(
-            mode: ChartViewMode.bar,
-            icon: Icons.bar_chart_rounded,
-            tooltip: 'Biểu đồ cột',
-          ),
-          _buildToggleButton(
-            mode: ChartViewMode.candlestick,
-            icon: Icons.candlestick_chart_rounded,
-            tooltip: 'Biểu đồ nến',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleButton({
-    required ChartViewMode mode,
-    required IconData icon,
-    required String tooltip,
-  }) {
-    final isSelected = _viewMode == mode;
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: () {
-          if (_viewMode != mode) {
-            setState(() {
-              _viewMode = mode;
-            });
-          }
-        },
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: isSelected ? AppColors.charcoal900 : AppColors.charcoal500,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBarChart(BuildContext context, int maxCount) {
-    return SizedBox(
-      height: 200,
-      child: Scrollbar(
-        controller: _scrollController,
-        thumbVisibility: true,
-        trackVisibility: true,
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(
-            dragDevices: {
-              PointerDeviceKind.touch,
-              PointerDeviceKind.mouse,
-              PointerDeviceKind.trackpad,
-              PointerDeviceKind.stylus,
-            },
-          ),
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: widget.stats.map((stat) {
-                return _buildBarGroup(stat, maxCount);
-              }).toList(),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -529,8 +420,14 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
 
   Widget _buildBarGroup(CheckInOutStatisticModel stat, int maxCount) {
     const double maxBarHeight = 120.0;
-    final inHeight = (stat.checkInCount / maxCount * maxBarHeight).clamp(4.0, maxBarHeight);
-    final outHeight = (stat.checkOutCount / maxCount * maxBarHeight).clamp(4.0, maxBarHeight);
+    final inHeight = (stat.checkInCount / maxCount * maxBarHeight).clamp(
+      4.0,
+      maxBarHeight,
+    );
+    final outHeight = (stat.checkOutCount / maxCount * maxBarHeight).clamp(
+      4.0,
+      maxBarHeight,
+    );
 
     final timeLabel = stat.intervalMin >= 1440
         ? DateFormat('dd/MM').format(stat.startDate.toLocal())
@@ -548,26 +445,32 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
             children: [
               // In bar
               Tooltip(
-                message: 'Vào: ${stat.checkInCount} lượt\nThời gian: ${stat.startDate.toLocal()}',
+                message:
+                    'Vào: ${stat.checkInCount} lượt\nThời gian: ${stat.startDate.toLocal()}',
                 child: Container(
                   width: 14,
                   height: inHeight,
                   decoration: const BoxDecoration(
                     color: AppColors.success,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(4),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 3),
               // Out bar
               Tooltip(
-                message: 'Ra: ${stat.checkOutCount} lượt\nThời gian: ${stat.startDate.toLocal()}',
+                message:
+                    'Ra: ${stat.checkOutCount} lượt\nThời gian: ${stat.startDate.toLocal()}',
                 child: Container(
                   width: 14,
                   height: outHeight,
                   decoration: const BoxDecoration(
                     color: AppColors.accent500,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(4),
+                    ),
                   ),
                 ),
               ),
@@ -596,7 +499,9 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
     return Column(
       children: [
         ...displayedList.map((s) {
-          final timeStr = DateFormat('HH:mm dd/MM').format(s.startDate.toLocal());
+          final timeStr = DateFormat(
+            'HH:mm dd/MM',
+          ).format(s.startDate.toLocal());
           final net = s.checkInCount - s.checkOutCount;
           final isBullish = net >= 0;
 
@@ -618,7 +523,11 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
                   flex: 2,
                   child: Row(
                     children: [
-                      const Icon(Icons.arrow_downward, size: 14, color: AppColors.success),
+                      const Icon(
+                        Icons.arrow_downward,
+                        size: 14,
+                        color: AppColors.success,
+                      ),
                       const SizedBox(width: 2),
                       Text(
                         '${s.checkInCount}',
@@ -634,7 +543,11 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
                   flex: 2,
                   child: Row(
                     children: [
-                      const Icon(Icons.arrow_upward, size: 14, color: AppColors.accent600),
+                      const Icon(
+                        Icons.arrow_upward,
+                        size: 14,
+                        color: AppColors.accent600,
+                      ),
                       const SizedBox(width: 2),
                       Text(
                         '${s.checkOutCount}',
@@ -653,10 +566,16 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: (isBullish ? AppColors.success : AppColors.danger)
-                                .withValues(alpha: 0.12),
+                            color:
+                                (isBullish
+                                        ? AppColors.success
+                                        : AppColors.danger)
+                                    .withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -664,7 +583,9 @@ class _CheckInOutChartState extends State<CheckInOutChart> {
                             style: AppTextStyles.caption.copyWith(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: isBullish ? AppColors.success : AppColors.danger,
+                              color: isBullish
+                                  ? AppColors.success
+                                  : AppColors.danger,
                             ),
                           ),
                         ),
