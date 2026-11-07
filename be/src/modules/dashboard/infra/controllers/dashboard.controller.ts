@@ -67,7 +67,7 @@ export class DashboardController {
     return this.dashboardService.getCheckInOutStatistic(query);
   }
 
-  @Sse('check-in-out-events')
+  @Sse('check-in-out/events')
   getCheckInOutEvents(): Observable<MessageEvent> {
     return this.dashboardStreamServide.getReaderAccessEvents();
   }
